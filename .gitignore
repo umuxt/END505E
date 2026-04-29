@@ -1,5 +1,6 @@
 # Ham çıktı dosyaları
 makale_raw.txt
+ders_notlari/*_preview.txt
 
 # macOS
 .DS_Store
