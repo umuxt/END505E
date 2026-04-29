@@ -1,0 +1,18 @@
+# Ham çıktı dosyaları
+makale_raw.txt
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editör
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
