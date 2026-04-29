@@ -1,0 +1,39 @@
+DOSYA: Bölüm 02 - Rotalama.pdf | TOPLAM SAYFA: 7
+
+--- Slayt 1 ---
+BÖLÜM 2
+ROTALAMA
+
+--- Slayt 2 ---
+İşin (parça, ürün, hizmet) hangi işlemlerden, hangi sürelerde geçerek
+tamamlanacağını belirleme işlemine rotalama (routing) denir.
+Burada, ürünün, üretim süreci sırasında izleyeceği yol (rota, 
+operasyon plânı, iş seyri) belirlenmektedir.
+Rotalama
+2
+
+--- Slayt 3 ---
+Bir üretim işletmesinde, iş akış şemalarına dayanılarak oluşturulan bir
+Rota Formu’nda bulunması gereken temel bilgiler şunlardır:
+Malzeme kodu ve adı
+İşlemlerin sırası, kod ve adları
+İşlemlerin uygulanacağı bölümler/iş istasyonları, tezgâh kod ve adları
+Hazırlık ve işlem süreleri
+Gerekli âlet ve ekipmanlar (kalıp, aparat, fikstür, jig vb.) 
+Rotalama
+3
+
+--- Slayt 4 ---
+Bir üretim işletmesi için rota formu örneği
+Rotalama
+4
+
+--- Slayt 5 ---
+Sipâriş tipi üretim yapan işletmelerde bâzı durumlarda rota formu 
+üzerine sipâriş numarası, üretilmesi istenen miktar ve sipâriş 
+teslim tarihi yazılabilmektedir.
+Benzer biçimde hizmet işletmelerinde de; belgelerin geçeceği, 
+personelin yapacağı işlemleri ve sürelerini belirterek Rota Formu
+hazırlanması gerekir.
+Rotalama
+5

@@ -1,0 +1,43 @@
+DOSYA: Bölüm 04B - Tek Tezgâh Durumu İçin İş Sıralama Yöntemleri.pdf | TOPLAM SAYFA: 90
+
+--- Slayt 1 ---
+BÖLÜM 4B
+1 TEZGÂH DURUMU İÇİN
+İŞ SIRALAMA YÖNTEMLERİ
+
+--- Slayt 2 ---
+İÇERİK
+Teslim Tarihlerinin Belli Olmadığı Durumlar
+Teslim Tarihlerinin Belli Olduğu Durumlar
+2
+
+--- Slayt 3 ---
+Bu problem tipini, iki genel başlık altında inceleyeceğiz:
+1) Teslim Tarihlerinin Belli Olmadığı Durumlar
+2) Teslim Tarihlerinin Belli Olduğu Durumlar
+n İş-1 Tezgâh (n×1) Durumu İçin
+Sıralama Yöntemleri
+3
+
+--- Slayt 4 ---
+Sıralama problemlerinin bu en basit tipinde, bir tezgâhtan geçecek olan
+ve teslim tarihleri belli olmayan n adet işin, optimal sırada işlenmesi
+amaçlanır. 
+(n!) adet sıralama olanağı vardır. 
+Bu problemlerde işler hangi sırada yapılırsa yapılsın tüm işleri bitirmek
+için gerekli toplam süre, yâni yayılma süresi (M) hiç bir zaman
+değişmez. O nedenle bu tip problemlerde farklı amaçlara yönelik
+çözümlemelere gidilebilir.
+n İş-1 Tezgâh (n×1) Durumu
+[Teslim Tarihlerinin Belli Olmadığı Durumlar]
+4
+
+--- Slayt 5 ---
+Önerme 4.1.
+Ortalama tamamlanma zamanı (C*), KİSÖ (Kısa İşlem Süresi Önce) 
+kuralı ile enküçüklenir [SPT (Shortest Processing Time) first]. 
+Yâni işleri artan işlem sürelerine göre sıralarsak, elde edilen iş sırasına
+göre işlerin yapılması durumunda, C* en küçük değerini alır. 
+n İş-1 Tezgâh (n×1) Durumu
+[Teslim Tarihlerinin Belli Olmadığı Durumlar]
+5

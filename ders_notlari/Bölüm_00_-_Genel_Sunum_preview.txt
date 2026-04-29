@@ -1,0 +1,40 @@
+DOSYA: Bölüm 00 - Genel Sunum.pdf | TOPLAM SAYFA: 10
+
+--- Slayt 1 ---
+ÜRETİMDE SIRALAMA ve 
+ÇİZELGELEME
+Doç.Dr. Murat BASKAK
+İ.T.Ü. Endüstri Mühendisliği Bölümü
+
+--- Slayt 2 ---
+GENEL OLARAK BÖLÜMLER
+BÖLÜM 1 ÜRETİM ÇİZELGESİ
+BÖLÜM 2 ROTALAMA
+BÖLÜM 3 İŞ YÜKLEME
+BÖLÜM 4 İŞ SIRALAMA ve TEMEL YAKLAŞIMLAR
+BÖLÜM 5 PARALEL TEZGÂH KULLANIMI İLE İŞ
+SIRALAMA YÖNTEMLERİ
+BÖLÜM 6 AKIŞ TİPİ ATÖLYELERDE İŞ SIRALAMA 
+YÖNTEMLERİ
+BÖLÜM 7 SİPÂRİŞ TİPİ ATÖLYELERDE İŞ
+SIRALAMA YÖNTEMLERİ
+
+--- Slayt 3 ---
+BÖLÜM 1
+ÜRETİM ÇİZELGESİ
+Genel Bilgi
+
+--- Slayt 4 ---
+BÖLÜM 2
+ROTALAMA
+Genel Bilgi
+
+--- Slayt 5 ---
+BÖLÜM 3
+İŞ YÜKLEME
+Genel Bilgi
+Gantt Diyagramı İle İş Yükleme
+Doğrusal Programlama İle İş Yükleme
+Atama Yöntemi İle İş Yükleme
+Kapasite Temelli İş Yükleme Yaklaşımı
+Dal-Sınır Algoritması İle İş Yükleme

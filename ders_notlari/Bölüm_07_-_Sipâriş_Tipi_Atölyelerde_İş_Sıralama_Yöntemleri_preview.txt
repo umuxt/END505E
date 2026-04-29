@@ -1,0 +1,62 @@
+DOSYA: Bölüm 07 - Sipâriş Tipi Atölyelerde İş Sıralama Yöntemleri.pdf | TOPLAM SAYFA: 46
+
+--- Slayt 1 ---
+BÖLÜM 7
+SİPÂRİŞ TİPİ ATÖLYELERDE
+İŞ SIRALAMA YÖNTEMLERİ
+
+--- Slayt 2 ---
+İÇERİK
+✓Genel Bilgi
+✓Esnek Sipâriş Tipi Çizelgeleme Problemi ve Sınıflandırılması, 
+Esneklik Tipleri
+✓Aynı Teknolojik Sırayı İzlemeyen n İş-2 Tezgâh (n×2) Durumu
+✓Aynı Teknolojik Sırayı İzlemeyen 2 İş-m Tezgâh (2×m) Durumu
+✓Sipâriş Tipi Atölyelerde n İş-m Tezgâh (n×m) İş Sıralama 
+Problemlerinin Çözümü İçin 0-1 Tamsayılı Programlama Yöntemi
+✓Sipâriş Tipi Atölyelerde İş Sıralama Problemlerinde Sıralanmış 
+İşlerin Yayılma Süresinin Roy Algoritması İle Hesaplanması
+
+--- Slayt 3 ---
+▪
+Bu bölüme kadar, atölyeye gelen işlerin önceden bilindiği ve işlerin atölyeye 
+belirli bir düzen içinde geldiği statik sıralama problemleri ile ilgilendik.
+▪
+Bu tip sıralama problemlerinin statik özelliği, cebirsel birtakım kurallarla 
+çözüme ulaşmayı sağlamaktadır. Ancak iş listesinin sürekli ve rastgele 
+değiştiği dinamik (değişken) sıralama problemlerinde çözüme ulaşmak için 
+tümüyle farklı teknikler kullanmak gerekir. 
+▪
+Bu tekniklerin esası, örneklerini Bölüm 4.1.’de verdiğimiz öncelik (işi 
+başlatma) kurallarının kullanılmasına dayanır. 
+Genel Bilgi
+3
+
+--- Slayt 4 ---
+▪
+Öncelik kuralları, herhangi bir tezgâhta, belli bir işin bitiminden sonra hangi 
+işe başlanacağı konusunda karar verici kişiye yol gösteren basit mantıksal 
+kurallardır. İşlerin özellikleri ya da sistemin durumuna göre işlere öncelik 
+değerleri vermede kullanılırlar.
+▪
+Statik öncelik kuralları, üretim sürecinde işlerin değişmeyen özelliklerini 
+kullanan kurallardır. Örneğin, “bir parçanın üretimi için gerekli işlem 
+sayısı” gibi.
+▪
+Dinamik öncelik kuralları ise, üretim süreci içinde değişen durumlara göre 
+öncelik hesaplamada kullanılan kurallardır. Örneğin, “parçanın kalan işlem 
+süresi” gibi.
+Genel Bilgi
+4
+
+--- Slayt 5 ---
+▪Dinamik bir atölyede çizelgeleme için kullanılabilecek en etkin 
+öncelik kuralının belirlenmesi amacıyla benzetim yöntemi sıkça 
+kullanılır. 
+▪Benzetim, kısaca, üzerinde deneyler yapmak amacıyla kurulan 
+sistemin bilgisayar modelinin oluşturulması olarak düşünülebilir.
+▪Gerçek yaşamdaki sisteme tüm ayrıntılarıyla (işlerin gelişi ve bu 
+işlerin işlem merkezleri arasındaki akışı vb. açılardan) benzeyen bu 
+bilgisayar modeli üzerinde farklı performans ölçütleri için 
+optimizasyon sağlayan öncelik kuralları, deneme yoluyla saptanır.
+Genel Bilgi

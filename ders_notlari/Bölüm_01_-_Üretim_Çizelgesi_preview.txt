@@ -1,0 +1,66 @@
+DOSYA: Bölüm 01 - Üretim Çizelgesi.pdf | TOPLAM SAYFA: 12
+
+--- Slayt 1 ---
+BÖLÜM 1
+ÜRETİM ÇİZELGESİ
+
+--- Slayt 2 ---
+Üretim plânlama ve kontrol faaliyetleri
+2
+
+--- Slayt 3 ---
+Plânlama süreci tümüyle tamamlandığında;
+Her ürün ve parçanın üretimine ne zaman başlanacağı,
+Ne kadar üretileceği,
+İşlemlerin hangi bölümlerde ve tezgâhlarda yapılacağı,
+Parça ve ürünlerin işlenme öncelikleri,
+İşlerin bitiş zamanları
+ayrıntılı olarak belirlenmiş olur.
+Üretim Çizelgesi
+3
+
+--- Slayt 4 ---
+ÜRETİM
+PLÂNLAMA 
+ANA ÜRETİM 
+ÇİZELGELEME
+Hangi ürün ?
+Ne zaman ?
+Ne miktarda ?
+MALZEME 
+GEREKSİNİM 
+PLÂNLAMASI
+Hangi 
+malzeme/parça ?
+Ne zaman ?
+Ne miktarda ?
+ROTALAMA
+Hangi teknolojik 
+işlem sırasıyla ?
+YÜKLEME
+Hangi tezgâhlarla ?
+Hangi işgörenle ?
+SIRALAMA
+Hangi iş sırasıyla ?
+ÇİZELGELEME
+Hangi iş ?
+Hangi tezgâhta ?
+Hangi zaman 
+aralığında ?
+Üretim Plânlamanın Temel İşlevleri
+Üretim Çizelgesi
+4
+
+--- Slayt 5 ---
+Üretim Çizelgesi
+5
+Toplu Üretim Plânlama çalışması sonucunda, Ana Üretim
+Çizelgelemenin temel girdileri sağlanır ve eldeki kaynakların
+plânlama sürecinde en uygun kullanımını sağlayacak temel üretim
+stratejileri saptanır. Bu plânlamada, 3 ay ile 1 yıl arası bir plânlama
+dönemi gözönünde tutularak orta dönemli kararlar verilir.
+Üretim Çizelgeleme çalışması ise, ana üretim çizelgesinde belirlenen
+stratejiler çerçevesinde, yapılacak işlerin sırasını ve bu işlere ayrılacak
+en uygun (optimum) kaynak miktarlarını belirler. Bu plânlamada 1
+hafta ile 1 ay arası bir plânlama dönemi gözönünde tutularak kısa
+dönemli kararlar verilir.

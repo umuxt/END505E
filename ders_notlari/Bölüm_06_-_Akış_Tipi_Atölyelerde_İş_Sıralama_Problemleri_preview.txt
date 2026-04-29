@@ -1,0 +1,55 @@
+DOSYA: Bölüm 06 - Akış Tipi Atölyelerde İş Sıralama Problemleri.pdf | TOPLAM SAYFA: 101
+
+--- Slayt 1 ---
+BÖLÜM 6
+AKIŞ TİPİ ATÖLYELERDE
+İŞ SIRALAMA YÖNTEMLERİ
+
+--- Slayt 2 ---
+n İş-2 Serî Tezgâh (n×2) Durumu
+n İş-3 Serî Tezgâh (n×3) Durumu
+n İş-m Serî Tezgâh (n×m) Durumu
+İÇERİK
+2
+
+--- Slayt 3 ---
+İki tezgâhtan geçecek n tane işin, aynı teknolojik sırayı izleyerek
+işlenmesi gerektiğini varsayalım. Bu tip serî iş akışı bulunan (n×2) 
+sıralama problemlerinde bulunan en iyi iş sırasının şu ölçütleri
+eniyilemesi istenir:
+Yayılma süresinin enküçüklenmesi
+İşlerin ortalama bekleme süresinin enküçüklenmesi
+Tezgâhların ortalama boş kalma süresinin enküçüklenmesi
+n İş-2 Serî Tezgâh (n×2) Durumu
+Johnson Yöntemi İle (n×2) Sıralama 
+Problemlerinin Çözümü
+3
+
+--- Slayt 4 ---
+Johnson Yöntemi İle (n×2) Sıralama 
+Problemlerinin Çözümü
+4
+Bu istekleri gerçekleştiren, yâni optimal iş sırasının bulunması, 
+Johnson yöntemi (J1-A) ile gerçekleştirilir. Bu yöntem şu adımlardan
+oluşur:
+1. İlk tezgâhtaki işlem süreleri ikinci tezgâhtaki işlem sürelerine göre
+küçük olan işler küçükten büyüğe sıralanarak bir alt sıra elde edilir. 
+İlgili iş her iki tezgâhta da aynı süreye sahipse bu adıma veya ikinci
+adıma dahil edilebilir.
+2. İkinci tezgâhtaki işlem süreleri birinci tezgâhtaki işlem sürelerine göre
+küçük olan işler büyükten küçüğe sıralanarak ikinci alt sıra elde edilir.
+3. Bu iki alt sıra, ardışık olarak birleştirilir.
+
+--- Slayt 5 ---
+Johnson yönteminin bir başka uygulama şekli (J1-B) ise şu
+adımlardan oluşmaktadır:
+1. Tüm işlem süresi tablosundaki en küçük süre değeri bulunur. Eğer eşit
+en küçük iki süre değeri varsa herhangi biri seçilebilir.
+2. Bu süre birinci tezgâha ilişkin ise, bu sürenin sırasındaki iş, ilk iş
+olarak belirlenir. İkinci tezgâha ilişkin ise, bu sürenin sırasındaki iş
+sonuncu iş olarak belirlenir.
+3. Bu işin sırası çizilerek tablodan çıkarılır.
+4. 1-3 arası adımlar, tüm işler sıralanıncaya dek yinelenir.
+Johnson Yöntemi İle (n×2) Sıralama 
+Problemlerinin Çözümü
+5

@@ -1,0 +1,42 @@
+DOSYA: Bölüm 03 - İş Yükleme.pdf | TOPLAM SAYFA: 104
+
+--- Slayt 1 ---
+BÖLÜM 3
+İŞ YÜKLEME
+
+--- Slayt 2 ---
+Genel Bilgi
+Gantt Diyagramı İle İş Yükleme
+Doğrusal Programlama İle İş Yükleme
+Atama Yöntemi İle İş Yükleme
+Kapasite Temelli İş Yükleme Yaklaşımı
+Dal-Sınır Algoritması İle İş Yükleme
+İÇERİK
+2
+
+--- Slayt 3 ---
+Genel Bilgi
+3
+Bir üretim sisteminde;
+işlerin yapılacağı iş istasyonunun, 
+tezgâh veya işi yapacak işgörenin
+seçimine, diğer bir deyişle işlerin
+hangi tezgâhlarda, 
+kimler tarafından
+yapılacağının belirlenmesi işlemine iş yükleme (job loading) denir.
+
+--- Slayt 4 ---
+Yükleme, üretim çizelgelerindeki çakışma ve beklemelerin
+engellenmesi açısından olduğu kadar, kapasite kullanım oranının 
+arttırılması bakımından da önem taşır.
+Genel Bilgi
+4
+
+--- Slayt 5 ---
+Aynı yetenek ve kapasiteye sahip birden çok tezgâh ve işgören olması 
+durumunda, işlemler, tezgâhlar ve işgörenler arasında rahatlıkla 
+dağıtılabilir.
+Bu durumda yükleme işlemi, işlerin, eşit kapasiteli tezgâhlar ve 
+işgörenlere paylaştırılması sorununa dönüşür.
+Genel Bilgi
+5

@@ -1,0 +1,68 @@
+DOSYA: Bölüm 05 - Paralel Tezgâh Kullanımı İle İş Sıralama Yöntemleri - uygulamalı.pdf | TOPLAM SAYFA: 87
+
+--- Slayt 1 ---
+BÖLÜM 5
+PARALEL TEZGÂH
+KULLANIMI İLE
+İŞ SIRALAMA YÖNTEMLERİ
+
+--- Slayt 2 ---
+Paralel Tezgâh Kullanımı Üzerine Genel Bilgi
+Bağımsız İşler İçin Sıralama Algoritmaları
+McNaughton Algoritması
+M’nin Azaltılması
+C*’nin Enküçüklenmesi
+Tenb’in Azaltılması
+NT’nin Azaltılması
+Cw
+*’nun Azaltılması
+Bağımlı İşler İçin Sıralama Algoritmaları
+Hu’nun Algoritması
+İÇERİK
+2
+
+--- Slayt 3 ---
+“Paralel tezgâh kullanımı” ifâdesi ile söylenmek istenen, n tane işin, 
+birbiriyle aynı/farklı özellikte olan m tane tezgâha, işlem görmek üzere
+dağıtılmasıdır (Yâni işler farklı bir tezgâhta işlenirse bile aynı sürede 
+işlem görmektedir. Bunun dışında varsayımların yapıldığı paralel tezgâh 
+problemleri de sözkonusudur.) 
+Bu dağıtım sonucunda, yapılan varsayıma göre:
+İşler bölünemez yapıya sahipse her iş farklı bir tezgâhta işlem
+görür;
+Bölünebilir yapıya sahipse bâzı işler birden fazla tezgâh arasında
+paylaştırılarak (veya aynı tezgâhta aralıklı olarak) işlem görür, 
+diğerleri ise ayrı ayrı tezgâhlarda gerçekleştirilir.
+Paralel Tezgâh Kullanımı Üzerine
+Genel Bilgi
+3
+
+--- Slayt 4 ---
+Paralel tezgâh kullanımında da işlerin bölünemezliği varsayımıyla işlerin 
+tek bir tezgâhta işlenme (başlanıp bitirilme) durumu sözkonusudur. 
+(n×1) sıralama problemlerinden farklı olarak, farklı her iş sırası için
+başka bir yayılma süresi değeri elde edebiliriz. Çünkü paralel olarak
+kullanılan her tezgâhta yapılan işler farklıdır. 
+Bu durumda da, sıralama yaparken çok sayıda farklı amacımız olabilir.
+Paralel Tezgâh Kullanımı Üzerine
+Genel Bilgi
+4
+
+--- Slayt 5 ---
+Yayılma süresinin en küçük değeri (Menk) şu şekilde belirlenir:
+n: İş sayısı
+m: Paralel tezgâh sayısı
+Bu ifâdenin; 
+işlerin bölünemez olduğu varsayımına göre tümü, 
+bölünebilir olduğu varsayımına göre ise ilk kısmı (tezgâh başına 
+ortalama süre) 
+kullanılır.
+Paralel Tezgâh Kullanımı Üzerine
+Genel Bilgi
+5
+Menk = Enb
+1
+m × ෍
+i=1
+n
+Pi ; Enb Pi i = 1,2, … , n)

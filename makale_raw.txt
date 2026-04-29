@@ -1,0 +1,3174 @@
+=== PAGE 1 ===
+Decision Analytics Journal 13 (2024) 100525
+Contents lists available at ScienceDirect
+Decision Analytics Journal
+journal homepage: www.elsevier.com/locate/dajour
+A multi-objective production scheduling model and dynamic dispatching
+rules for unrelated parallel machines with sequence-dependent set-up times
+Pham Duc Tai, Papimol Kongsri, Prasal Soeurn, Jirachai Buddhakulsomsiri ∗
+School of Manufacturing Systems and Mechanical Engineering, Sirindhorn International Institute of Technology, Thammasat University, Pathum Thani, Thailand
+A R T I C L E
+I N F O
+Keywords:
+Unrelated parallel machine
+Sequence-dependent setup
+Mixed-integer linear programming
+Multiple objectives
+Dispatching rules
+Rule switching
+A B S T R A C T
+This study presents a production scheduling for unrelated parallel machines with machine and job sequence-
+dependent setup times. The system performance measures to minimize include makespan, total tardiness,
+and number of tardy jobs. The aim of the study is to develop a solution methodology that can solve the
+problem for the large scale. First, the problem is formulated as a mixed-integer linear programming model. The
+augmented 𝜀-constraint method is applied to find Pareto solutions for small problem instances. The purpose is
+to demonstrate that Pareto solutions, which balance the trade-offs among three measures of performance, can
+be found for these instances. Dispatching rule-based heuristics is developed to solve large problem instances.
+The heuristics feature three dispatching rules that are designed to handle the dependent setup time. In addition,
+these rules are combined into six variants using a time-based rule-switching mechanism. The heuristics are
+tested with 18 problem instances, containing 244 to 298 jobs, in two demand scenarios derived from the
+monthly demand data from an industrial user. Under each demand scenario, a set of heuristics that provides
+the best performance with respect to the three measures is identified. The heuristics include combinations
+of the shortest completion time and due date-based rules. Finally, a multi-criteria decision-making analysis is
+performed to determine the conditions specified by the weight given to each measure, with which one heuristic
+is preferred over the others.
+1. Introduction
+Effective production planning is critical for manufacturing systems,
+particularly when dealing with complex job sequencing and scheduling
+tasks. This paper addresses these challenges for production systems in-
+volving non-identical machines, known as unrelated parallel machines.
+The problem is motivated by a real problem at the largest steel pipe
+manufacturer in Thailand. This production system consists of multiple
+machines that differ in their capabilities and production rates, adding
+complexity to scheduling as they operate in parallel. In each period
+(month), there are jobs, i.e., production orders, to be processed with
+their own production quantity and due date. All jobs can be processed
+at the beginning of each period with no job priority. This implies that
+a job may have different processing times for different machines.
+The complexity is further increased by machine setup times. Specif-
+ically, the setup time of a job depends on the machine to which it
+is assigned and its sequence. For instance, if two adjacent jobs are in
+different families, the setup time is longer than if they are in the same
+family but are different in dimension. That is, the setup time for a job
+depends not only on the machine, but also on the preceding job on that
+∗Correspondence to: P.O. Box 22, Khlong Luang, Pathum Thani, 12120, Thailand.
+E-mail addresses: tai.pham@siit.tu.ac.th (P.D. Tai), d6622300223@g.siit.tu.ac.th (P. Kongsri), m6422040474@g.siit.tu.ac.th (P. Soeurn),
+jirachai@siit.tu.ac.th (J. Buddhakulsomsiri).
+machine. This is known as the machine- and sequence-dependent setup
+time.
+In each period (i.e., production month), jobs representing orders
+from customers are placed before the beginning of the period such
+that production scheduling is performed during the previous period.
+Consequently, the setup operation of the first scheduled job on each
+machine is performed before the beginning of the period. In other
+words, the setup time of the first job on each machine is set to zero
+for each production month.
+This problem is also commonly found in many manufacturing in-
+dustries, where there are several product families to be made on the
+same set of unrelated machines. In most cases, the primary objective
+is to determine a job schedule for each machine such that the jobs
+are completed as early as possible. This is usually measured by the
+makespan, that is, the completion time of the last scheduled job.
+Moreover, these jobs usually have different promised delivery dates.
+To measure how well the due dates are met, the tardiness of each job
+and number of tardy jobs are calculated. In practice, minimizing the
+makespan, total tardiness, and number of tardy jobs are conflicting
+https://doi.org/10.1016/j.dajour.2024.100525
+Received 1 August 2024; Received in revised form 25 October 2024; Accepted 27 October 2024
+Available online 4 November 2024
+2772-6622/© 2024 The Author(s). Published by Elsevier Inc. This is an open access article under the CC BY-NC-ND license
+(http://creativecommons.org/licenses/by-nc-nd/4.0/).
+
+=== PAGE 2 ===
+P.D. Tai, P. Kongsri, P. Soeurn et al.
+Decision Analytics Journal 13 (2024) 100525
+objectives. Therefore, it is in the best interest of a planner to bal-
+ance these performance measures, such that production efficiency is
+sustained without sacrificing customer satisfaction. Although the trade-
+offs among the three measures of performance are well known in the
+scheduling literature, no study has attempted to offer a solution that
+strikes a balance among these measures for the problem under study.
+This study makes three major contributions to literature.
+• First, we develop a mixed-integer linear programming (MILP)
+model for the unrelated parallel-machine scheduling problem
+with machine- and sequence-dependent setup times. The model
+is adapted from the study by Avalos-Rosales et al. [1] to include
+the total tardiness and total number of tardy jobs in addition
+to the original objective function of minimizing the makespan.
+Moreover, we implement the augmented 𝜀-constraint (AUGME-
+CON) method to find compromise solutions among the three
+measures. The application of the proposed model is demonstrated
+using small problem instances. This contribution fills a gap in
+the literature, where existing models either simplify setup times
+or focus on single-objective optimization for unrelated parallel
+machines.
+• Second, we design dynamic dispatching rule-based heuristics
+(DDR) for large problem instances. Specifically, three widely used
+single dispatching rules, including shortest processing time (SPT),
+earliest due date (EDD), and longest processing time (LPT), are
+modified to consider machine- and sequence-dependent setup
+times. This modification results in three dispatching rules de-
+signed for the sequence-dependent setup scheduling problems. In
+addition, the three rules are combined into six dispatching rules
+that feature rule switching times. The mechanism that allows the
+change of dispatching rules during the scheduling process is very
+effective not only in this study, but also in scheduling problems
+in general due especially to its ease of implementation.
+• Third, based on the set of effective rules, a thorough multi-criteria
+decision-making analysis is performed to further identify the
+conditions in which each rule is most effective. These conditions
+are specified by the relative weights of importance that a decision-
+maker assigns to the three performance measures. The approach
+is believed to be the first of its kind that has been performed
+for a multi-objective scheduling problem. The benefit of this
+method can be explored in other scheduling problem settings with
+multiple objectives.
+The remaining part of this paper is organized as follows. Relevant
+literature, research gaps, and contributions of this research are dis-
+cussed in Section 2. The mathematical model is formulated in Section 3,
+while the heuristics are constructed in Section 4. The computational
+study and its results are discussed in Section 5. Conclusions of the
+research is summarized in Section 6.
+2. Literature review
+Production scheduling problems on parallel machines have been
+explored in numerous studies. These problems can be categorized using
+various criteria, such as parallel machine classification, setup time, sys-
+tem measures of performance, and solution methods. Parallel machines
+can be classified as identical, uniform, and unrelated. Identical parallel
+machines imply that the processing time of a job is the same for every
+machine, which has the same production rate [2–9]. Studies on uniform
+machines with different processing times and production rates can be
+found in Li et al. [10] and Zandi et al. [11]. Unrelated parallel machines
+have different production rates and specific machine restrictions, which
+means that each job can be processed by some machines [1,12–21].
+Setup time is the time required to prepare resources to process
+the next task [22]. It is classified as sequence-independent, sequence-
+dependent, and machine-dependent. Sequence-independent setup time
+means that the setup time is constant regardless of the job or ma-
+chine [18,23,24]. The sequence-dependent setup time depends on the
+preceding job on the machine [12,19,25–30]. In other words, sequence-
+dependent setup times are determined by a pair of adjacent jobs on a
+machine. The machine-dependent setup time depends on the machine
+assigned to process a job [1,26,28,30,31].
+Several criteria are used for measuring the performance of schedul-
+ing solutions, including the makespan, total tardiness, and number
+of tardy jobs [32,33]. Studies focusing on minimizing the makespan
+have been conducted by Avalos-Rosales et al. [1], Arroyo et al. [20],
+Soper [21], Ezugwu [31], Shchepin and Vakhania [34], and Lee et al.
+[35]. Research on minimizing total tardiness includes works by Logen-
+dran et al. [12] and Yin et al. [36]. Finally, Su et al. [18] minimize the
+number of tardy jobs.
+In addition to single-objective optimization, seminal contributions
+that take different objectives into account have emerged over the
+years in the field of unrelated parallel machine scheduling. Chayu and
+Chang [25] investigate the minimization of total weighted flow time
+and total weighted tardiness, dealing with job sequence- and machine-
+dependent setup times. Lin et al. [13] expand this research by targeting
+critical scheduling objectives, including makespan, total weighted com-
+pletion time, and total weighted tardiness. Torabi et al. [26] explore
+the minimization of total weighted flow time, total weighted tardiness,
+and machine load variation. Nikabadi and Naderi [27] simultaneously
+minimize makespan, number of tardy jobs, earliness and tardiness.
+In a subsequent study, Wang and Alidaee [28] undertake the order
+acceptance and scheduling on unrelated parallel machines, introducing
+a multi-objective mixed-integer linear programming model that min-
+imizes total workload and machine fixed costs. Farmand et al. [37]
+develop a bi-objective model that integrates identical parallel machines
+scheduling and supply chain management. The model aims at mini-
+mizing both time-based and cost-based measures of performance. The
+time-based measure consists of total weighted tardiness and operation
+time, while the cost-based contains penalty for tardy orders, earliness,
+and batch delivery cost. Lastly, Yepes-Borrero et al. [30] formulate a
+bi-objective model that minimizes makepsan and maximum number of
+resources needed.
+For the methodology, a mixed-integer linear programming model
+(MILP) can solve only small problem instances. Therefore, many re-
+searchers have developed heuristics for solving large-scale problems.
+Popular heuristics for unrelated parallel machines include genetic algo-
+rithm [1,13,14,18], and simulated algorithm [17,18]. Other heuristics
+found in literature reviews include branch and bound [19], iterated
+greedy [20,30,38], polynomial-time approximation scheme [15], three-
+phase [29], and composite dispatching rule [19]. Yin et al. [36] modify
+the iterated greedy algorithm to their scheduling problem. In addition,
+Chyu and Chang [25] introduce a Pareto evolutionary approach for
+a two-objective (total weighted flow time and weighted tardiness)
+scheduling problem, involving job sequence- and machine-dependent
+setup times. Lin et al. [13] extend the work of Chyu and Chang [25]
+by modifying the genetic algorithm to find multi-objective (includ-
+ing makespan, weighted completion time, and weighted tardiness)
+solutions in scheduling problems. Their algorithm shows exceptional
+proficiency in generating non-dominated solutions. Torabi et al. [26]
+propose a multi-objective particle swarm optimization (MOPSO) algo-
+rithm. Nikabadi and Naderi [27] employ multi-objective genetic algo-
+rithm (MOGA) and simulated annealing (SA). Wang and Alidaee [28]
+develop a list-scheduling-based multi-objective parthenogenetic algo-
+rithm (LS-MPGA). Their computational experiments demonstrate the
+effectiveness of the LS-MPGA in achieving trade-off optimization ob-
+jectives. Bektur and Sarac [29] propose two heuristics, simulated an-
+nealing and Tabu Search, which use an initial solution from modified
+apparent tardiness cost with setups (ATCS) dispatching rules. Far-
+mand et al. [37] adopt meta-heuristic algorithms such as MOPSO and
+non-dominated sorting genetic algorithm II (NSGA-II) for solving an in-
+tegrated problem of identical parallel machines scheduling and supply
+2
+
+=== PAGE 3 ===
+P.D. Tai, P. Kongsri, P. Soeurn et al.
+Decision Analytics Journal 13 (2024) 100525
+Table 1
+A summary of relevant research work.
+Author
+Problem characteristic
+Measures of performance
+Solution method
+Parallel machine
+Setup time
+Completion time
+Tardiness
+Ghalami and Grosu [2]
+I
+N
+M
+PTAS
+Kim and Lee [3]
+I
+J
+M
+SA-TL
+Omar and Teo [4]
+I
+S
+T, E
+Anderson et al. [5]
+I
+S
+T, E
+Hamzadayi and Yildiz [6]
+I
+S
+M
+SA, GA
+Ozer and Sarac [7]
+I
+S
+WC
+GA
+Farmand et al. [37]
+I
+S
+WT
+MOPSO
+Li et al. [10]
+UF
+N
+T
+SA
+Zandi et al. [11]
+UF
+N
+TC
+PC
+Lin et al. [23]
+U
+N
+M, WC
+WT
+GA, HEU
+Lin et al. [13]
+U
+N
+M, WC
+WT
+GA
+Ghirardi and Pott [14]
+U
+N
+M
+RBS
+Lin and Ying [15]
+U
+N
+M, WC
+WT
+MOMSA
+Cheng and Huang [16]
+U
+N
+T, E
+GARTC
+Arroyo et al. [20]
+U
+N
+F
+IG
+Xiong et al. [17]
+U
+N
+WC
+BAP
+Yin et al. [36]
+U
+N
+TC
+IG
+Pei et al. [38]
+U
+N
+WC
+D-SDP, FD-SDP
+Soper [21]
+U
+N
+M
+Su et al. [18]
+U
+J
+L
+Three-phase
+Logendran et al. [12]
+U
+S
+WT
+TS
+Bajestani and Tavakkoli-Moghaddam [19]
+U
+S
+WT
+ATC, BAB
+Bektur and Sarac [29]
+U
+S
+WT
+SA, TS, ATCS
+Avalos-Rosales et al. [1]
+U
+MS
+M
+GA, MA
+Ezugwu [31]
+U
+MS
+M
+HSOSSA
+Shchepin and Vakhania [34]
+U
+N
+M
+Rounding approach
+Chyu and Chang [25]
+U
+S
+WF
+WT
+SA, GA
+Nikabadi and Naderi [27]
+U
+S
+M
+T, E, L
+SA, MOGA
+Torabi et al. [26]
+U
+MS
+WF
+WT
+MOPSO
+Wang and Alidaee [28]
+U
+MS
+M
+LS-MPGA
+Yepes-Borrero et al. [30]
+U
+MS
+M
+IG
+This paper
+U
+MS
+M
+T, L
+DDR
+Note: I: Identical machine, UF: Uniform machine, U: Unrelated machine; N: Not consider, J: Job-dependent setup, S: Sequence-dependent setup, MS: Machine- and sequence-
+dependent; M: Makespan, TC: Total completion time, WC: Weighted completion time, F: Average flow time; T: Total tardiness, E: Total earliness, WF: Weighted flow time WT:
+Weighted tardiness, L: Number of tardy jobs, PTAS: Polynomial-time approximation scheme, SA: Simulated annealing, GA: Genetic algorithms, TS: Tabu search, RBS: Recovering
+beam search, MOGA: Multi-objective genetic algorithm, MOMSA: Multi-objective multi-point simulated annealing, GARTC: Genetic algorithms time control, IG: Iterated greedy,
+ATCS: Apparent tardiness cost with setups, HSOSSA: Hybrid symbiotic organisms search with simulated annealing, MOPSO: Multi-objective particle swarm optimization, LS-MPGA:
+List-scheduling-based multi-objective parthenogenetic algorithm, DDR: Dynamic dispatching rule-based heuristics.
+chain management. Krim et al. [39] propose two novel metaheuristics
+based on tabu search, which leverages distinct neighborhood structures
+and solution spaces.
+An overview of relevant literature on parallel machine scheduling
+is presented in Table 1.
+According to Table 1, no research has studied a scheduling problem
+with multiple objective functions of makespan, total tardiness, and the
+number of tardy jobs in production systems of unrelated parallel ma-
+chines with machine- and sequence-dependent setup times. Motivated
+by this research gap, this study aims to address the following aspects.
+• The formulation of a multi-objective MILP model that can pro-
+vide Pareto solutions, which represents the best trade-offs among
+makespan, total tardiness, and number of tardy jobs.
+• The capability and limit of the MILP model is examined through
+a numerical experiment that is adapted from a practical problem.
+• In addition to mathematical model, different dynamic dispatch-
+ing rule-based heuristics are proposed, constructed, and exper-
+imented. The purpose is to offer an alternative approach that
+can find high-quality solutions within a reasonable time. This
+aligns with the need of industries, especially those with unrelated
+parallel machine systems, for a scheduling method that con-
+sumes a minimal amount of time for generating good production
+schedules.
+• To the best of our knowledge, there is one previous study by
+Bektur and Sarac [29] that includes sequence-dependent setup
+time in the ATCS dispatching rule. Instead of constructing only
+one dispatching rule, our work modifies three different rules that
+are commonly employed in practice.
+3. Model development
+3.1. Problem statement
+This study considers an unrelated parallel-machine scheduling prob-
+lem with machine- and sequence-dependent setup times. The problem
+descriptions are as follows.
+– There are 𝑛jobs to be processed in each period (i.e., a month).
+Each job consists of the required production quantity and the due
+date.
+– All jobs are released for production at the beginning of each
+period, that is, all jobs have the same release time. There is no
+priority among jobs in terms of their importance.
+– The production system consists of 𝑚unrelated parallel machines.
+– The processing time of a job on a machine depends on the
+job-machine pair.
+– Each machine can process a subset of all jobs. For the jobs that a
+machine cannot process, their processing times are set to a large
+value.
+– Setup time is machine- and sequence-dependent, i.e., setup time
+of a job is determined by a pair of preceding job and the job itself
+on a given machine.
+3
+
+=== PAGE 4 ===
+P.D. Tai, P. Kongsri, P. Soeurn et al.
+Decision Analytics Journal 13 (2024) 100525
+3.2. Mathematical models
+The problem is formulated as a MILP model, where each model
+minimizes one of the three system performance measures, including the
+makespan, total tardiness, and number of tardy jobs. MILP models are
+used to study the characteristics of the problems with respect to dif-
+ferent system measures. This is performed by solving the optimization
+problem using four small problem instances. In addition, another model
+that sought a set of compromise solutions among the three measures
+is formulated. The trade-off between the three measures is examined
+to identify the Pareto solutions. The model indices, parameters, and
+decision variables are as follows:
+Index
+𝑖, 𝑗
+indices of jobs, where 𝑁denotes the set of jobs,
+𝑖, 𝑗∈𝑁= {1, 2, … , 𝑛}, and 𝑁0 denotes the set of jobs
+including a dummy job 0, 𝑁0 = {0} ∪𝑁.
+𝑘
+index of machines, where 𝑀denotes the set of
+machines; 𝑘∈𝑀= {1, 2, … , 𝑚}. Also, because each
+machine can process a different set of jobs, each given
+job 𝑗can only be processed by a subset of 𝑀, i.e., 𝑀𝑗.
+That is, 𝑀= 𝑀1 ∪𝑀2 … ∪𝑀𝑛
+Parameter
+𝑃𝑗 ,𝑘
+=
+the processing time of job 𝑗on machine 𝑘
+𝑆𝑖,𝑗 ,𝑘
+=
+the required setup time of machine 𝑘, when the
+machine is set up to process job 𝑗and has a
+previous job 𝑖.
+𝐷𝑗
+=
+the due date of the job 𝑗
+𝑉
+=
+a large value
+𝑁 𝑃𝑗 ,𝑘
+=
+the restriction condition of job 𝑗that indicates if
+it can be processed on machine 𝑘if it equals 1, 0
+otherwise.
+Decision Variable
+𝑋𝑖,𝑗 ,𝑘
+=
+a binary variable that takes on a value of 1, if job
+𝑗is scheduled after job 𝑖on machine 𝑘, or 0
+otherwise.
+𝐶𝑗
+=
+the completion time of job 𝑗(hours)
+𝐶𝑚𝑎𝑥
+=
+the makespan (the maximum completion time of
+all jobs, 𝑗∈𝑁) (hours)
+𝑒+
+𝑗
+=
+the tardiness of job 𝑗(hours)
+𝑒−
+𝑗
+=
+the earliness of job 𝑗(hours)
+𝑈𝑗
+=
+a binary variable that is equal to 1 if job 𝑗is
+tardy, or 0 otherwise.
+3.2.1. Minimize makespan
+The MILP is adopted by Avalos-Rosales et al. [1] and Kongsri and
+Buddhakulsomsiri [40]. It is regarded as M1.
+Minimize 𝐶𝑚𝑎𝑥
+(1)
+Subject to
+∑
+𝑘∈𝑀
+∑
+𝑖∈𝑁0 ∶𝑖≠𝑗
+𝑋𝑖,𝑗 ,𝑘= 1,
+∀𝑗∈𝑁
+(2)
+∑
+𝑘∈𝑀
+∑
+𝑗∈𝑁0 ∶𝑖≠𝑗
+𝑋𝑖,𝑗 ,𝑘= 1,
+∀𝑖∈𝑁
+(3)
+∑
+𝑗∈𝑁0 ∶𝑖≠𝑗
+𝑋𝑖,𝑗 ,𝑘−
+∑
+ℎ∈𝑁0 ∶ℎ≠𝑖
+𝑋ℎ,𝑖,𝑘= 0,
+∀𝑘∈𝑀 , ∀𝑖∈𝑁
+(4)
+∑
+𝑗∈𝑁
+𝑋0,𝑗 ,𝑘≤1,
+∀𝑘∈𝑀
+(5)
+𝐶𝑗−𝐶𝑖+ 𝑉(1 −𝑋𝑖,𝑗 ,𝑘
+) ≥𝑆𝑖,𝑗 ,𝑘+ 𝑃𝑗 ,𝑘,
+∀𝑖∈𝑁0, ∀𝑗∈𝑁∶
+𝑖≠𝑗 , ∀𝑘∈𝑀
+(6)
+𝐶0 = 0
+(7)
+𝐶𝑗≤𝐶𝑚𝑎𝑥,
+∀𝑗∈𝑁
+(8)
+∑
+𝑘∈𝑀
+∑
+𝑖∈𝑁0 ∶𝑖≠𝑗
+𝑋𝑖,𝑗 ,𝑘≤𝑁 𝑃𝑗 ,𝑘
+∀𝑗∈𝑁
+(9)
+𝐶𝑗≥0,
+∀𝑗∈𝑁
+(10)
+𝑋𝑖,𝑗 ,𝑘∈{0, 1} ,
+∀𝑖∈𝑁0, ∀𝑗∈𝑁0 ∶
+𝑖≠𝑗 , ∀𝑘∈𝑀
+(11)
+In the model, the objective function (1) minimizes the makespan.
+Constraints (2) and (3) ensure that each job has only one preceding
+job and exactly one successive job. Constraint (4) represents the flow
+balance of each job on each machine. Constraint (5) specifies that each
+machine should start with a dummy job. Constraint (6) calculates each
+job completion time from the completion time of the preceding job,
+setup time, and job-processing time. Constraint (7) indicates that the
+dummy job had a completion time of 0. Constraint (8) determines
+the makespan from the completion time of all jobs. Constraint (9)
+determines that job 𝑗cannot be processed on machine 𝑚if it has a
+restriction. Finally, Constraints (10)–(11) identify the types of decision
+variables.
+3.2.2. Minimize the total tardiness
+To generate a schedule of jobs with minimum total tardiness, M1
+is modified into another model, denoted M2, by introducing additional
+decision variables and constraints. Specifically, two variables, i.e. 𝑒+
+𝑗
+and 𝑒−
+𝑗which represent the tardiness and earliness of job 𝑗, are included
+in M2. The objective function for minimizing the total tardiness is
+expressed by Eq. (12). In addition, the values and types of 𝑒+
+𝑗and 𝑒−
+𝑗
+are specified by constraints (13) and (14), respectively.
+Minimize 𝑇=
+∑
+𝑗∈𝑁
+𝑒+
+𝑗
+(12)
+Subject to
+(2)–(10)
+𝐶𝑗−𝐷𝑗= 𝑒+
+𝑗−𝑒−
+𝑗,
+∀𝑗∈𝑁
+(13)
+𝑒+
+𝑗, 𝑒−
+𝑗≥0,
+∀𝑗∈𝑁
+(14)
+3.2.3. Minimize the number of tardy jobs
+Similar to M2, the model in this section, regarded as M3, is derived
+from M1 by adding a binary decision variable 𝑈𝑗to indicate whether
+job 𝑗is late. M3 is formulated as follows:
+Minimize 𝐿=
+∑
+𝑗∈𝑁
+𝑈𝑗
+(15)
+Subject to
+𝑒+
+𝑗= 𝑉× 𝑈𝑗,
+∀𝑗∈𝑁
+(16)
+𝑈𝑗= {0, 1} ,
+∀𝑗∈𝑁
+(17)
+The objective function (15) minimizes the number of tardy jobs. The
+additional constraints (16) and (17) specify the tardy status of each job
+and the type of additional decision variable, respectively.
+3.2.4. Determine compromise solutions among the three performance mea-
+sures
+To find compromise solutions, the multiple-objective model (M4) is
+formulated as follows:
+Min 𝑓1 = 𝐶𝑚𝑎𝑥
+Min 𝑓2 = 𝑇
+Min 𝑓3 = 𝐿
+Subject to:
+4
+
+=== PAGE 5 ===
+P.D. Tai, P. Kongsri, P. Soeurn et al.
+Decision Analytics Journal 13 (2024) 100525
+Constraints (2)–(11), (13)–(14), and (16)–(17)
+Since multi-objective model involves optimizing several objective
+functions simultaneously, achieving a single solution that is optimal
+for all objectives that are in conflict is generally impossible. As a
+result, a widely adopted approach for dealing with these problems
+is the 𝜀-constraint method. This technique facilitates the exploration
+of interactions among objectives such that a balanced compromise
+among them can be achieved [41]. In this study, we utilize an aug-
+mented version of the 𝜀-constraint (AUGMECON) method [42] to ad-
+dress the proposed multi-objective model for production scheduling
+problem. The AUGMECON method is designed to generate efficient
+Pareto-optimal, non-dominated solutions in multi-objective problems,
+with proven effectiveness in producing pareto optimal results [43].
+For a detailed explanation of this method, audiences are referred to
+Mavrotas [42].
+The AUGMECON method is applied to M4 using the following steps:
+Step 1: Set the objective functions of 𝑓2 and 𝑓3 as Constraints (18) and
+(19)
+∑
+𝑗∈𝑁
+𝑒+
+𝑗≤𝑇
+(18)
+∑
+𝑗∈𝑁
+𝑈𝑗≤𝐿
+(19)
+where 𝑇denotes the specified acceptable total tardiness, and 𝐿denotes
+the specified acceptable number of tardy jobs, and are additional
+parameters of M4.
+Step 2: Create the payoff table by solving M1, M2, and M3 to obtain
+the best and worst possible values of 𝐶𝑚𝑎𝑥, 𝑇, and 𝐿.
+Step 3: Calculate the range of 𝑓2 and 𝑓3. Each range contained several
+grid points.
+Step 4: M4 is solved for each combination of grid points in the ranges
+of 𝑇and 𝐿.
+Step 5: Determine the Pareto solutions, which are the non-dominant
+solutions with respect to the three objective functions.
+4. Dynamic dispatching rule based heuristics
+Because only small problem instances can be solved by the MILP
+models presented in the previous section, heuristics, which implement
+dynamic dispatching rules, are developed in this section to solve large-
+scale problem instances that properly represent real problems. Our
+proposed heuristics utilize widely adopted dispatching rules, including
+the shortest processing time (SPT), longest processing time (LPT), and
+earliest due date (EDD). These rules are modified to consider the char-
+acteristics of our problem, that is, sequence- and machine-dependent
+setup-time setup times and unrelated parallel machines. The modified
+rules are denoted as SCT, SC-LPT, and SC-EDD, respectively. Their
+descriptions are as follows:
+Notation:
+𝑁𝑖
+=
+a set of scheduled jobs
+𝑁𝑗
+=
+a set of remaining jobs, 𝑁= 𝑁𝑖∪𝑁𝑗
+𝑀𝑗
+=
+a set of machines that can process job 𝑗
+𝑃𝑗∗,𝑘
+=
+the processing time of selected job 𝑗on machine
+𝑘(hours)
+𝑆𝑖,𝑗∗,𝑘
+=
+the required setup time of machine 𝑘, when the
+machine is set up to process a selected job 𝑗and
+has a previous job 𝑖(hours).
+𝐷𝑗∗
+=
+the due date of selected job 𝑗(hours)
+𝐶𝑗 ,𝑘
+=
+completion time of job 𝑗when processed on
+machine 𝑘(hours)
+SCT (shortest job completion time): This rule simultaneously selects
+the next job 𝑗∈𝑁𝑗to be processed and machine 𝑘∈𝑀𝑗to process
+the job such that the completion time of job 𝑗is minimized, that is,
+SCT: min𝑗∈𝑁𝑗,𝑘∈𝑀𝑗(𝑆𝑖,𝑗 ,𝑘+ 𝑃𝑗 ,𝑘). Note that, in most cases, the selected
+machine 𝑘processes Job 𝑖(the predecessor of Job 𝑗). This affects the
+set-up time 𝑆𝑖,𝑗 ,𝑘of Job 𝑗on Machine 𝑘. That is, the selected job 𝑗may
+not be the job with the shortest processing time but rather the job with
+the shortest combined setup and processing times.
+SC-LPT (shortest job completion time based on the longest process-
+ing time): This rule chooses the next job 𝑗∈𝑁𝑗that has the longest
+processing time first, for example, Job 𝑗∗. Then, it chooses machine
+𝑘∈𝑀𝑗∗to process job 𝑗∗taking into account the setup time 𝑆𝑖,𝑗∗,𝑘, such
+that the job and machine selection results in the shortest completion
+time of job 𝑗. In other words, the rule is expressed as
+SC-LPT:
+min
+𝑘∈𝑀𝑗∗(𝑆𝑖,𝑗∗,𝑘+ 𝑃𝑗∗,𝑘)
+|||||
+[𝑃𝑗∗,𝑘= 
+max
+𝑗∈𝑁𝑗,𝑘∈𝑀𝑗
+𝑃𝑗 ,𝑘] .
+SC-EDD (shortest job completion time based on the earliest due
+date): The rule takes the next Job 𝑗∈𝑁𝑗with the earliest due date
+first, for example, Job 𝑗∗After that, a Machine 𝑘∈𝑀𝑗is selected that
+results in the shortest completion time of Job 𝑗∗, given that the selected
+machine 𝑘is processing a preceding job 𝑖. That is,
+SC-EDD:
+min
+𝑘∈𝑀𝑗∗(𝑆𝑖,𝑗∗,𝑘+ 𝑃𝑗∗,𝑘)
+|||||
+[𝐷𝑗∗= 
+min
+𝑗∈𝑁𝑗,𝑘∈𝑀𝑗
+𝐷𝑗] .
+In addition to the aforementioned rules, six combined rules are
+developed. Each consists of a pair of rules that are implemented sequen-
+tially with a specified rule-switching time 𝑡𝑠. For example, a combined
+rule [SC-EDD & SC-LPT: 200] first schedules jobs using the SC-EDD rule.
+When the completion time of the latest scheduled job exceeds 𝑡𝑠= 200
+h, it switches to schedule jobs using the SC-LPT rule until all jobs are
+scheduled. The six combined rules include [SCT & SC-LPT: 𝑡𝑠], [SC-LPT
+& SCT: 𝑡𝑠], [SCT & SC-EDD: 𝑡𝑠], [SC-EDD & SCT: 𝑡𝑠], [SC-LPT & SC-EDD:
+𝑡𝑠], and [SC-EDD & SC-LPT: 𝑡𝑠]. The steps of each rule are expressed as
+follows:
+According to the illustration in Fig. 1, the algorithm sets 𝑁𝑖= {0},
+𝑁𝑗= 𝑁, and the parameters 𝑃𝑗 ,𝑘, 𝑆𝑖,𝑗 ,𝑘, and 𝐷𝑗first. After that, it
+sets completion time of the dummy job 𝐶0 = 0, and computes the
+completion time 𝐶𝑗 ,𝑘= 𝑃𝑗 ,𝑘, ∀𝑗∈𝑁𝑗, ∀𝑘∈𝑀𝑗for all jobs on all
+possible machines. Then, the algorithm starts using Rule 1. After Job
+𝑗∗is scheduled on machine 𝑘∗, the following are updated: the lists of
+scheduled jobs 𝑁𝑖and remaining jobs 𝑁𝑗. In addition, set 𝑖= 𝑗∗, and
+update the completion times of all remaining jobs that can be processed
+on machine 𝑘∗i.e. 𝐶𝑗 ,𝑘∗= 𝑆𝑖,𝑗 ,𝑘∗+ 𝑃𝑗 ,𝑘∗, ∀𝑗∈𝑁𝑗, because the next
+job to be processed on this machine will follow Job 𝑖= 𝑗∗. After that,
+check whether all jobs are scheduled, that is, 𝑁𝑗is empty. If this is
+the case, the algorithm stops. Otherwise, check whether the maximum
+completion time of the scheduled job 𝐶𝑗 ,𝑘, ∀𝑗∈𝑁𝑖, ∀𝑘∈𝑀𝑗exceeds
+the rule-switching time 𝑡𝑠. If it does not, Rule 1 is continued. Otherwise,
+switch to Rule 2 and proceed until all the remaining jobs are scheduled.
+Note that when only one rule exists, 𝑡𝑠is set to a large value, which
+leads to no rule switching. The algorithm is implemented using Python
+programming language.
+Numerical Example
+A numerical example is provided to demonstrate the dispatching
+rules developed in the previous section. Suppose there are three jobs
+to be processed by two unrelated parallel machines with a sequence-
+dependent setup time. The processing times, setup times, and due dates
+of each job are listed in Table 2. Because jobs 1 and 2 are in the same
+job family, the setup times when one follows the other are relatively
+short. Job 3, on the other hand, is in a different job family from jobs
+2 and 3; therefore, the setup times when either job 1 or job 2 succeeds
+or precedes job 3 are longer.
+The steps of a single dispatching rule, SCT, are described below
+as an example, whereas the steps of using SC-LPT and SC-EDD are
+demonstrated in Appendix A.
+5
+
+=== PAGE 6 ===
+P.D. Tai, P. Kongsri, P. Soeurn et al.
+Decision Analytics Journal 13 (2024) 100525
+Fig. 1. Flow chart of the dynamic dispatching rule algorithm.
+Table 2
+Numerical example data.
+𝑗
+𝑃𝑗 ,1
+𝑃𝑗 ,2
+𝐷𝑗
+𝑆𝑖,𝑗 ,1
+𝑗
+𝑆𝑖,𝑗 ,2
+𝑗
+1
+2
+3
+1
+2
+3
+1
+9
+6
+30
+𝑖
+1
+0
+0.5
+5
+𝑖
+1
+0
+0.5
+3
+2
+22
+16
+20
+2
+0.5
+0
+5
+2
+0.5
+0
+3
+3
+28
+22
+32
+3
+5
+5
+0
+3
+3
+3
+0
+SCT: This rule considers the job completion time as the main
+criterion. The rule proceeds as presented in Table 3.
+From Table 3, in Step 1, Job 1 provides the least completion time
+for machine 2. Therefore, it is selected with a completion time of 6 h. In
+Step 2, the setup and completion times of jobs 2 and 3 on machine 2 are
+updated to reflect the previously scheduled job 1 on machine 2. This
+leads to the decision to schedule job 2 on machine 1 as the best choice,
+with the least completion time of 22 h. After updating the setup time
+and completion time of job 3 on machine 1 in step 3, job 3 is selected
+to be processed by machine 2, which gives a completion time of 31 h.
+6
+
+=== PAGE 7 ===
+P.D. Tai, P. Kongsri, P. Soeurn et al.
+Decision Analytics Journal 13 (2024) 100525
+Table 3
+Steps of SCT.
+Step
+𝑗
+𝐷𝑗
+𝑃𝑗 ,1
+𝑃𝑗 ,2
+𝑆𝑖,𝑗 ,1
+𝑆𝑖,𝑗 ,2
+𝐶𝑗 ,1
+𝐶𝑗 ,2
+𝑗∗
+𝑀𝑗∗
+1
+1
+30
+9
+6
+0
+0
+9
+6
+1
+2
+2
+20
+22
+16
+0
+0
+22
+16
+3
+32
+28
+22
+0
+0
+28
+22
+2
+2
+20
+22
+16
+0
+0.5
+22
+22.5
+2
+1
+3
+32
+28
+22
+0
+3
+28
+31
+3
+3
+32
+28
+22
+5
+3
+55
+31
+3
+2
+Table 4
+Steps of SCT & SC-LPT: 𝑡𝑠= 5.
+Step
+𝑗
+𝐷𝑗
+𝑃𝑗 ,1
+𝑃𝑗 ,2
+𝑆𝑖,𝑗 ,1
+𝑆𝑖,𝑗 ,2
+𝐶𝑗 ,1
+𝐶𝑗 ,2
+𝑗∗
+𝑀𝑗∗
+1
+1
+30
+9
+6
+0
+0
+9
+6
+1
+2
+2
+20
+22
+16
+0
+0
+22
+16
+3
+32
+28
+22
+0
+0
+28
+22
+2
+2
+20
+22
+16
+0
+0.5
+22
+22.5
+3
+1
+3
+32
+28
+22
+0
+3
+28
+31
+3
+2
+20
+22
+16
+5
+0.5
+55
+22.5
+2
+2
+Table 5
+Summary of results from four rules.
+Rule
+𝐶𝑚𝑎𝑥
+𝑇
+𝐿
+SCT
+31
+2
+1
+LPT
+31
+3
+2
+EDD
+41
+9
+1
+[SCT & SC-LPT]
+28
+2.5
+1
+This schedule resulted in a makespan of 31 h, a total tardiness of 2 h,
+and only job 2 is tardy.
+Next, one of the combined rules, [SCT & SC-LPT: 𝑡𝑠= 5], which
+starts with the SCT rule and switches to the SC-LPT rule after 5 h, is
+described as an example. The rule proceeds as presented in Table 4.
+First, using the SCT rule in Step 1, job 1 is selected to be processed
+on machine 2 with a completion time of 6 h. Subsequently, in Step 2,
+the heuristic switches to SC-LPT, which chooses job 3 to be processed
+on machine 1 with a completion time of 28 h. Finally, in Step 3, job 2
+is processed on machine 2, which provides a completion time of 22.5 h.
+Using the combined rule, the makespan is 28 h, the total tardiness is
+2.5 h, and only job 2 is tardy.
+The performance of the four rules in the numerical example is
+summarized in Table 5. In general, it is observed that among the
+first three dispatching rules, SCT performed the best in this example.
+In addition, the solution from the combined rules can improve the
+makespan over the SCT rule, with a tradeoff of a 0.5 h increase in the
+total tardiness. This indicates the potential benefit of combining the
+dispatching rules.
+5. Computational study
+5.1. Small problem instances
+The models described in Section 3 are implemented in ILOG CPLEX
+20.1. The purpose of solving the small problem instances is to demon-
+strate the problem and the formulated models, as well as to investigate
+the characteristics of the problems with respect to the three system
+measures of performance. Based on our initial computational test, small
+problem instances with a size of up to three machines and ten jobs can
+provide insight into the problem and can be solved within a reasonable
+computational time. The data for the small problem instances are
+samples of real data. The source of the data is an industrial user, the
+largest steel pipe manufacturer in Thailand. Problem instances 1 and
+2 are sample data from the production months with relatively low
+demand, whereas problem instances 3 and 4 are from the production
+months with high demand. Furthermore, instances 1 and 3 contain
+jobs that can be processed on some machines, whereas instances 2
+and 4 include jobs that can be processed on any machine. Problem
+instance 1 is presented below, and the other instances are provided
+in the Appendix.
+𝑃𝑗 ,𝑘=
+⎡
+⎢
+⎢
+⎢⎣
+66.90 
+11.80 
+26.80 
+6.45 
+30.74 
+11.23 
+4.51 
+5.09 
+9.70 
+3.18
+100 
+100 
+33.49 
+8.07 
+38.43 
+14.03 
+100 
+100 
+12.13 
+3.97
+66.90 
+11.80 
+26.80 
+6.45 
+30.74 
+11.23 
+4.51 
+5.09 
+100 
+100
+⎤
+⎥
+⎥
+⎥⎦
+𝐷𝑗= [79 30 60 25 57 38 11 7 42 4]
+𝑁 𝑃𝑗 ,𝑘=
+⎡
+⎢
+⎢⎣
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1
+0 
+0 
+1 
+1 
+1 
+1 
+0 
+0 
+1 
+1
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+1 
+0 
+0
+⎤
+⎥
+⎥⎦
+𝑆𝑖,𝑗 ,1 =
+⎡
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢⎣
+0 
+3 
+5 
+5 
+5 
+5 
+4 
+4 
+5 
+5
+3 
+0 
+5 
+5 
+5 
+5 
+4 
+4 
+5 
+5
+5 
+5 
+0 
+0.5 
+0.5 
+3 
+5 
+5 
+5 
+5
+5 
+5 
+0.5 
+0 
+0.5 
+3 
+5 
+5 
+5 
+5
+5 
+5 
+0.5 
+0.5 
+0 
+3 
+5 
+5 
+5 
+5
+5 
+5 
+3 
+3 
+3 
+0 
+5 
+5 
+5 
+5
+4 
+4 
+5 
+5 
+5 
+5 
+0 
+0.5 
+5 
+5
+4 
+4 
+5 
+5 
+5 
+5 
+0.5 
+0 
+5 
+5
+5 
+5 
+5 
+5 
+5 
+5 
+5 
+5 
+0 
+0.5
+5 
+5 
+5 
+5 
+5 
+5 
+5 
+5 
+0.5 
+0
+⎤
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥⎦
+𝑆𝑖,𝑗 ,2 =
+⎡
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢⎣
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0
+0 
+0 
+0 
+0.5 
+0.5 
+3 
+0 
+0 
+5 
+5
+0 
+0 
+0.5 
+0 
+0.5 
+3 
+0 
+0 
+5 
+5
+0 
+0 
+0.5 
+0.5 
+0 
+3 
+0 
+0 
+5 
+5
+0 
+0 
+3 
+3 
+3 
+0 
+0 
+0 
+5 
+5
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0
+0 
+0 
+5 
+5 
+5 
+5 
+0 
+0 
+0 
+0.5
+0 
+0 
+5 
+5 
+5 
+5 
+0 
+0 
+0.5 
+0
+⎤
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥⎦
+𝑆𝑖,𝑗 ,3 =
+⎡
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢
+⎢⎣
+0 
+3 
+6 
+6 
+6 
+6 
+4 
+4 
+0 
+0
+3 
+0 
+6 
+6 
+6 
+6 
+4 
+4 
+0 
+0
+6 
+6 
+0 
+4 
+4 
+3 
+6 
+6 
+0 
+0
+6 
+6 
+4 
+0 
+0.5 
+4 
+6 
+6 
+0 
+0
+6 
+6 
+4 
+0.5 
+0 
+4 
+6 
+6 
+0 
+0
+6 
+6 
+3 
+4 
+4 
+0 
+6 
+6 
+0 
+0
+4 
+4 
+6 
+6 
+6 
+6 
+0 
+0.5 
+0 
+0
+4 
+4 
+6 
+6 
+6 
+6 
+0.5 
+0 
+0 
+0
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0
+⎤
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥
+⎥⎦
+The number of decision variables, binary variables, and computa-
+tional times for each model are listed in Table 6.
+5.1.1. Optimal solutions
+The optimal solution from M1 for problem instance P1 is presented
+in Table 7 and Fig. 2. Appendix B presents the other optimal solutions
+for M2 and M3.
+Fig. 2 illustrates the three machines working on ten jobs. Each
+machine sequentially processes a job. Machine 1 processes five jobs,
+starting with jobs 3, 6, 2, 7, and 8. Machine 2 serves four jobs,
+beginning with jobs 10, 9, 5, and 4. The last machine, Machine 3,
+operated only one job, 1. Fig. 2 also demonstrates that the total time
+for the setup is 18.5 h. The optimal makespan is 71.93 h. Furthermore,
+these two machines finish jobs 8, 7, 2, 6, 4, and 5 after the due date.
+The total tardiness is 197.75 h.
+5.1.2. Pareto solution
+M4 is used to find the comprise solutions by minimizing the
+makespan while fixing the value of the total tardiness (𝑇) and the
+number of tardy jobs (𝐿). It is necessary to create a payoff table from
+7
+
+=== PAGE 8 ===
+P.D. Tai, P. Kongsri, P. Soeurn et al.
+Decision Analytics Journal 13 (2024) 100525
+Fig. 2. Job sequence at each machine from minimizing the makespan.
+Table 6
+The decision variables, binary variables, and computational times.
+Model
+Decision variable
+Binary variable
+Computational time
+P1
+P2
+P3
+P4
+M1 — Minimize the makespan
+342
+330
+22 s
+4 min
+15 s
+8 min
+M2 — Minimize the total tardiness
+362
+330
+8 s
+29 s
+9 s
+36 s
+M3 — Minimize the number of tardy jobs
+372
+340
+7 s
+9 s
+8 s
+10 s
+M4 — Determine compromise solutions
+372
+340
+21 min
+4 h 39 min
+15 min
+5 h 40 min
+Table 7
+Completion time, due date, and tardiness of each job from minimizing the makespan.
+Job
+Completion time
+Due date
+Tardiness
+1
+66.90
+79
+0
+2
+57.83
+30
+27.83
+3
+26.80
+60
+0
+4
+68.61
+25
+43.61
+5
+60.04
+57
+3.04
+6
+41.02
+38
+3.02
+7
+66.33
+11
+55.33
+8
+71.93
+7
+64.93
+9
+16.61
+42
+0
+10
+3.98
+4
+0
+Table 8
+Payoff table for P1.
+𝐶𝑚𝑎𝑥
+𝑇
+𝐿
+Min 𝐶𝑚𝑎𝑥
+71.93
+197.75
+6
+Min 𝑇
+81.00
+11.23
+4
+Min 𝐿
+127.95
+48.95
+1
+the optimal solutions for M1, M2, and M3. The payoff table for P1 is
+presented in Table 8.
+This payoff table shows that the smallest tardiness is 11.23 h from
+M2 and the largest tardiness is 197.75 h from M1. The largest number
+of tardy jobs is six from M1, and the smallest number of tardy jobs
+is one from M3. From the payoff table, the range of 𝐿is [1, 2, 3, 4,
+5, 6]. Next, the range of tardiness is set to 20 grid points with a step
+size of (197.75 – 11.23)/20 = 9.33. Hence, the range of tardiness, 𝑇
+= [11.23, 20.56, ..., 197.75]. After solving M4 for 126 runs, there are
+nine solutions, the so-called Pareto solutions, that are not dominated
+by other solutions in all three measures of performance. Table 9 shows
+the set of Pareto optimal solutions for the four problems illustrated in
+Fig. 3.
+From Fig. 3, it can be observed that given a number of tardy jobs,
+the total tardiness decreases as the makespan increases. Similarly, given
+the total tardiness, the makespan decreased as the number of tardy
+jobs increased. The same observation can be made for the relationship
+between the number of tardy jobs and the total tardiness, given a
+makespan.
+To evaluate the quality of the Pareto solutions, hypervolume per-
+centages for the four problem instances are computed as shown in
+Table 10. The Pareto solutions from AUGMECON method range from
+74% (P3) to 91% (P1).
+Among the Pareto solutions, a decision maker can choose one
+solution by specifying the weight of importance for each measure of
+performance and applying the min–max normalization as follows:
+̃𝑥𝑖=
+𝑥𝑖− min𝑖
+{𝑥𝑖
+}
+max𝑖
+{𝑥𝑖
+} − min𝑖
+{𝑥𝑖
+}
+Suppose that the decision maker assigns the following weights to
+the three measures of performance: 𝑊𝐶𝑚𝑎𝑥= 0.5, 𝑊𝑇= 0.4, 𝑊𝐿= 0.1.
+For P1, the minimum 𝐶𝑚𝑎𝑥is 71.93 and the maximum 𝐶𝑚𝑎𝑥is 78.35,
+the minimum 𝑇is 20.56, the maximum 𝑇is 57.86, the minimum 𝐿is 1,
+and the maximum 𝐿is 4. All Pareto solution measures of performance
+are normalized and weighted to obtain the total normalized score, as
+shown in Table 11. The solution with the lowest total normalized score
+is selected by the decision maker. For P1, Solution 6 with 𝐶𝑚𝑎𝑥= 72.14,
+8
+
+=== PAGE 9 ===
+P.D. Tai, P. Kongsri, P. Soeurn et al.
+Decision Analytics Journal 13 (2024) 100525
+Fig. 3. Pareto solutions of small problem instances.
+Table 9
+Pareto solutions.
+P1
+P2
+P3
+P4
+𝐶𝑚𝑎𝑥
+𝑇
+𝐿
+𝐶𝑚𝑎𝑥
+𝑇
+𝐿
+𝐶𝑚𝑎𝑥
+𝑇
+𝐿
+𝐶𝑚𝑎𝑥
+𝑇
+𝐿
+78.35
+20.56
+1
+69.14
+26.90
+2
+134.36
+37.49
+1
+88.24
+76.65
+2
+75.41
+29.88
+2
+62.66
+32.47
+2
+116.18
+41.68
+1
+94.42
+60.48
+3
+73.01
+48.53
+2
+61.20
+38.03
+2
+112.28
+58.43
+1
+91.27
+65.87
+3
+72.14
+57.86
+2
+60.56
+26.90
+3
+107.26
+16.55
+2
+88.24
+71.26
+3
+75.08
+29.88
+3
+60.07
+38.03
+3
+105.98
+62.61
+2
+87.38
+82.04
+3
+72.14
+39.21
+3
+59.67
+60.31
+3
+101.46
+75.18
+2
+86.43
+92.82
+3
+71.93
+57.86
+3
+59.60
+65.87
+3
+105.31
+41.68
+3
+93.56
+55.09
+4
+71.93
+39.21
+4
+57.90
+71.44
+3
+100.93
+45.86
+3
+90.86
+60.48
+4
+59.67
+32.47
+4
+98.25
+96.11
+3
+90.16
+65.87
+4
+58.21
+43.60
+4
+101.46
+41.68
+4
+87.38
+76.65
+4
+57.90
+60.31
+4
+98.25
+62.61
+4
+86.43
+82.04
+4
+58.95
+38.03
+5
+103.88
+33.30
+5
+85.74
+92.82
+4
+57.90
+49.17
+5
+102.75
+37.49
+5
+84.59
+103.6
+4
+98.25
+50.05
+5
+84.24
+114.38
+4
+93.61
+49.7
+5
+91.61
+55.09
+5
+90.64
+60.48
+5
+87.93
+65.87
+5
+87.49
+71.26
+5
+84.59
+92.82
+5
+Table 10
+Hypervolume of Pareto solutions.
+P1
+P2
+P3
+P4
+𝐶𝑚𝑎𝑥
+𝑇
+𝐿
+𝐶𝑚𝑎𝑥
+𝑇
+𝐿
+𝐶𝑚𝑎𝑥
+𝑇
+𝐿
+𝐶𝑚𝑎𝑥
+𝑇
+𝐿
+Origin point
+71.93
+11.23
+1
+57.90
+21.33
+2
+98.25
+16.55
+1
+84.42
+49.70
+2
+Reference point
+127.95
+197.75
+6
+84.63
+132.96
+6
+134.36
+93.70
+5
+133.50
+157.50
+5
+Hypervolume indicator
+48,057.58
+10,768.40
+8500.54
+12,971.95
+Bounding hypervolume
+52,244.25
+11,935.48
+11,491.65
+15,880.23
+Hypervolume percentage
+91.99%
+90.22%
+73.97%
+81.69%
+9
+
+=== PAGE 10 ===
+P.D. Tai, P. Kongsri, P. Soeurn et al.
+Decision Analytics Journal 13 (2024) 100525
+Fig. 4. 18-month demand.
+Table 11
+The total normalized score of P1’s Pareto solutions.
+Solution number
+𝐶𝑚𝑎𝑥
+𝑇
+𝐿
+Total normalized score
+1
+0.5000
+0.0000
+0.0000
+0.5000
+2
+0.2706
+0.1000
+0.0333
+0.4040
+3
+0.0838
+0.3000
+0.0333
+0.4172
+4
+0.0164
+0.4000
+0.0333
+0.4498
+5
+0.2455
+0.1000
+0.0667
+0.4122
+6
+0.0164
+0.2000
+0.0667
+0.2831
+7
+0.0000
+0.4000
+0.0667
+0.4667
+8
+0.0000
+0.2000
+0.1000
+0.3000
+𝑇= 39.21, and 𝐿= 3 is selected, as shown in Table 9. The selected
+solutions obtained by applying the same procedure to P2, P3, and P4
+are presented in Table 12.
+5.1.3. Performance of the heuristic methods on the small problem instances
+The performance of the heuristics is evaluated using small problem
+instances with known Pareto solutions. Each best-found solution from
+the heuristics is compared with one of the Pareto solutions closest to
+the best-found heuristic solution. Table 13 presents a comparison of the
+results for P1. For example, the first heuristic solution obtained from
+[SC-EDD & SC-LPT: 60] had a 𝐿= 2, 𝐶𝑚𝑎𝑥= 106.59, and 𝑇= 29.19.
+Note that the closest Pareto solution is chosen among the solutions
+with the same 𝐿, which results in a solution with 𝐶𝑚𝑎𝑥= 75.41, and
+𝑇= 29.88. The %off Pareto solutions for 𝐶𝑚𝑎𝑥and 𝑇are 41.35% and
+−2.31%, respectively. This indicates that the heuristic solution is worse
+than the selected Pareto solution in terms of 𝐶𝑚𝑎𝑥, but outperforms the
+Pareto solution in terms of 𝑇, which implies that the heuristic solution
+is not inferior to the Pareto solution. Similar arguments are applied for
+the second heuristic solution from [SC-EDD & SC-LPT: 30] with 𝐿= 3,
+𝐶𝑚𝑎𝑥= 81, and 𝑇= 18.02. However, the best-found heuristic solution,
+where 𝐿= 4, 𝐶𝑚𝑎𝑥= 77.88, and 𝑇= 41.78, is inferior to the closest
+Pareto solution. The results of the heuristics for P2, P3, and P4 can be
+found in Appendix C.
+5.2. Large problem instances
+Large problem instances are created using 18 months of real pro-
+duction data from January 2019 to June 2020. Each problem instance
+is a month of production data. In total, 413 products are classified into
+26 product families. These products are steel pipes with (1) different
+thicknesses, which are categorized as being in the same family, that
+is, requiring a short setup time; (2) different diameters, medium setup
+times depending on the change in diameters; or (3) different shapes:
+round, rectangular, or square, which are classified as being in different
+families, that is, requiring a long setup time. The monthly demand
+data contain customer orders ranging from 1359 to 3639 orders. Each
+order contains up to 40 products. Customer orders requesting the same
+products are aggregated into the same job, that is, production orders.
+On average, the number of jobs in each month ranged from 244 to 298.
+The production line has ten unrelated parallel machines with vary-
+ing capabilities in terms of the product families that each machine
+can process and the production rate. The setup times for products
+in the same family but with different thicknesses ranged from 20 to
+40 min. However, products in the same family with different diameters
+or products in different families require setup times ranging from 3 to
+11 h, depending on the sequence of jobs, that is, changing diameters
+requires a shorter setup time than changing shape. Statistical summary
+of the large instances is presented in Table 14.
+Several months of data are tested to demonstrate the effectiveness of
+the proposed heuristics in various demand scenarios. Naturally, there is
+some variation in monthly demand and an increasing trend in demand
+over time due to business growth (see Fig. 4). Specifically, the monthly
+demand in 2019 is lower than that in 2020, except in October 2019.
+Interestingly, there is growing demand despite the Covid-19 pandemic.
+The problem instances are grouped using the k-mean clustering method
+to characterize the demand scenarios. Based on the analysis, the 18
+months of demand data can be divided into two clusters: low demand
+and high demand. The number of clusters is chosen based on the
+highest silhouette score [44], as shown in Table 15.
+Each problem instance is tested with three single dispatching rules
+and six combined rules in combination with six rule-switching times.
+In a month, there are up to 25 working days, eight hours per shift,
+two shifts per day, and up to five hours of overtime, which results
+in a maximum of 525 production hours. Therefore, the rule-switching
+times are set between 200 and 450 h with a step size of 50 h, which
+is 200, 250, 300, 350, 400, and 450. In summary, the computational
+experiment tests (3 + 6 × 6) = 39 rules on 18 problem instances and
+three measures of performance, including makespan, tardiness, and
+number of tardy jobs.
+5.2.1. Single dispatching rule results
+First, the average performance of the three single dispatching rules
+is reported for both the demand scenarios in Table 16. Statistical
+analysis, including analysis of variance (ANOVA) and Tukey’s test,
+is performed on each measure of performance treated as a response
+variable, the three rules as experimental factors, and demand scenarios
+as blocks. According to the ANOVA, the performances of the three
+10
+
+=== PAGE 11 ===
+P.D. Tai, P. Kongsri, P. Soeurn et al.
+Decision Analytics Journal 13 (2024) 100525
+Table 12
+The selected one solution of the set of Pareto solutions for the four problems.
+P1
+P2
+P3
+P4
+𝐶𝑚𝑎𝑥
+𝑇
+𝐿
+𝐶𝑚𝑎𝑥
+𝑇
+𝐿
+𝐶𝑚𝑎𝑥
+𝑇
+𝐿
+𝐶𝑚𝑎𝑥
+𝑇
+𝐿
+72.14
+39.208
+3
+60.56
+26.90
+3
+107.26
+16.55
+2
+88.24
+71.26
+3
+Table 13
+The solutions from heuristic methods and pareto, and %-Off Pareto solutions for P1.
+Rules
+Heuristics solutions
+Pareto solutions
+%-Off Pareto solutions
+𝐿
+𝐶𝑚𝑎𝑥
+𝑇
+𝐿
+𝐶𝑚𝑎𝑥
+𝑇
+𝐶𝑚𝑎𝑥
+𝑇
+[SC-EDD & SC-LPT: 60]
+2
+106.59
+29.19
+2
+75.41
+29.88
+41.35%
+−2.31%
+[SC-EDD & SC-LPT: 30]
+3
+81
+18.02
+3
+75.08
+29.88
+7.88%
+−39.69%
+[SC-LPT & SCT: 10]
+4
+77.88
+41.78
+4
+71.93
+39.21
+8.27%
+6.55%
+Table 14
+Statistical summary of large problem instances.
+Dataset
+Demand scenario
+No. of jobs
+Quantity
+No. of jobs that can be processed by k machines
+Avg
+SD
+Max
+Min
+k = 1
+k = 2
+k = 3
+k = 4
+k = 5
+k = 6
+k = 7
+1
+Low
+839
+31.75
+44.75
+418.13
+0.01
+78
+4
+52
+19
+50
+37
+7
+2
+Low
+809
+40.36
+50.09
+369.93
+0.02
+87
+4
+43
+16
+61
+36
+–
+3
+Low
+838
+33.65
+53.68
+538.08
+0.06
+87
+3
+46
+16
+63
+38
+–
+4
+Low
+815
+29.51
+41.30
+323.79
+0.03
+80
+2
+43
+16
+62
+38
+–
+5
+Low
+868
+41.09
+71.01
+711.91
+0.13
+82
+3
+47
+14
+66
+43
+–
+6
+Low
+886
+33.08
+51.64
+374.96
+0.03
+82
+3
+48
+16
+64
+45
+–
+7
+Low
+914
+47.76
+68.32
+606.10
+0.05
+85
+4
+51
+16
+62
+49
+–
+8
+Low
+938
+40.93
+59.10
+587.33
+0.06
+84
+3
+51
+16
+65
+51
+–
+9
+Low
+917
+34.76
+55.66
+591.82
+0.03
+81
+4
+53
+17
+65
+46
+–
+10
+High
+952
+60.84
+89.21
+828.87
+0.06
+87
+4
+53
+16
+68
+49
+–
+11
+Low
+922
+44.26
+61.28
+480.95
+0.06
+88
+4
+53
+14
+67
+46
+–
+12
+Low
+941
+31.59
+43.69
+336.00
+0.07
+85
+4
+57
+14
+69
+46
+–
+13
+High
+976
+74.67
+110.13
+1018.96
+0.05
+92
+4
+59
+16
+67
+50
+–
+14
+High
+932
+54.99
+86.00
+756.49
+0.33
+91
+4
+56
+15
+67
+45
+–
+15
+High
+998
+55.27
+94.90
+947.90
+0.08
+93
+3
+59
+15
+76
+47
+–
+16
+High
+1025
+63.22
+102.91
+981.80
+0.03
+91
+4
+60
+17
+78
+48
+–
+17
+High
+958
+76.85
+128.43
+1433.85
+0.10
+90
+3
+52
+16
+72
+47
+–
+18
+High
+1029
+64.86
+99.60
+893.22
+0.04
+90
+3
+55
+18
+78
+51
+–
+Table 15
+Silhouettes score.
+The number of clusters
+2
+3
+4
+5
+6
+7
+8
+9
+10
+Silhouettes score
+0.76
+0.72
+0.69
+0.75
+0.71
+0.73
+0.68
+0.6
+0.58
+Table 16
+Average performance measures of dispatching rules.
+Demand scenario
+Rule
+𝐶𝑚𝑎𝑥
+𝑇
+𝐿
+Low
+SCT
+466.99C
+3,915.75B
+43.36B
+SC-EDD
+629.86B
+3,657.31B
+51.18B
+SC-LPT
+907.15A
+26,312.50A
+113.64A
+High
+SCT
+637.97C
+8,770.64B
+67.14B
+SC-EDD
+827.20B
+11,336.01B
+70.00B
+SC-LPT
+1112.51A
+55,823.23A
+179.00A
+Note: Average measures that do not share a letter are significantly different.
+rules are statistically different. In addition, Tukey’s comparison results
+indicate that the performance of SCT and SC-EDD rules is statistically
+better than that of the SC-LPT rule in all three measures and in both de-
+mand scenarios. Therefore, SC-LPT is eliminated from further analysis.
+For SCT and SC-EDD, it is observed that (1) SCT provides statistically
+better results in terms of the makespan (as expected), (2) SCT provides
+relatively better results in terms of the number of tardy jobs, and (3)
+SC-EDD yields better results in terms of total tardiness under the low-
+demand scenario but worse results in the high-demand scenario. Note
+that the performances of the two rules are not statistically different in
+terms of the total tardiness and number of tardy jobs.
+5.2.2. Combined dispatching rule results
+For the six combined rules, there could be effects of rule-switching
+time and demand scenarios as well as their interactions. Therefore, the
+six combined rules are treated as a categorical factor with six levels,
+and the rule-switching time is treated as a covariate. The 18 problem
+instances, split into two demand scenarios, are treated as another factor
+with two levels. Regression models for each performance measure are
+fitted to determine the effective rule(s) and appropriate rule-switching
+time for each demand scenario. The results of the statistical analysis
+used to evaluate the factor effects are shown in Tables 17–19.
+From Table 17, because the three-factor interaction is significant,
+the effect of the dispatching rules on the makespan clearly depends
+on the rule-switching time and demand scenarios. The relationship
+between the makespan and rule-switching time for each rule under a
+demand scenario is shown in Table 18 and plotted in Fig. 5. From Fig. 5,
+the effective rules for reducing makespan are [SCT & SC-LPT: 450] for
+the high-demand scenario, and [SCT & SC-EDD: 450], [SCT & SC-LPT:
+450] for the low-demand scenario. Note that these rules use SCT in
+a much larger proportion of the production time in a month before
+switching to other rules.
+A similar analysis is performed on total tardiness and number of
+tardy jobs. According to the ANOVA results, the three-factor interaction
+of dispatching rule, rule-switching time, and demand scenario is also
+significant for both responses. Based on the analysis of the three mea-
+sures of performance, the effective rules for all under the two demand
+scenarios are summarized in Table 19. Among the 36 possible rules (six
+combined rules and six rule-switching times), there are three effective
+combined rules: (1) [SCT & SC-LPT: 450] for makespan and the number
+of tardy jobs in both demand scenarios; (2) [SCT & SC-EDD: 450] for
+makespan in low demand, total tardiness in high demand, and the
+11
+
+=== PAGE 12 ===
+P.D. Tai, P. Kongsri, P. Soeurn et al.
+Decision Analytics Journal 13 (2024) 100525
+Fig. 5. Regression models of different dispatching rules on the makespan.
+Table 17
+ANOVA for makespan.
+Source
+DF
+Seq SS
+Seq MS
+F-Value
+P-Value
+Regression
+23
+15,219,517
+661,718
+169.23
+0.000
+Dispatching rule
+5
+6,023,192
+1,204,638
+308.08
+0.000
+Rule-switching time
+1
+15,919
+15,919
+4.07
+0.044
+Demand scenario
+1
+8,238,496
+8,238,496
+2106.94
+0.000
+Dispatching rule × Rule-switching time
+5
+532,531
+106,506
+27.24
+0.000
+Dispatching rule × Demand scenario
+5
+300,433
+60,087
+15.37
+0.000
+Rule-switching time × Demand scenario
+1
+49,940
+49,940
+12.77
+0.000
+Dispatching rule × Rule-switching time × Demand scenario
+5
+59,006
+11,801
+3.02
+0.011
+Error
+624
+2,439,949
+3,910
+Lack-of-fit
+48
+49,133
+1,024
+0.25
+1.000
+Pure error
+576
+2,390,816
+4,151
+Total
+647
+17,659,467
+Table 18
+Regression equations for makespan.
+Demand scenario
+Rule
+Regression equation
+High
+SC-EDD & SC-LPT
+Makespan = 926.1 −0.245Time
+High
+SC-EDD & SCT
+Makespan = 596.4 + 0.335Time
+High
+SC-LPT & SC-EDD
+Makespan = 984.1 + 0.136Time
+High
+SC-LPT & SCT
+Makespan = 801.8 + 0.004Time
+High
+SCT & SC-EDD
+Makespan = 845.7 −0.448Time
+High
+SCT & SC-LPT
+Makespan = 1028.2 - 0.902Time
+Low
+SC-EDD & SC-LPT
+Makespan = 642.2 −0.014Time
+Low
+SC-EDD & SCT
+Makespan = 410.9 + 0.4207Time
+Low
+SC-LPT & SC-EDD
+Makespan = 723.8 + 0.0205Time
+Low
+SC-LPT & SCT
+Makespan = 413.5 + 0.4173Time
+Low
+SCT & SC-EDD
+Makespan = 606.6 −0.3738Time
+Low
+SCT & SC-LPT
+Makespan = 586.4 −0.327Time
+Table 19
+Effective combined dispatching rules.
+Measures
+Demand scenario
+High
+Low
+Makespan
+[SCT & SC-LPT: 450]
+[SCT & SC-EDD: 450]
+[SCT & SC-LPT: 450]
+Total tardiness
+[SCT & SC-EDD: 450]
+[SC-EDD & SCT: 200]
+Number of tardy jobs
+[SCT & SC-EDD: 450]
+[SCT & SC-LPT: 450]
+[SC-EDD & SCT: 200]
+[SCT & SC-EDD: 450]
+[SCT & SC-LPT: 450]
+[SC-EDD & SCT: 200]
+number of tardy jobs in both demand scenarios; and (3) [SC-EDD &
+SCT: 200] for the total tardiness in low demand and the number of
+tardy jobs in both demand scenarios.
+5.3. Selection of dispatching rule under multiple measures of performance
+The effective dispatching rules (two single and three combined
+rules) and their performances on the three measures are summarized
+in Table 20. The selection of dispatching rules becomes a multi-criteria
+decision-making problem. A closer look reveals that some rules, al-
+though effective, are inferior to others. Specifically, under high de-
+mand, the [SCT & SC-LPT: 450] is outperformed by SCT in all three
+measures. Therefore, [SCT & SC-LPT: 450] is eliminated for further
+analysis under high demand. As a result, four rules remain for the
+high-demand scenario. Similarly, under low demand, SCT and [SCT &
+SC-LPT: 450] are eliminated by [SCT & SC-EDD: 450] and SC-EDD by
+[SC-EDD & SCT: 200]. In other words, there are only two rules, [SC-
+EDD & SCT: 200] and [SCT & SC-EDD: 450], to be considered under
+low demand.
+For the multi-criteria decision-making problem, the weight of im-
+portance assigned to each measure is critical to the rule selection
+process. Although these weights are usually specified by a decision
+maker (DM), we chose to perform rule selection analysis under exhaus-
+tive enumerations of the three weights. The purpose is to obtain the
+conditions specified by the relative weights assigned to the measures,
+where each dispatching rule is the most effective. The weights for the
+makespan, total tardiness, and number of tardy jobs are denoted by
+𝑤𝐶, 𝑤𝑇, and 𝑤𝐿, respectively. Their values are varied from 0.01 to
+0.98, under the condition that the weights add up 1, i.e., 𝑤𝐶, 𝑤𝑇, and
+𝑤𝐿∈[0.01, 0.98] and 𝑤𝐶+𝑤𝑇+𝑤𝐿= 1. Because the three measures are
+numerical, an appropriate selection method is the technique for order
+preference by similarity to ideal solution (TOPSIS). The steps of TOPSIS
+implemented in this study are described below [45].
+Step 1: Construct a matrix of performance measure 𝑥𝑎𝑏for dispatch-
+ing rule 𝑎and measure of performance 𝑏. For our problem, all three
+12
+
+=== PAGE 13 ===
+P.D. Tai, P. Kongsri, P. Soeurn et al.
+Decision Analytics Journal 13 (2024) 100525
+Table 20
+Effective dispatching rules.
+Demand scenario
+Dispatching rule
+𝐶𝑚𝑎𝑥
+𝑇
+𝐿
+Eliminated by
+High
+SCT
+637.97
+8770.64
+67.14
+High
+SC-EDD
+827.20
+6223.62
+70
+High
+[SC-EDD & SCT: 200]
+660.77
+8003.79
+66.43
+High
+[SCT & SC-LPT: 450]
+644.43
+11,093.70
+74.43
+SCT
+High
+[SCT & SC-EDD: 450]
+652.47
+7565.10
+68.43
+Low
+SCT
+466.99
+3915.75
+43.36
+[SCT & SC-EDD: 450]
+Low
+SC-EDD
+629.86
+3657.31
+51.18
+[SC-EDD & SCT: 200]
+Low
+[SC-EDD & SCT: 200]
+491.22
+2429.83
+41.09
+Low
+[SCT & SC-LPT: 450]
+453.22
+3908.48
+42.73
+[SCT & SC-EDD: 450]
+Low
+[SCT & SC-EDD: 450]
+452.94
+3795.79
+42.63
+Table 21
+Numerical example for TOPSIS.
+Step 1: 𝑥𝑎𝑏
+Steps 2–3: 𝑟𝑎𝑏, 𝑣+
+𝑏, 𝑣−
+𝑏
+Step 4: 𝑆−
+𝑎, 𝑆+
+𝑎
+Step 5: 𝐶∗
+𝑎
+𝑏
+𝑏
+𝑎
+1
+2
+3
+𝑎
+1
+2
+3
+𝑎
+𝑆−
+𝑎
+𝑆+
+𝑎
+𝑎
+𝐶∗
+𝑎
+1
+491.22
+2429.83
+41.09
+1
+0.92
+1
+1
+1
+0.19
+0.05
+1
+0.81
+2
+452.94
+3795.79
+42.63
+2
+1
+0.64
+0.96
+2
+0.05
+0.19
+2
+0.19
+̃𝑥𝑏
+452.94
+2429.83
+41.09
+𝑣+
+𝑏
+1
+1
+1
+𝑣−
+𝑏
+0.92
+0.64
+0.96
+measures are considered as cost attributes; the lower the value of 𝑥𝑎𝑏,
+the better is the performance.
+Step 2: Compute 𝑟𝑎𝑏
+=
+̃𝑥𝑏
+𝑥𝑎𝑏as a normalized value of 𝑥𝑎𝑏, ̃𝑥𝑏=
+mina{𝑥𝑎𝑏}. After normalization, the higher the value of 𝑟𝑎𝑏, the better
+the performance.
+Step 3: Find a positive ideal solution (𝑣+
+𝑏) and negative ideal (𝑣−
+𝑏)
+solutions for each measure of performance, where 𝑣+
+𝑏= max𝑎{𝑟𝑎𝑏}, and
+𝑣−
+𝑏= min𝑎{𝑟𝑎𝑏}.
+Step 4: Compute separate measures for each dispatching rule a.
+Separate measures from the positive ideal solution are computed 𝑆+
+𝑎=
+√∑
+𝑏𝑤𝑏
+(𝑟𝑎𝑏−𝑣+
+𝑏
+)2, and from the negative ideal solution 𝑆−
+𝑎
+=
+√∑
+𝑏𝑤𝑏
+(𝑟𝑎𝑏−𝑣−
+𝑏
+)2.
+Step 5: Calculate the relative closeness to the ideal solution 𝐶∗
+𝑎=
+𝑆−
+𝑎
+𝑆+
+𝑎+𝑆−𝑎
+for dispatching rule a. The greater the relative closeness, the
+better the performance.
+Numerical example to compare the two rules, [SC-EDD & SCT: 200]
+and [SCT & SC-EDD: 450], for the low-demand scenario with 𝑤𝐶= 0.36,
+𝑤𝑇= 0.3, and 𝑤𝐿= 0.34. Note that 𝑎= 1 denotes [SC-EDD & SCT:
+200]; 2 denotes [SCT & SC-EDD: 450]; and 𝑏= 1, 2, and 3 denote the
+makespan, total tardiness, and number of tardy jobs, respectively. The
+calculation results are presented in Table 21. From the table, [SC-EDD
+& SCT: 200] is more effective.
+After repeating TOPSIS for many combinations of weights, the
+conditions for each dispatching rule to be the most effective are as
+follows:
+Low demand scenario: There are two rules to consider: [SC-EDD &
+SCT: 200], which gives the minimum total tardiness and minimum
+number of tardy jobs, and [SCT & SC-EDD: 450], which gives the
+minimum makespan. [SCT & SC-EDD: 450] is the most effective under
+the following conditions:
+1. 𝑤𝐶≥0.88, 𝑤𝑇= 0.04, and 𝑤𝐿≤0.08
+2. 𝑤𝐶≥0.70, 𝑤𝑇= 0.03, and 𝑤𝐿≤0.27
+3. 𝑤𝐶≥0.53, 𝑤𝑇= 0.02, and 𝑤𝐿≤0.45
+4. 𝑤𝐶≥0.36, 𝑤𝑇= 0.01, and 𝑤𝐿≤0.63
+Otherwise, [SC-EDD & SCT: 200] is the most effective rule.
+These conditions indicate that [SCT & SC-EDD: 450] is the most
+effective when the DM places little importance on total tardiness. In
+other words, [SC-EDD & SCT: 200] is dominant when 𝑤𝑇≥0.05. In
+addition, even though the DM gives little weight to the total tardiness,
+he or she must give enough weight to the makespan for [SCT & SC-EDD:
+450] to be the more effective rule according to the four conditions.
+High demand scenario: For the four considered rules, SCT, SC-EDD, [SCT
+& SC-EDD: 450], and [SC-EDD & SCT: 200]. The conditions are,
+SCT is most effective under the conditions, 0.22 ≤𝑤𝐶≤0.98,
+𝑤𝑇= 0.01, and 0.01 ≤𝑤𝐿≤0.77, where the makespan or number
+of tardy jobs is dominant in terms of their weights of importance.
+[SC-EDD & SCT: 200] is the most effective under the following
+conditions: These conditions are applicable for various cases when the
+weight of the makespan is up to 29% and the weight of the total
+tardiness is relatively small (up to 7%).
+1. 0.01 ≤𝑤𝐶≤0.07, 0.01 ≤𝑤𝑇≤0.07, 0.86 ≤𝑤𝐿≤0.98, and
+𝑤𝑇−𝑤𝐶≤0.03
+2. 0.08 ≤𝑤𝐶≤0.09, 0.01 ≤𝑤𝑇≤0.06, and 0.85 ≤𝑤𝐿≤0.91
+3. 0.10 ≤𝑤𝐶≤0.12, 0.01 ≤𝑤𝑇≤0.05, and 0.83 ≤𝑤𝐿≤0.89
+4. 0.13 ≤𝑤𝐶≤0.16, 0.01 ≤𝑤𝑇≤0.04, and 0.80 ≤𝑤𝐿≤0.86
+5. 0.17 ≤𝑤𝐶≤0.21, 0.01 ≤𝑤𝑇≤0.03, and 0.76 ≤𝑤𝐿≤0.82
+6. 0.22 ≤𝑤𝐶≤0.29, 𝑤𝑇= 0.02, and 0.69 ≤𝑤𝐿≤0.76
+[SCT & SC-EDD: 450] is the most effective under the four conditions
+listed below. These conditions indicate cases when the weight of the
+total tardiness is up to 50%.
+1. 𝑤𝐶≥0.49, 𝑤𝑇≥0.02, and 𝑤𝐿≤0.49
+2. 0.30 ≤𝑤𝐶≤0.48, 0.02 ≤𝑤𝑇≤0.50, 0.02 ≤𝑤𝐿≤0.68, and
+(𝑤𝑇−𝑤𝐶) ≤0.02
+3. 0.24 ≤𝑤𝐶≤0.29, 0.03 ≤𝑤𝑇≤0.31, 0.40 ≤𝑤𝐿≤0.73, and
+(𝑤𝑇−𝑤𝐶) ≤0.03
+4. 0.07 ≤𝑤𝐶≤0.23, 0.03 ≤𝑤𝑇≤0.24, 0.53 ≤𝑤𝐿≤0.85, and
+(𝑤𝑇−𝑤𝐶) ≤0.01
+Otherwise, the SC-EDD is effective when the weight of the total
+tardiness is greater than 50%.
+5.4. Discussion
+The findings of this research provide contributions to the produc-
+tion scheduling research area, particularly in the context of unrelated
+parallel machines with machine and job sequence-dependent setup
+times. The results are in line with previous research that emphasizes
+the complexity of scheduling problems in manufacturing environments.
+The classification of parallel machines into identical, uniform, and
+13
+
+=== PAGE 14 ===
+P.D. Tai, P. Kongsri, P. Soeurn et al.
+Decision Analytics Journal 13 (2024) 100525
+unrelated categories has been well-documented in the literature [1–
+3]. This approach builds on this foundation by specifically addressing
+the challenges posed by machine and job sequence-dependent setups,
+which have been less frequently explored.
+Performance of the modified dispatching rules, i.e., SPT, EDD, and
+LPT, demonstrates a clear benefit over traditional methods. Previous
+studies have shown that these rules can yield effective scheduling
+solutions under certain conditions [4,5]. Our research extends this
+understanding by incorporating machine and job sequence-dependent
+setup times, thereby enhancing the applicability of these rules in real-
+world scenarios. Moreover, the statistical analysis conducted, including
+ANOVA and Tukey’s test, confirms that the performance of the SCT
+and SC-EDD rules is superior to that of the SC-LPT rule across various
+performance measures and demand scenarios. This finding is consistent
+with earlier work that suggests the importance of rule selection based
+on specific operational contexts [6]. The ability to adapt dispatching
+rules to the unique characteristics of each scheduling problem is crucial
+for improving production efficiency.
+The multi-criteria decision-making analysis further enriches these
+findings by demonstrating how different performance measures can
+be prioritized based on the decision-maker’s preference. This aspect
+of the research resonates with the literature that supports a tailored
+approach to scheduling, where the relative importance of makespan,
+tardiness, and job completion times can vary significantly depend-
+ing on the production environment [9]. This study highlights that
+combined dispatching rules, such as [SCT & SC-LPT] and [SCT & SC-
+EDD], offer flexible and robust strategies that results in solutions with
+improved makespan and acceptable tardiness compared to single-rule
+approaches.
+5.5. Research implication
+Implications of the research findings for practical applications in
+production scheduling, particularly for industrial users are as follows.
+Firstly, the development of modified dispatching rules considering
+machine and job sequence-dependent setup times provides a valuable
+framework for optimizing production processes. Industrial users can
+implement these tailored rules to enhance their scheduling efficiency,
+leading to reduced idle times and improved machine utilization. By
+minimizing setup times and effectively managing job sequences, man-
+ufacturers can achieve higher throughput and better meet production
+targets.
+Secondly, the application of multi-criteria decision-making analysis
+underscores the necessity for decision-makers to consider multiple
+performance measures when evaluating scheduling solutions. Indus-
+trial users often face competing system measures, such as minimizing
+makespan while reducing tardiness. This research enables a holistic
+approach to scheduling, allowing for the balancing of various perfor-
+mance metrics based on specific operational goals. Such flexibility can
+lead to improved customer satisfaction through timely deliveries and
+enhanced overall operational performance.
+Thirdly, the findings emphasize the importance of adaptability in
+scheduling systems. As industries increasingly face demand fluctuations
+and changes in production requirements, the ability to adjust schedul-
+ing strategies becomes crucial. The proposed heuristics and dispatching
+rules can be easily modified to accommodate different production
+demand scenarios, enabling manufacturers to respond swiftly to market
+changes. This adaptability not only enhances operational resilience,
+but also positions companies to capitalize on emerging opportunities.
+Lastly, the research provides a foundation for further exploration of
+hybrid scheduling approaches that combine the strengths of various
+heuristics and optimization techniques. Industrial users can benefit
+from integrating advanced scheduling algorithms into their existing
+systems, leading to more sophisticated decision-making processes and
+improved production planning.
+6. Conclusion
+This study involved an unrelated parallel-machine scheduling prob-
+lem with sequence- and machine-dependent setup times. Three system
+performance measures, including makespan, total tardiness, and the
+number of tardy jobs, are considered. For small problem instances,
+MILP models are formulated to find optimal solutions as well as Pareto
+solutions through the implementation of the AUGMECON method. For
+large problem instances, dispatching rule-based heuristics that consider
+sequence- and machine-dependent setup times are developed. They
+include SCT, SC-LPT, SC-EDD, and six combinations of these rules. For
+the combined rules, the appropriate rule-switching time is determined
+through computational experiments.
+The heuristics are tested using 18 datasets of the monthly demand
+from the industry. The results indicate that under the high-demand
+scenario, the best dispatching rule for the makespan, total tardiness,
+and number of tardy jobs are SCT, SC-EDD, and [SCT & SC-EDD: 450],
+respectively. For the low-demand scenario, the best rule for makespan
+is [SCT & SC-EDD: 450], whereas [SC-EDD & SCT: 200] is most effective
+for both the total tardiness and the number of tardy jobs. In practice,
+the decision makers may assign multiple relative weights of importance
+to the performance measures, which determines the rule that should be
+used. We perform a complete enumeration of the weights to determine
+a series of conditions in which the DM prefers one rule over the others.
+The result in this research is the stepping stone for several research
+directions in the future. One of them is to develop new dispatching
+rules or to extend the problem to multiple operations in sequence,
+where there are unrelated parallel machines in each operation. In
+addition, to further improve the performance, the dispatching rules can
+be implemented as a part of a meta-heuristic algorithm that generates
+solutions on the Pareto front for large problem instances.
+Funding
+This study is supported by the Thammasat University Research Fund
+[Contract Number: TUFT 85/2566].
+Declaration of competing interest
+The authors declare that they have no known competing finan-
+cial interests or personal relationships that could have appeared to
+influence the work reported in this paper.
+Appendix A. Supplementary data
+Supplementary material related to this article can be found online
+at https://doi.org/10.1016/j.dajour.2024.100525.
+Data availability
+Data will be made available on request.
+References
+[1] O. Avalos-Rosales, F. Angel-Bello, A. Alvarez, Efficient metaheuristic algorithm
+and re-formulations for the unrelated parallel machine scheduling problem with
+sequence and machine-dependent setup times, Int. J. Adv. Manuf. Technol. 76
+(9) (2015) 1705–1718.
+[2] L. Ghalami, D. Grosu, Scheduling parallel identical machines to minimize
+makespan: A parallel approximation algorithm, J. Parallel Distrib. Comput. 133
+(2019) 221–231.
+[3] M.Y. Kim, Y.H. Lee, MIP models and hybrid algorithm for minimizing the
+makespan of parallel machines scheduling problem with a single server, Comput.
+Oper. Res. 39 (11) (2012) 2457–2468.
+[4] M.K. Omar, S.C. Teo, Minimizing the sum of earliness/tardiness in identical
+parallel machines schedule with incompatible job families: An improved MIP
+approach, Appl. Math. Comput. 181 (2) (2006) 1008–1017.
+14
+
+=== PAGE 15 ===
+P.D. Tai, P. Kongsri, P. Soeurn et al.
+Decision Analytics Journal 13 (2024) 100525
+[5] B.E. Anderson, J.D. Blocher, K.M. Bretthauer, M.A. Venkataramanan, An efficient
+network-based formulation for sequence dependent setup scheduling on parallel
+identical machines, Math. Comput. Modelling 57 (3–4) (2013) 483–493.
+[6] A. Hamzadayi, G. Yildiz, Modeling and solving static m identical parallel
+machines scheduling problem with a common server and sequence dependent
+setup times, Comput. Ind. Eng. 106 (2017) 287–298.
+[7] E.A. Ozer, T. Sarac, MIP models and a matheuristic algorithm for an identical
+parallel machine scheduling problem under multiple copies of shared resources
+constraints, TOP 27 (1) (2019) 94–124.
+[8] L. Epstein, Parallel solutions for preemptive makespan scheduling on two
+identical machines, J. Sched. (2022) 1–16.
+[9] G.H. Wu, P. Pourhejazy, W.X. Li, T.H. Wu, A new dispatching mechanism for
+parallel-machine scheduling with different efficiencies and sequence-dependent
+setup times, Decis. Anal. J. 10 (2024) 100432.
+[10] K. Li, W. Xiao, S. Yang, Minimizing total tardiness on two uniform parallel
+machines considering a cost constraint, Expert Syst. Appl. 123 (2019) 143–153.
+[11] A. Zandi, R. Ramezanian, L. Monplaisir, Green parallel machines scheduling
+problem: A bi-objective model and a heuristic algorithm to obtain Pareto frontier,
+J. Oper. Res. Soc. 71 (6) (2020) 967–978.
+[12] R. Logendran, B. McDonell, B. Smucker, Scheduling unrelated parallel mach-
+ines with sequence-dependent setups, Comput. Oper. Res. 34 (11) (2007)
+3420–3438.
+[13] Y.K. Lin, J.W. Fowler, M.E. Pfund, Multiple-objective heuristics for sched-
+uling unrelated parallel machines, European J. Oper. Res. 227 (2) (2013)
+239–253.
+[14] M. Ghirardi, C.N. Potts, Makespan minimization for scheduling unrelated parallel
+machines: A recovering beam search approach, European J. Oper. Res. 165 (2)
+(2005) 457–467.
+[15] S.W. Lin, K.C. Ying, A multi-point simulated annealing heuristic for solving
+multiple objective unrelated parallel machine scheduling problems, Int. J. Prod.
+Res. 53 (4) (2015) 1065–1076.
+[16] C.Y. Cheng, L.W. Huang, Minimizing total earliness and tardiness through
+unrelated parallel machine scheduling using distributed release time control, J.
+Manuf. Syst. 42 (2017) 1–10.
+[17] X. Xiong, P. Zhou, Y. Yin, T.C.E. Cheng, D. Li, An exact branch-and-price
+algorithm for multitasking scheduling on unrelated parallel machines, Naval Res.
+Logist. 66 (6) (2019) 502–516.
+[18] L.H. Su, M.C. Hsiao, H. Zhou, F.D. Chou, Minimizing the number of tardy jobs
+on unrelated parallel machines with dirt consideration, J. Ind. Prod. Eng. 35 (6)
+(2018) 383–393.
+[19] M.A. Bajestani, R. Tavakkoli-Moghaddam, A new branch-and-bound algorithm
+for the unrelated parallel machine scheduling problem with sequence-dependent
+setup times, IFAC Proc. Vol. 42 (4) (2009) 792–797.
+[20] J.E.C. Arroyo, J.Y.T. Leung, R.G. Tavares, An iterated greedy algorithm for total
+flow time minimization in unrelated parallel batch machines with unequal job
+release times, Eng. Appl. Artif. Intell. 77 (2019) 239–254.
+[21] A.J. Soper, V.A. Strusevich, Preemptive and non-preemptive scheduling on two
+unrelated parallel machines, J. Sched. 25 (6) (2022) 659–674.
+[22] A. Allahverdi, The third comprehensive survey on scheduling problems with
+setup times/costs, European J. Oper. Res. 246 (2) (2015) 345–378.
+[23] Y.K. Lin, M.E. Pfund, J.W. Fowler, Heuristics for minimizing regular performance
+measures in unrelated parallel machine scheduling problems, Comput. Oper. Res.
+38 (6) (2011) 901–916.
+[24] M. Moser, N. Musliu, A. Schaerf, F. Winter, Exact and metaheuristic approaches
+for unrelated parallel machine scheduling, J. Sched. 25 (5) (2022) 507–534.
+[25] C.C. Chyu, W.S. Chang, A Pareto evolutionary algorithm approach to bi-objective
+unrelated parallel machine scheduling problems, Int. J. Adv. Manuf. Technol. 49
+(2010) 697–708.
+[26] S.A. Torabi, N. Sahebjamnia, S.A. Mansouri, M.A. Bajestani, A particle swarm
+optimization for a fuzzy multi-objective unrelated parallel machines scheduling
+problem, Appl. Soft Comput. 13 (12) (2013) 4750–4762.
+[27] M. Nikabadi, R. Naderi, A hybrid algorithm for unrelated parallel machines
+scheduling, Int. J. Ind. Eng. Comput. 7 (4) (2016) 681–702.
+[28] H. Wang, B. Alidaee, Unrelated parallel machine selection and job scheduling
+with the objective of minimizing total workload and machine fixed costs, IEEE
+Trans. Autom. Sci. Eng. 15 (4) (2018) 1955–1963.
+[29] G. Bektur, T. Saraç, A mathematical model and heuristic algorithms for an
+unrelated parallel machine scheduling problem with sequence-dependent setup
+times, machine eligibility restrictions and a common server, Comput. Oper. Res.
+103 (2019) 46–63.
+[30] J.C. Yepes-Borrero, F. Perea, R. Ruiz, F. Villa, Bi-objective parallel machine
+scheduling with additional resources during setups, European J. Oper. Res. 292
+(2) (2021) 443–455.
+[31] A.E. Ezugwu, Enhanced symbiotic organisms search algorithm for unrelated
+parallel machines manufacturing scheduling with setup times, Knowl.-Based Syst.
+172 (2019) 15–32.
+[32] M. Mirmozaffari, S.M. Hejazi, N. Karamizadeh, A. Montazeri, A mixed-integer
+non-linear no-wait open-shop scheduling model for minimizing makespan and
+total tardiness in manufacturing, Decis. Anal. J. 10 (2024) 100403.
+[33] S. Nessari, R. Tavakkoli-Moghaddam, H. Bakhshi-Khaniki, A. Bozorgi-Amiri, A
+hybrid simheuristic algorithm for solving bi-objective stochastic flexible job shop
+scheduling problems, Decis. Anal. J. (2024) 100485.
+[34] E.V. Shchepin, N. Vakhania, An optimal rounding gives a better approximation
+for scheduling unrelated machines, Oper. Res. Lett. 33 (2) (2005) 127–133.
+[35] M. Lee, K. Lee, M. Pinedo, Tight approximation bounds for the LPT rule applied
+to identical parallel machines with small jobs, J. Sched. 25 (6) (2022) 721–740.
+[36] Y. Yin, Y. Chen, K. Qin, D. Wang, Two-agent scheduling on unrelated parallel
+machines with total completion time and weighted number of tardy jobs criteria,
+J. Sched. 22 (3) (2019) 315–333.
+[37] N. Farmand, H. Zarei, M. Rasti-Barzoki, Two meta-heuristic algorithms for
+optimizing a multi-objective supply chain scheduling problem in an identical
+parallel machines environment, Int. J. Ind. Eng. Comput. 12 (3) (2021) 249–272.
+[38] Z. Pei, M. Wan, Z. Wang, A new approximation algorithm for unrelated parallel
+machine scheduling with release dates, Ann. Oper. Res. 285 (1) (2020) 397–425.
+[39] H. Krim, N. Zufferey, J.Y. Potvin, R. Benmansour, D. Duvivier, Tabu search for
+a parallel-machine scheduling problem with periodic maintenance, job rejection
+and weighted sum of completion times, J. Sched. (2022) 1–17.
+[40] P. Kongsri, J. Buddhakulsomsiri, A mixed integer programming model for
+unrelated parallel machine scheduling problem with sequence dependent setup
+time to minimize makespan and total tardiness, in: 2020 IEEE 7th International
+Conference on Industrial Engineering and Applications, ICIEA, IEEE, 2020, pp.
+605–609.
+[41] Y. Fallahpour, M. Rafiee, A. Elomri, V. Kayvanfar, A. El Omri, A multi-objective
+planning and scheduling model for elective and emergency cases in the operating
+room under uncertainty, Decis. Anal. J. 11 (2024) 100475.
+[42] G. Mavrotas, Effective implementation of the 𝜀-constraint method in multi-
+objective mathematical programming problems, Appl. Math. Comput. 213 (2)
+(2009) 455–465.
+[43] M. Momenitabar, Z.D. Ebrahimi, A. Abdollahi, W. Helmi, K. Bengtson, P.
+Ghasemi, An integrated machine learning and quantitative optimization method
+for designing sustainable bioethanol supply chain networks, Decis. Anal. J. 7
+(2023) 100236.
+[44] P.J. Rousseeuw, Silhouettes: a graphical aid to the interpretation and validation
+of cluster analysis, J. Comput. Appl. Math. 20 (1987) 53–65.
+[45] H.S. Shih, H.J. Shyur, E.S. Lee, An extension of TOPSIS for group decision
+making, Math. Comput. Modelling 45 (7–8) (2007) 801–813.
+15
+

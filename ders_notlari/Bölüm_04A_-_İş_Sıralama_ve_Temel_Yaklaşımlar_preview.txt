@@ -1,0 +1,53 @@
+DOSYA: Bölüm 04A - İş Sıralama ve Temel Yaklaşımlar.pdf | TOPLAM SAYFA: 48
+
+--- Slayt 1 ---
+BÖLÜM 4A
+İŞ SIRALAMA
+ve ÇİZELGELEME
+HAKKINDA TEMEL BİLGİLER
+
+--- Slayt 2 ---
+İÇERİK
+Genel Bilgi
+Öncelik Kuralları
+Sıralama ve Çizelgeleme Problemlerinin Sınıflandırılması
+Çizelgeleme Problemlerinin Genel Gösterim Şekilleri
+Temel Formüller
+Gantt Diyagramı İle İş Çizelgeleme
+2
+
+--- Slayt 3 ---
+Aynı tezgâhtan/tezgâhlardan geçecek birden çok iş olduğu takdirde, 
+bu işlerin yapılma sırasının belirlenmesi işlemine iş sıralama (job
+sequencing) denir.
+Bir plânlama işlevi olan sıralama, çoğunlukla yüklemeden sonra, 
+genellikle nihaî üretim çizelgesi hazırlanırken gerçekleştirilen bir 
+işlemdir.
+Genel Bilgi
+3
+
+--- Slayt 4 ---
+Günlük yaşantımızda birçok sıralama işlemiyle karşılaşırız, çeşitli
+yerlerde sıraya sokuluruz. 
+Örnekler:
+•
+Hastalar test ve muayene işlemleri için hastanelerde
+•
+Uçaklar iniş ve kalkış için havaalanlarında
+•
+Müşteriler işlem ya da alışveriş için bankalarda, mağazalarda, 
+postanelerde
+•
+İşler, yapılmak üzere makinalarda
+•
+Programlar gerçekleştirilmek üzere işlemcide
+sıraya girerler ya da sıraya sokulurlar.
+Genel Bilgi
+4
+
+--- Slayt 5 ---
+Bu problemlerde
+Kısıtlı Kaynaklar: Havaalanı, makina, işlemci, ...
+Faaliyetler: İniş-kalkış, işlemler, programlar, ...
+Genel Bilgi
+5
