@@ -32,7 +32,7 @@ from app.ddr_heuristic import (
 )
 from app.topsis import run_topsis, print_topsis_results
 
-from app.augmecon import run_augmecon, ParetoSolution
+from app.augmecon import run_augmecon, ParetoSolution, select_best_pareto
 
 DATA_PATH = os.path.join(ROOT, "data", "seed_input.json")
 
@@ -277,7 +277,15 @@ def flow_augmecon():
     g_T    = ask_int("T için grid adım sayısı", 4)
     g_L    = ask_int("L için grid adım sayısı", 4)
     
-    run_augmecon(data, time_limit=tlimit, grid_T=g_T, grid_L=g_L)
+    pareto_set = run_augmecon(data, time_limit=tlimit, grid_T=g_T, grid_L=g_L)
+
+    if pareto_set:
+        print("\n  ─── Formül (20): Nihai Pareto Seçimi ──────────────")
+        wC = ask_float("Cmax Ağırlığı (wC)", 0.5)
+        wT = ask_float("Toplam Gecikme Ağırlığı (wT)", 0.4)
+        wL = ask_float("Geciken İş Sayısı Ağırlığı (wL)", 0.1)
+        
+        select_best_pareto(pareto_set, wC, wT, wL)
 
 
 # ─── Ana Döngü ──────────────────────────────────────────────────────────────

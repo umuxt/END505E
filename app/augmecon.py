@@ -184,3 +184,66 @@ def run_augmecon(data: ProblemData, time_limit: int = 60,
     print("  ──────────────────────────────────────────\n")
 
     return pareto_set
+
+
+def select_best_pareto(pareto_set: list[ParetoSolution], 
+                       wC: float, wT: float, wL: float) -> ParetoSolution | None:
+    """
+    Formül (20): Pareto kümesinden Min-Max normalizasyonu ve ağırlıklarla 
+    en iyi uzlaşı çözümünü (Best Compromise Solution) seçer.
+    """
+    if not pareto_set:
+        return None
+        
+    if len(pareto_set) == 1:
+        return pareto_set[0]
+
+    # Min ve Max değerleri bul
+    cmax_vals = [p.Cmax for p in pareto_set]
+    t_vals    = [p.T for p in pareto_set]
+    l_vals    = [p.L for p in pareto_set]
+    
+    min_C, max_C = min(cmax_vals), max(cmax_vals)
+    min_T, max_T = min(t_vals), max(t_vals)
+    min_L, max_L = min(l_vals), max(l_vals)
+    
+    best_sol = None
+    best_score = float("inf")
+    
+    # Ağırlıkları normalize et (toplamı 1 olsun)
+    tot_w = wC + wT + wL
+    if tot_w > 0:
+        wC, wT, wL = wC/tot_w, wT/tot_w, wL/tot_w
+    else:
+        wC, wT, wL = 1/3, 1/3, 1/3
+        
+    print("\n" + "─" * 70)
+    print("  FORMÜL (20): MİN-MAX NORMALİZASYONU İLE PARETO SEÇİMİ")
+    print(f"  Kullanılan Ağırlıklar: wCmax={wC:.2f}, wT={wT:.2f}, wL={wL:.2f}")
+    print("─" * 70)
+    print("  Çözüm │ Normalize Cmax │ Normalize T │ Normalize L │ Toplam Skor ")
+    print("  ──────┼────────────────┼─────────────┼─────────────┼─────────────")
+
+    for p in sorted(pareto_set, key=lambda x: x.Cmax):
+        # Min-Max Normalizasyon
+        norm_C = (p.Cmax - min_C) / (max_C - min_C) if max_C > min_C else 0.0
+        norm_T = (p.T - min_T) / (max_T - min_T) if max_T > min_T else 0.0
+        norm_L = (p.L - min_L) / (max_L - min_L) if max_L > min_L else 0.0
+        
+        # Skor (En düşük olan en iyi)
+        score = wC * norm_C + wT * norm_T + wL * norm_L
+        
+        mark = ""
+        if score < best_score:
+            best_score = score
+            best_sol = p
+            mark = " ← MEVCUT EN İYİ"
+            
+        print(f"   #{p.id:2d}  │ {norm_C:14.3f} │ {norm_T:11.3f} │ {norm_L:11.3f} │ {score:11.3f}{mark}")
+        
+    print("─" * 70)
+    if best_sol:
+        print(f"  ✓ SEÇİLEN NİHAİ UZLAŞI ÇÖZÜMÜ: Çözüm #{best_sol.id}")
+        print(f"    (Cmax={best_sol.Cmax:.2f}, T={best_sol.T:.2f}, L={best_sol.L})")
+    
+    return best_sol
