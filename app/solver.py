@@ -118,70 +118,71 @@ def solve(data: ProblemData, cfg: SolverConfig) -> SolverResult:
         model.AddExactlyOne(assign[j])
     print("[SOLVER] Kısıt (2)+(3)+(9): Atama + NP kısıtları eklendi")
 
-    # ── start/end + OptionalIntervalVar ──────────────────────────────────────
+    # ── Zaman Değişkenleri ───────────────────────────────────────────────────
     start = [[model.NewIntVar(0, BIG, f"s_{j}_{k}") for k in range(m)] for j in range(n)]
     end_  = [[model.NewIntVar(0, BIG, f"e_{j}_{k}") for k in range(m)] for j in range(n)]
-    intv  = [[None]*m for _ in range(n)]
 
-    for j in range(n):
-        for k in range(m):
-            dur = data.P[j][k] * sc
-            intv[j][k] = model.NewOptionalIntervalVar(
-                start[j][k], dur, end_[j][k], assign[j][k], f"intv_{j}_{k}"
-            )
-
-    # Kısıt (4)+(5): NoOverlap — aynı makinede işler çakışamaz
-    for k in range(m):
-        model.AddNoOverlap([intv[j][k] for j in range(n)])
-    print("[SOLVER] Kısıt (4)+(5): NoOverlap kısıtları eklendi")
-
-    # Atanmamış işlerin start/end = 0
+    # Atanmayan işlerin zamanı = 0
     for j in range(n):
         for k in range(m):
             model.Add(start[j][k] == 0).OnlyEnforceIf(assign[j][k].Not())
             model.Add(end_[j][k]   == 0).OnlyEnforceIf(assign[j][k].Not())
 
-    # ── Kısıt (6): Sıra-bağımlı hazırlık ────────────────────────────────────
-    # İki iş i,j aynı k makinesine atandığında (overlapping olmayan durumda)
-    # ya end_[i][k] ≤ start[j][k] ya da end_[j][k] ≤ start[i][k].
-    # Hazırlık süresi şu koşulla zorunlu: i'nin j'den ÖNCE çalışması durumunda
-    # start[j][k] ≥ end_[i][k] + S[i][j][k]
-    #
-    # Bunu modellemek için yön değişkeni kullanıyoruz:
-    # before[i][j][k] = 1: k'da i, j'den önce çalışır
-    # before[i][j][k] = 0: k'da j, i'den önce çalışır (ya da farklı makineler)
+    # ── Kısıt (4, 5, 6): AddCircuit ile Akış Dengesi ve Sıra-Bağımlı Hazırlık ──
+    # Makaledeki X_{i,j,k} değişkenleri AddCircuit içindeki arc'lara eşittir.
+    DUMMY = n  # Düğüm 0..n-1: İşler, Düğüm n: Kukla (Başlangıç/Bitiş)
+    
+    arc_lit: list[dict] = [{} for _ in range(m)]
 
-    print("[SOLVER] Kısıt (6): Sıra-bağımlı hazırlık kısıtları ekleniyor...")
     for k in range(m):
-        for i in range(n):
-            for j in range(n):
-                if i >= j:   # sadece i<j çiftleri (j<i'yi ters before ile ele alırız)
-                    continue
-                if data.NP[i][k] == 0 or data.NP[j][k] == 0:
-                    continue  # en az biri bu makinede yapılamıyorsa atla
+        arcs = []
 
-                # before_ij[k]=1 → i önce, j sonra (bu makinede)
-                b = model.NewBoolVar(f"bef_{i}_{j}_{k}")
+        # 1. DUMMY Self-Loop: Makine hiç iş almazsa
+        b = model.NewBoolVar(f"a_{k}_dd")
+        arc_lit[k][(DUMMY, DUMMY)] = b
+        arcs.append((DUMMY, DUMMY, b))
 
-                both_on_k = model.NewBoolVar(f"both_{i}_{j}_{k}")
-                model.AddBoolAnd([assign[i][k], assign[j][k]]).OnlyEnforceIf(both_on_k)
-                model.AddBoolOr([assign[i][k].Not(), assign[j][k].Not()]).OnlyEnforceIf(both_on_k.Not())
+        for j in range(n):
+            # 2. İş Self-Loop: Eğer iş bu makineye atanmadıysa devreden çıkması için self-loop atmalı!
+            b_self = model.NewBoolVar(f"a_{k}_{j}_{j}")
+            arc_lit[k][(j, j)] = b_self
+            arcs.append((j, j, b_self))
+            
+            # İşin bu makinede self-loop atması <=> İşin bu makineye ATANMAMASI
+            model.Add(b_self == 1).OnlyEnforceIf(assign[j][k].Not())
+            model.Add(b_self == 0).OnlyEnforceIf(assign[j][k])
 
-                # Eğer ikisi de k'da:
-                #   b=1 → i önce: start[j][k] ≥ end_[i][k] + S[i][j][k]
-                #   b=0 → j önce: start[i][k] ≥ end_[j][k] + S[j][i][k]
+            # 3. DUMMY -> j : j bu makinedeki İLK iş
+            b_dj = model.NewBoolVar(f"a_{k}_d_{j}")
+            arc_lit[k][(DUMMY, j)] = b_dj
+            arcs.append((DUMMY, j, b_dj))
+            
+            # Kısıt (5,6): Eğer j ilk iş ise, start >= S[-1][j][k]
+            s_dummy = data.S[-1][j][k] * sc
+            model.Add(start[j][k] >= s_dummy).OnlyEnforceIf(b_dj)
+            model.Add(end_[j][k] == start[j][k] + data.P[j][k] * sc).OnlyEnforceIf(b_dj)
+
+            # 4. j -> DUMMY : j bu makinedeki SON iş
+            b_jd = model.NewBoolVar(f"a_{k}_{j}_d")
+            arc_lit[k][(j, DUMMY)] = b_jd
+            arcs.append((j, DUMMY, b_jd))
+
+            # 5. i -> j : i işinden hemen sonra j işi (Sıra-bağımlı hazırlık)
+            for i in range(n):
+                if i == j: continue
+                b_ij = model.NewBoolVar(f"a_{k}_{i}_{j}")
+                arc_lit[k][(i, j)] = b_ij
+                arcs.append((i, j, b_ij))
+
+                # Kısıt (6): Eğer i'den sonra j geliyorsa, start_j >= end_i + S[i][j]
                 sij = data.S[i][j][k] * sc
-                sji = data.S[j][i][k] * sc
+                model.Add(start[j][k] >= end_[i][k] + sij).OnlyEnforceIf(b_ij)
+                model.Add(end_[j][k] == start[j][k] + data.P[j][k] * sc).OnlyEnforceIf(b_ij)
 
-                model.Add(start[j][k] >= end_[i][k] + sij).OnlyEnforceIf([b, both_on_k])
-                model.Add(start[i][k] >= end_[j][k] + sji).OnlyEnforceIf([b.Not(), both_on_k])
+        # CP-SAT devreyi kurar
+        model.AddCircuit(arcs)
 
-                # Eğer ikisi de k'da → b kesin tanımlı (biri önce olmak zorunda)
-                # (NoOverlap zaten bunu sağlıyor, ama b'yi de sabitleyelim)
-                # Eğer sadece i k'da: b = 1 (anlamsız ama tutarlı)
-                # Eğer hiçbiri k'da değil: b serbest (model serbest)
-
-    print("[SOLVER] Kısıt (6): Hazırlık süresi kısıtları eklendi")
+    print("[SOLVER] Kısıt (4)+(5)+(6): AddCircuit ile Sıra-Bağımlı Hazırlık eklendi")
 
     # ── Performans Değişkenleri ───────────────────────────────────────────────
     C_j = [model.NewIntVar(0, BIG, f"C_{j}") for j in range(n)]
