@@ -33,6 +33,7 @@ from app.ddr_heuristic import (
 from app.topsis import run_topsis, print_topsis_results
 
 from app.augmecon import run_augmecon, ParetoSolution, select_best_pareto
+from app.utils import Colors, print_gantt_chart
 
 DATA_PATH = os.path.join(ROOT, "data", "seed_input.json")
 
@@ -40,27 +41,27 @@ DATA_PATH = os.path.join(ROOT, "data", "seed_input.json")
 # ─── Yardımcı ───────────────────────────────────────────────────────────────
 
 def banner():
-    print("""
+    print(Colors.CYAN + Colors.BOLD + """
 ╔══════════════════════════════════════════════════════════════╗
 ║    UPMSP — Eşisiz Paralel Makine Çizelgeleme Çözücüsü       ║
 ║    OR-Tools CP-SAT + DDR Sezgisel + TOPSIS | END505E        ║
 ╚══════════════════════════════════════════════════════════════╝
-""")
+""" + Colors.ENDC)
 
 
 def menu():
-    print("\n" + "─" * 62)
-    print("  ANA MENÜ")
-    print("─" * 62)
-    print("  [1]  Yeni veri seti oluştur")
-    print("  [2]  OR-Tools CP-SAT ile Exact Çöz (MILP)")
-    print("  [3]  DDR Sezgisel — Tüm 39 Kural Konfigürasyonu")
-    print("  [4]  DDR Sezgisel — Tek Kural (Adım Adım Log)")
-    print("  [5]  TOPSIS Analizi (DDR sonuçlarından en iyi kuralı seç)")
-    print("  [6]  AUGMECON (ε-constraint ile Pareto Kümesi Çözümü)")
-    print("  [7]  Çıkış")
-    print("─" * 62)
-    return input("  Seçiminiz: ").strip()
+    print("\n" + Colors.BLUE + "─" * 62 + Colors.ENDC)
+    print(Colors.BOLD + "  ANA MENÜ" + Colors.ENDC)
+    print(Colors.BLUE + "─" * 62 + Colors.ENDC)
+    print("  [1]  " + Colors.YELLOW + "Yeni veri seti oluştur" + Colors.ENDC)
+    print("  [2]  " + Colors.GREEN + "OR-Tools CP-SAT ile Exact Çöz (MILP)" + Colors.ENDC)
+    print("  [3]  " + Colors.CYAN + "DDR Sezgisel — Tüm 39 Kural Konfigürasyonu" + Colors.ENDC)
+    print("  [4]  " + Colors.CYAN + "DDR Sezgisel — Tek Kural (Adım Adım Log)" + Colors.ENDC)
+    print("  [5]  " + Colors.HEADER + "TOPSIS Analizi (DDR sonuçlarından en iyi kuralı seç)" + Colors.ENDC)
+    print("  [6]  " + Colors.HEADER + "AUGMECON (ε-constraint ile Pareto Kümesi Çözümü)" + Colors.ENDC)
+    print("  [7]  " + Colors.RED + "Çıkış" + Colors.ENDC)
+    print(Colors.BLUE + "─" * 62 + Colors.ENDC)
+    return input(Colors.BOLD + "  Seçiminiz: " + Colors.ENDC).strip()
 
 
 def ask_int(prompt, default):
@@ -169,6 +170,8 @@ def flow_cpsat():
     cfg    = SolverConfig(W1=W1, W2=W2, W3=W3, time_limit=tlimit)
     result = solve(data, cfg)
     print_cpsat_results(result, raw)
+    if result.status in ("OPTIMAL", "FEASIBLE"):
+        print_gantt_chart(result.schedule, result.Cmax)
 
 
 # ─── Akış 3: DDR Tüm Kurallar ───────────────────────────────────────────────
@@ -238,6 +241,8 @@ def flow_ddr_single():
     for k, jobs in result.schedule.items():
         seq = "  ".join(f"[J{j} {s:.1f}→{e:.1f}]" for j, s, e in jobs)
         print(f"  Makine {k}: {seq if seq else '(boş)'}")
+        
+    print_gantt_chart(result.schedule, result.Cmax)
 
 
 # ─── Akış 5: TOPSIS ─────────────────────────────────────────────────────────

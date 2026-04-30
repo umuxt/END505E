@@ -119,26 +119,29 @@ def run_topsis(candidates: list[dict],
     return results
 
 
+from app.utils import Colors
+
 def print_topsis_results(results: list[TOPSISResult],
                          wC: float, wT: float, wL: float) -> None:
     """TOPSIS sonuç tablosunu terminale basar."""
-    print("\n" + "═" * 90)
-    print("  TOPSIS ANALİZ SONUÇLARI")
+    print("\n" + Colors.CYAN + "═" * 90 + Colors.ENDC)
+    print(Colors.BOLD + "  TOPSIS ANALİZ SONUÇLARI" + Colors.ENDC)
     print(f"  Ağırlıklar: wCmax={wC:.2f}  wT={wT:.2f}  wL={wL:.2f}")
-    print("═" * 90)
+    print(Colors.CYAN + "═" * 90 + Colors.ENDC)
     print(
-        f"  {'Sıra':>4}  {'Kural':<35}  {'Cmax':>8}  {'T':>9}  {'L':>4}"
-        f"  {'r1':>6}  {'r2':>6}  {'r3':>6}  {'S+':>7}  {'S-':>7}  {'C*':>7}"
+        f"  {Colors.BOLD}{'Sıra':>4}  {'Kural':<35}  {'Cmax':>8}  {'T':>9}  {'L':>4}"
+        f"  {'r1':>6}  {'r2':>6}  {'r3':>6}  {'S+':>7}  {'S-':>7}  {'C*':>7}{Colors.ENDC}"
     )
-    print("─" * 90)
+    print(Colors.BLUE + "─" * 90 + Colors.ENDC)
     for r in results:
-        medal = " ← EN İYİ" if r.rank == 1 else ""
+        medal = Colors.GREEN + " ← EN İYİ" + Colors.ENDC if r.rank == 1 else ""
+        row_color = Colors.YELLOW if r.rank == 1 else ""
         print(
-            f"  {r.rank:>4}  {r.rule_name:<35}  {r.Cmax:>8.2f}  {r.total_tard:>9.2f}"
+            f"{row_color}  {r.rank:>4}  {r.rule_name:<35}  {r.Cmax:>8.2f}  {r.total_tard:>9.2f}"
             f"  {r.num_tardy:>4}  {r.r[0]:>6.3f}  {r.r[1]:>6.3f}  {r.r[2]:>6.3f}"
-            f"  {r.S_pos:>7.4f}  {r.S_neg:>7.4f}  {r.C_star:>7.4f}{medal}"
+            f"  {r.S_pos:>7.4f}  {r.S_neg:>7.4f}  {r.C_star:>7.4f}{Colors.ENDC}{medal}"
         )
-    print("═" * 90)
+    print(Colors.CYAN + "═" * 90 + Colors.ENDC)
     if results:
         best = results[0]
-        print(f"\n  ✓ En iyi kural: [{best.rule_name}]  C*={best.C_star:.4f}\n")
+        print(f"\n  {Colors.GREEN}{Colors.BOLD}✓ En iyi kural: [{best.rule_name}]  C*={best.C_star:.4f}{Colors.ENDC}\n")

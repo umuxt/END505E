@@ -284,24 +284,24 @@ def run_all_rules(n: int, m: int, P: dict, S: dict, D: dict, NP: dict,
     return results
 
 
-# ─── Özet Tablo ──────────────────────────────────────────────────────────────
+from app.utils import Colors
 
 def print_ddr_summary(results: list[DDRResult]) -> None:
     """Tüm kural sonuçlarını tablo olarak basar."""
-    print("\n" + "═" * 72)
-    print("  DDR KURAL SONUÇLARI (39 Konfigürasyon)")
-    print("═" * 72)
-    print(f"  {'Kural':<35}  {'Cmax':>8}  {'Toplam T':>10}  {'L':>4}  {'Süre(s)':>8}")
-    print("─" * 72)
+    print("\n" + Colors.CYAN + "═" * 72 + Colors.ENDC)
+    print(Colors.BOLD + "  DDR KURAL SONUÇLARI (39 Konfigürasyon)" + Colors.ENDC)
+    print(Colors.CYAN + "═" * 72 + Colors.ENDC)
+    print(f"  {Colors.BOLD}{'Kural':<35}  {'Cmax':>8}  {'Toplam T':>10}  {'L':>4}  {'Süre(s)':>8}{Colors.ENDC}")
+    print(Colors.BLUE + "─" * 72 + Colors.ENDC)
 
     best_cmax = min(r.Cmax            for r in results)
     best_tard = min(r.total_tardiness for r in results)
     best_l    = min(r.num_tardy       for r in results)
 
     for r in results:
-        cmax_mark = " ★" if r.Cmax            == best_cmax else "  "
-        tard_mark = " ★" if r.total_tardiness == best_tard else "  "
-        l_mark    = " ★" if r.num_tardy       == best_l    else "  "
+        cmax_mark = Colors.GREEN + " ★" + Colors.ENDC if r.Cmax            == best_cmax else "  "
+        tard_mark = Colors.GREEN + " ★" + Colors.ENDC if r.total_tardiness == best_tard else "  "
+        l_mark    = Colors.GREEN + " ★" + Colors.ENDC if r.num_tardy       == best_l    else "  "
         print(
             f"  {r.rule_name:<35}"
             f"  {r.Cmax:>8.2f}{cmax_mark}"
@@ -310,6 +310,6 @@ def print_ddr_summary(results: list[DDRResult]) -> None:
             f"  {r.solve_time:>8.4f}"
         )
 
-    print("═" * 72)
-    print("  ★ = bu ölçütte en iyi değer")
+    print(Colors.CYAN + "═" * 72 + Colors.ENDC)
+    print(f"  {Colors.GREEN}★{Colors.ENDC} = bu ölçütte en iyi değer")
     print()

@@ -186,6 +186,8 @@ def run_augmecon(data: ProblemData, time_limit: int = 60,
     return pareto_set
 
 
+from app.utils import Colors
+
 def select_best_pareto(pareto_set: list[ParetoSolution], 
                        wC: float, wT: float, wL: float) -> ParetoSolution | None:
     """
@@ -217,12 +219,12 @@ def select_best_pareto(pareto_set: list[ParetoSolution],
     else:
         wC, wT, wL = 1/3, 1/3, 1/3
         
-    print("\n" + "─" * 70)
-    print("  FORMÜL (20): MİN-MAX NORMALİZASYONU İLE PARETO SEÇİMİ")
+    print("\n" + Colors.CYAN + "─" * 70 + Colors.ENDC)
+    print(Colors.BOLD + "  FORMÜL (20): MİN-MAX NORMALİZASYONU İLE PARETO SEÇİMİ" + Colors.ENDC)
     print(f"  Kullanılan Ağırlıklar: wCmax={wC:.2f}, wT={wT:.2f}, wL={wL:.2f}")
-    print("─" * 70)
-    print("  Çözüm │ Normalize Cmax │ Normalize T │ Normalize L │ Toplam Skor ")
-    print("  ──────┼────────────────┼─────────────┼─────────────┼─────────────")
+    print(Colors.CYAN + "─" * 70 + Colors.ENDC)
+    print(Colors.BOLD + "  Çözüm │ Normalize Cmax │ Normalize T │ Normalize L │ Toplam Skor " + Colors.ENDC)
+    print(Colors.BLUE + "  ──────┼────────────────┼─────────────┼─────────────┼─────────────" + Colors.ENDC)
 
     for p in sorted(pareto_set, key=lambda x: x.Cmax):
         # Min-Max Normalizasyon
@@ -234,16 +236,18 @@ def select_best_pareto(pareto_set: list[ParetoSolution],
         score = wC * norm_C + wT * norm_T + wL * norm_L
         
         mark = ""
+        row_color = ""
         if score < best_score:
             best_score = score
             best_sol = p
-            mark = " ← MEVCUT EN İYİ"
+            mark = Colors.GREEN + " ← MEVCUT EN İYİ" + Colors.ENDC
+            row_color = Colors.YELLOW
             
-        print(f"   #{p.id:2d}  │ {norm_C:14.3f} │ {norm_T:11.3f} │ {norm_L:11.3f} │ {score:11.3f}{mark}")
+        print(f"{row_color}   #{p.id:2d}  │ {norm_C:14.3f} │ {norm_T:11.3f} │ {norm_L:11.3f} │ {score:11.3f}{Colors.ENDC}{mark}")
         
-    print("─" * 70)
+    print(Colors.CYAN + "─" * 70 + Colors.ENDC)
     if best_sol:
-        print(f"  ✓ SEÇİLEN NİHAİ UZLAŞI ÇÖZÜMÜ: Çözüm #{best_sol.id}")
-        print(f"    (Cmax={best_sol.Cmax:.2f}, T={best_sol.T:.2f}, L={best_sol.L})")
+        print(f"  {Colors.GREEN}{Colors.BOLD}✓ SEÇİLEN NİHAİ UZLAŞI ÇÖZÜMÜ: Çözüm #{best_sol.id}{Colors.ENDC}")
+        print(f"    {Colors.GREEN}(Cmax={best_sol.Cmax:.2f}, T={best_sol.T:.2f}, L={best_sol.L}){Colors.ENDC}")
     
     return best_sol
