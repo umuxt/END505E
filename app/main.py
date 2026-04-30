@@ -178,9 +178,18 @@ def flow_full_pipeline():
         pareto_set = run_augmecon(data, time_limit=30, grid_T=4, grid_L=4)
         if pareto_set:
             print("\n" + Colors.CYAN + "  [AŞAMA 5] Nihai Pareto Seçimi (Formül 20)" + Colors.ENDC)
-            select_best_pareto(pareto_set, 0.5, 0.4, 0.1)
+            best_sol = select_best_pareto(pareto_set, 0.5, 0.4, 0.1)
+            if best_sol:
+                print_gantt_chart(best_sol.schedule, best_sol.Cmax)
     else:
         print("\n" + Colors.YELLOW + "  [BİLGİ] İş sayısı büyük (n>15), Exact AUGMECON testi atlandı." + Colors.ENDC)
+        print(Colors.CYAN + "  [AŞAMA 4] TOPSIS Kazananı İçin Gantt Şeması Çiziliyor..." + Colors.ENDC)
+        if topsis_results:
+            best_rule_name = topsis_results[0].rule_name
+            # ddr_results listesinden bu kuralın schedule'ını bul
+            best_ddr = next((r for r in ddr_results if r.rule_name == best_rule_name), None)
+            if best_ddr:
+                print_gantt_chart(best_ddr.schedule, best_ddr.Cmax)
         
     print(Colors.GREEN + Colors.BOLD + "\n  ✓ BÜTÜNCÜL TEST TAMAMLANDI." + Colors.ENDC)
 

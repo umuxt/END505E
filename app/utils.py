@@ -6,6 +6,7 @@ Terminal arayüzü için renklendirme ve Gantt şeması çizdirme araçları.
 
 class Colors:
     HEADER = '\033[95m'
+    MAGENTA= '\033[95m'
     BLUE = '\033[94m'
     CYAN = '\033[96m'
     GREEN = '\033[92m'
@@ -16,7 +17,7 @@ class Colors:
     UNDERLINE = '\033[4m'
 
 
-def print_gantt_chart(schedule: dict, cmax: float, width: int = 60) -> None:
+def print_gantt_chart(schedule: dict, cmax: float, width: int = 70) -> None:
     """
     Terminal üzerinde basit bir Gantt şeması (Zaman Çizelgesi) çizer.
     
@@ -26,7 +27,9 @@ def print_gantt_chart(schedule: dict, cmax: float, width: int = 60) -> None:
         width: Gantt şemasının terminaldeki maksimum karakter genişliği
     """
     print("\n" + Colors.CYAN + Colors.BOLD + "  GANTT ŞEMASI (ZAMAN ÇİZELGESİ)" + Colors.ENDC)
-    print("  " + "═" * 70)
+    print(f"  {Colors.BOLD}Y EKSENİ:{Colors.ENDC} Makineler   |   {Colors.BOLD}X EKSENİ:{Colors.ENDC} Zaman")
+    print(f"  {Colors.MAGENTA}▒▒▒{Colors.ENDC} = Hazırlık (Setup) Süresi   |   {Colors.GREEN}███{Colors.ENDC} = İşlem Süresi")
+    print("  " + "═" * (width + 12))
     
     if cmax == 0:
         print("  Çizelgelenmiş iş yok.")
@@ -36,16 +39,16 @@ def print_gantt_chart(schedule: dict, cmax: float, width: int = 60) -> None:
     cmax = max(cmax, 1)
 
     for k in sorted(schedule.keys()):
-        line = f"  {Colors.BOLD}Makine {k:2d}{Colors.ENDC} │"
+        line = f"  {Colors.BOLD}M{k:2d}{Colors.ENDC} │ "
         
         current_t = 0.0
         
         for (j, start, end) in schedule[k]:
-            # Boşluk (Hazırlık veya Bekleme)
-            idle_time = start - current_t
-            if idle_time > 0:
-                idle_chars = int((idle_time / cmax) * width)
-                line += " " * idle_chars
+            # Setup Süresi (start - current_t)
+            setup_time = start - current_t
+            if setup_time > 0:
+                setup_chars = max(1, int((setup_time / cmax) * width))
+                line += Colors.MAGENTA + "▒" * setup_chars + Colors.ENDC
                 
             # İş Bloğu
             job_time = end - start
@@ -58,12 +61,12 @@ def print_gantt_chart(schedule: dict, cmax: float, width: int = 60) -> None:
             else:
                 pad_l = (job_chars - len(j_str)) // 2
                 pad_r = job_chars - len(j_str) - pad_l
-                block = Colors.GREEN + "█" * pad_l + Colors.YELLOW + j_str + Colors.GREEN + "█" * pad_r + Colors.ENDC
+                block = Colors.GREEN + "█" * pad_l + Colors.YELLOW + Colors.BOLD + j_str + Colors.ENDC + Colors.GREEN + "█" * pad_r + Colors.ENDC
                 
             line += block
             current_t = end
             
         print(line)
         
-    print("  " + "─" * 70)
-    print(f"  Zaman: 0 {' ' * (width-8)} {cmax:.2f}\n")
+    print("  " + "─" * (width + 12))
+    print(f"       0 {' ' * (width-4)} {cmax:.1f}\n")
