@@ -53,6 +53,7 @@ def menu():
     print("\n" + Colors.BLUE + "─" * 62 + Colors.ENDC)
     print(Colors.BOLD + "  ANA MENÜ" + Colors.ENDC)
     print(Colors.BLUE + "─" * 62 + Colors.ENDC)
+    print("  [0]  " + Colors.HEADER + Colors.BOLD + "Makale Akışı (Tüm Analizleri Tek Seferde Çalıştır)" + Colors.ENDC)
     print("  [1]  " + Colors.YELLOW + "Yeni veri seti oluştur" + Colors.ENDC)
     print("  [2]  " + Colors.GREEN + "OR-Tools CP-SAT ile Exact Çöz (MILP)" + Colors.ENDC)
     print("  [3]  " + Colors.CYAN + "DDR Sezgisel — Tüm 39 Kural Konfigürasyonu" + Colors.ENDC)
@@ -131,6 +132,57 @@ def print_cpsat_results(result: SolverResult, raw: dict) -> None:
             st  = "✗ GECİKTİ" if lat > 0 else "✓ Zamanında"
             print(f"  J{j:2d}  {e:8.2f}  {d:8.2f}  {lat:10.2f}  {st:>10}")
     print("═" * 62 + "\n")
+
+
+# ─── Akış 0: Tam Makale Akışı ────────────────────────────────────────────────
+
+def flow_full_pipeline():
+    print(Colors.HEADER + Colors.BOLD + "\n" + "═" * 70)
+    print("  MAKALE AKIŞI: BÜTÜNCÜL TEST (TAM OTOMASYON)")
+    print("═" * 70 + Colors.ENDC)
+    print("  Bu akış, makaledeki deneysel prosedürü baştan sona uygular:")
+    print("  1. Veri üretimi (Makine sayısı ve iş sayısı)")
+    print("  2. DDR (39 Kural) testleri")
+    print("  3. TOPSIS ile En İyi DDR Kuralının Seçilmesi")
+    print("  4. AUGMECON ile Pareto Kümesinin Çıkarılması (Küçük problemler için)")
+    print("  5. Formül (20) ile Nihai Pareto Seçimi\n")
+    
+    n          = ask_int("İş sayısı (n)", 10)
+    m          = ask_int("Makine sayısı (m)", 3)
+    seed       = ask_int("Rastgele tohum (seed)", 42)
+    n_families = ask_int("Ürün ailesi sayısı", 3)
+    np_ratio   = ask_float("Makine kısıtı oranı (0.0=kısıtsız)", 0.0)
+    
+    print("\n" + Colors.CYAN + "  [AŞAMA 1] Veri Üretiliyor..." + Colors.ENDC)
+    problem = generate_problem(n, m, seed, n_families, np_ratio)
+    save_problem(problem, DATA_PATH)
+    
+    raw, n, m, P, S, D, NP = load_and_parse()
+    data = ProblemData(n=n, m=m, P=P, S=S, D=D, NP=NP)
+    print_problem_summary(raw)
+    
+    print("\n" + Colors.CYAN + "  [AŞAMA 2] DDR Sezgisel Algoritmaları Çalıştırılıyor (39 Kural)..." + Colors.ENDC)
+    ddr_results = run_all_rules(n, m, P, S, D, NP, verbose=False)
+    print_ddr_summary(ddr_results)
+    
+    print("\n" + Colors.CYAN + "  [AŞAMA 3] TOPSIS Analizi (Ağırlıklar wC=0.34, wT=0.33, wL=0.33)..." + Colors.ENDC)
+    candidates = [
+        {"name": r.rule_name, "Cmax": r.Cmax, "T": r.total_tardiness, "L": r.num_tardy}
+        for r in ddr_results
+    ]
+    topsis_results = run_topsis(candidates, 0.334, 0.333, 0.333)
+    print_topsis_results(topsis_results, 0.334, 0.333, 0.333)
+    
+    if n <= 15:
+        print("\n" + Colors.CYAN + "  [AŞAMA 4] Problem boyutu küçük (n<=15), AUGMECON çalıştırılıyor..." + Colors.ENDC)
+        pareto_set = run_augmecon(data, time_limit=30, grid_T=4, grid_L=4)
+        if pareto_set:
+            print("\n" + Colors.CYAN + "  [AŞAMA 5] Nihai Pareto Seçimi (Formül 20)" + Colors.ENDC)
+            select_best_pareto(pareto_set, 0.5, 0.4, 0.1)
+    else:
+        print("\n" + Colors.YELLOW + "  [BİLGİ] İş sayısı büyük (n>15), Exact AUGMECON testi atlandı." + Colors.ENDC)
+        
+    print(Colors.GREEN + Colors.BOLD + "\n  ✓ BÜTÜNCÜL TEST TAMAMLANDI." + Colors.ENDC)
 
 
 # ─── Akış 1: Veri Üret ──────────────────────────────────────────────────────
@@ -299,7 +351,8 @@ def main():
     banner()
     while True:
         choice = menu()
-        if   choice == "1": flow_generate()
+        if   choice == "0": flow_full_pipeline()
+        elif choice == "1": flow_generate()
         elif choice == "2": flow_cpsat()
         elif choice == "3": flow_ddr_all()
         elif choice == "4": flow_ddr_single()
