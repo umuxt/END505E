@@ -1,190 +1,125 @@
 # Matematiksel Modeller ve Formüller
 
-## M1 — Tamamlanma Zamanını (Makespan) En Küçükle
+Bu bölüm, makalede sunulan Karmaşık Tamsayılı Doğrusal Programlama (MILP) modellerinin teknik detaylarını ve her bir kısıtın mantıksal açıklamasını içerir.
 
-### Amaç Fonksiyonu
+## Notasyonlar
 
-**(1)** `Minimize Cₘₐₓ`
+### İndeksler
+- $i, j$: İş indeksleri ($N = \{1, 2, ..., n\}$; $N_0 = \{0\} \cup N$ dummy iş dahil).
+- $k$: Makine indeksi ($M = \{1, 2, ..., m\}$).
 
-Tüm işlerin en geç tamamlanma zamanını minimize et.
+### Parametreler
+- $P_{j,k}$: $j$ işinin $k$ makinesindeki işlem süresi.
+- $S_{i,j,k}$: $k$ makinesinde $i$ işinden hemen sonra $j$ işi işleneceğinde gereken hazırlık süresi.
+- $D_j$: $j$ işinin teslim tarihi (due date).
+- $V$: Çok büyük bir sayı (Big-M katsayısı).
+- $NP_{j,k}$: $j$ işinin $k$ makinesinde işlenebilirliğini gösteren kısıt durumu (1 ise işlenebilir, 0 ise işlenemez).
+
+### Karar Değişkenleri
+- $X_{i,j,k}$: Eğer $j$ işi $k$ makinesinde $i$ işinden hemen sonra planlanmışsa 1, aksi halde 0.
+- $C_j$: $j$ işinin tamamlanma zamanı (saat).
+- $C_{max}$: Tamamlanma zamanı (Makespan - tüm işlerin maksimum tamamlanma zamanı).
+- $e^+_j$: $j$ işinin teslim gecikmesi (tardiness) süresi.
+- $e^-_j$: $j$ işinin erken bitme (earliness) süresi.
+- $U_j$: $j$ işi gecikmişse 1, aksi halde 0 (binary gösterge).
 
 ---
 
+## M1 — Tamamlanma Zamanını (Makespan) En Küçükle
+
+### Amaç Fonksiyonu
+**(1)** `Minimize Cₘₐₓ`
+> **Mantık:** Tüm işlerin en geç biteninin tamamlanma zamanını minimize ederek toplam üretim süresini (makespan) en kısa tutmayı amaçlar.
+
 ### Kısıtlar
 
-**(2)** Her j işinin tam olarak bir önceki işi vardır (bir makineye atanır):
+**(2)** `Σₖ∈M  Σᵢ∈N₀, i≠j  Xᵢ,ⱼ,ₖ = 1      ∀j ∈ N`
+> **Açıklama:** Her $j$ işinin tam olarak bir önceki işi olmasını sağlar. Yani her iş mutlaka bir makineye atanmalı ve bir sıraya yerleştirilmelidir.
 
-```
-Σₖ∈M  Σᵢ∈N₀, i≠j  Xᵢ,ⱼ,ₖ = 1      ∀j ∈ N
-```
+**(3)** `Σₖ∈M  Σⱼ∈N₀, j≠i  Xᵢ,ⱼ,ₖ = 1      ∀i ∈ N`
+> **Açıklama:** Her $i$ işinin tam olarak bir sonraki işi olmasını sağlar.
 
-**(3)** Her i işinin tam olarak bir sonraki işi vardır:
+**(4)** `Σⱼ∈N₀,j≠i  Xᵢ,ⱼ,ₖ - Σₕ∈N₀,h≠i  Xₕ,ᵢ,ₖ = 0      ∀k ∈ M, ∀i ∈ N`
+> **Açıklama:** Akış dengesi kısıtıdır. Eğer bir iş bir makineye girmişse (bir önceki iş olarak atanmışsa), o makineden çıkmalıdır (bir sonraki işin öncülü olmalıdır).
 
-```
-Σₖ∈M  Σⱼ∈N₀, j≠i  Xᵢ,ⱼ,ₖ = 1      ∀i ∈ N
-```
+**(5)** `Σⱼ∈N  X₀,ⱼ,ₖ ≤ 1      ∀k ∈ M`
+> **Açıklama:** Her makinenin en fazla bir kukla iş (0) ile başlayabileceğini belirtir. Bu, makine başına tek bir iş dizisi (sequence) başlatılmasını garanti eder.
 
-**(4)** Akış dengesi — her makine ve her iş için giriş = çıkış:
+**(6)** `Cⱼ - Cᵢ + V·(1 - Xᵢ,ⱼ,ₖ) ≥ Sᵢ,ⱼ,ₖ + Pⱼ,ₖ      ∀i ∈ N₀, ∀j ∈ N: i≠j, ∀k ∈ M`
+> **Açıklama:** Tamamlanma zamanı hesaplama ve çakışma önleme kısıtıdır. Eğer $j$ işi $i$ işinden sonra geliyorsa ($X_{i,j,k}=1$), $j$'nin bitişi en az ($i$'nin bitişi + hazırlık süresi + işlem süresi) kadar olmalıdır. $X_{i,j,k}=0$ ise Big-M ($V$) sayesinde kısıt etkisizleşir.
 
-```
-Σⱼ∈N₀,j≠i  Xᵢ,ⱼ,ₖ  -  Σₕ∈N₀,h≠i  Xₕ,ᵢ,ₖ  = 0      ∀k ∈ M, ∀i ∈ N
-```
+**(7)** `C₀ = 0`
+> **Açıklama:** Kukla başlangıç işinin tamamlanma zamanını 0'a sabitler.
 
-**(5)** Her makinede en fazla bir işle başlanır (kukla iş 0'dan):
+**(8)** `Cⱼ ≤ Cₘₐₓ      ∀j ∈ N`
+> **Açıklama:** $C_{max}$ değişkenini tüm işlerin tamamlanma zamanlarının en büyüğüne eşit veya ondan büyük olmaya zorlar.
 
-```
-Σⱼ∈N  X₀,ⱼ,ₖ ≤ 1      ∀k ∈ M
-```
+**(9)** `Σᵢ∈N₀,i≠j  Xᵢ,ⱼ,ₖ ≤ NPⱼ,ₖ      ∀j ∈ N, ∀k ∈ M`
+> **Ajan Notu (Matematikçi & Yöneylemci):** Orijinal makalede burada $k$ üzerinden toplam alınmıştır ancak sağ tarafta $NP_{j,k}$ serbest bırakılmıştır. Doğrusu budur: Her makine için işin uygunluğu ($NP_{j,k}$) ayrı kontrol edilmelidir. Bu kısıt, işin sadece yetkin makinelere atanmasını sağlar.
 
-**(6)** Tamamlanma zamanı hesabı — önceki işin tamamlanma zamanı + hazırlık süresi + işlem süresi (Big-M kısıtı):
+**(10)** `Cⱼ ≥ 0      ∀j ∈ N`
+> **Açıklama:** Tamamlanma zamanlarının negatif olamayacağını belirtir.
 
-```
-Cⱼ - Cᵢ + V·(1 - Xᵢ,ⱼ,ₖ) ≥ Sᵢ,ⱼ,ₖ + Pⱼ,ₖ      ∀i ∈ N₀, ∀j ∈ N: i≠j, ∀k ∈ M
-```
-
-> **Açıklama:** Eğer j işi, k makinesinde i işinden hemen sonra gelmiyorsa (Xᵢ,ⱼ,ₖ=0), büyük V sayısı kısıtı etkisiz kılar. Eğer geliyorsa (Xᵢ,ⱼ,ₖ=1), Cⱼ ≥ Cᵢ + Sᵢ,ⱼ,ₖ + Pⱼ,ₖ zorlanır.
-
-**(7)** Kukla işin tamamlanma zamanı = 0:
-
-```
-C₀ = 0
-```
-
-**(8)** Tamamlanma zamanı (makespan) tanımı:
-
-```
-Cⱼ ≤ Cₘₐₓ      ∀j ∈ N
-```
-
-**(9)** Makine kısıtı — j işi kısıtlı makinede çizelgelenemesin:
-
-```
-Σₖ∈M  Σᵢ∈N₀,i≠j  Xᵢ,ⱼ,ₖ ≤ NPⱼ,ₖ      ∀j ∈ N
-```
-
-**(10)** Tamamlanma zamanları negatif olamaz:
-
-```
-Cⱼ ≥ 0      ∀j ∈ N
-```
-
-**(11)** İkili değişken tanımı:
-
-```
-Xᵢ,ⱼ,ₖ ∈ {0, 1}      ∀i ∈ N₀, ∀j ∈ N₀: i≠j, ∀k ∈ M
-```
+**(11)** `Xᵢ,ⱼ,ₖ ∈ {0, 1}      ∀i ∈ N₀, ∀j ∈ N₀: i≠j, ∀k ∈ M`
+> **Açıklama:** Atama değişkeninin ikili (binary) olduğunu tanımlar.
 
 ---
 
 ## M2 — Toplam Teslim Gecikmesi Süresini En Küçükle
 
-M1'e ek olarak eⱼ⁺ (gecikme) ve eⱼ⁻ (erken bitme) değişkenleri eklenir.
-
 ### Amaç Fonksiyonu
-
 **(12)** `Minimize T = Σⱼ∈N  eⱼ⁺`
+> **Mantık:** Müşteri memnuniyetini maksimize etmek için tüm işlerin toplam gecikme süresini minimize eder.
 
-Toplam teslim gecikmesi süresini minimize et.
+### Kısıtlar: (2)–(11) kısıtlarına ek olarak:
 
-### Kısıtlar: (2)–(10) + aşağıdakiler
+**(13)** `Cⱼ - Dⱼ = eⱼ⁺ - eⱼ⁻      ∀j ∈ N`
+> **Açıklama:** Teslim tarihi ($D_j$) ile gerçekleşen bitiş ($C_j$) arasındaki farkı hesaplar. Eğer $C_j > D_j$ ise gecikme ($e_j^+$) pozitif olur, aksi halde erken bitme ($e_j^-$) pozitif olur.
 
-**(13)** Gecikme ve erken bitme farkı:
-
-```
-Cⱼ - Dⱼ = eⱼ⁺ - eⱼ⁻      ∀j ∈ N
-```
-
-> **Açıklama:** Eğer Cⱼ > Dⱼ → iş geç teslim (eⱼ⁺ > 0, eⱼ⁻ = 0). Eğer Cⱼ < Dⱼ → iş erken bitti (eⱼ⁻ > 0, eⱼ⁺ = 0).
-
-**(14)** Gecikme ve erken bitme negatif olamaz:
-
-```
-eⱼ⁺, eⱼ⁻ ≥ 0      ∀j ∈ N
-```
+**(14)** `eⱼ⁺, eⱼ⁻ ≥ 0      ∀j ∈ N`
+> **Açıklama:** Gecikme ve erken bitme sürelerinin negatif olamayacağını tanımlar.
 
 ---
 
 ## M3 — Geciken İş Sayısını En Küçükle
 
-M1'e ek olarak Uⱼ (geç iş göstergesi) değişkeni eklenir.
-
 ### Amaç Fonksiyonu
-
 **(15)** `Minimize L = Σⱼ∈N  Uⱼ`
+> **Mantık:** Gecikme süresinin miktarından bağımsız olarak, sadece toplamda kaç adet işin geç kaldığını minimize etmeyi hedefler.
 
-Geciken iş sayısını minimize et.
+### Kısıtlar: (2)–(11) + (13)–(14) kısıtlarına ek olarak:
 
-### Kısıtlar: (2)–(10) + (13)–(14) + aşağıdakiler
+**(16)** `eⱼ⁺ ≤ V × Uⱼ      ∀j ∈ N`
+> **Açıklama:** Gecikme süresi ile ikili gösterge ($U_j$) arasındaki ilişkiyi kurar. Eğer gecikme ($e_j^+$) 0'dan büyükse, $U_j$ mutlaka 1 olmak zorundadır.
+> **Ajan Notu (Yöneylemci):** Orijinal metindeki `=` hatası `≤` olarak düzeltilmiştir. Eşitlik durumunda gecikme süresi yapay olarak $V$ sabitine eşitlenirdi, bu da modelin doğruluğunu bozardı.
 
-**(16)** Gecikme ile geç iş göstergesi ilişkisi:
-
-```
-eⱼ⁺ = V × Uⱼ      ∀j ∈ N
-```
-
-> **Açıklama:** Uⱼ=1 ise iş geç → eⱼ⁺ = V (büyük sayı, yani gecikmeli). Uⱼ=0 ise iş zamanında → eⱼ⁺ = 0.  
-> *Not: Bu kısıt, M2'nin (13) ile birlikte kullanılır.*
-
-**(17)** İkili değişken tanımı:
-
-```
-Uⱼ ∈ {0, 1}      ∀j ∈ N
-```
+**(17)** `Uⱼ ∈ {0, 1}      ∀j ∈ N`
+> **Açıklama:** Geciken iş göstergesinin ikili (binary) olduğunu tanımlar.
 
 ---
 
 ## M4 — Üç Ölçüt için Uzlaşı Çözümleri (Pareto)
 
-### Amaç Fonksiyonları (üçü birden):
-
+### Amaç Fonksiyonları
 ```
 Min f₁ = Cₘₐₓ
-Min f₂ = T  = Σ eⱼ⁺
-Min f₃ = L  = Σ Uⱼ
+Min f₂ = T
+Min f₃ = L
 ```
+> **Mantık:** Bu üç çatışan hedefi (makespan, gecikme süresi, geciken iş sayısı) aynı anda minimize etmeye çalışır.
 
 ### Kısıtlar: (2)–(11), (13)–(14), (16)–(17)
 
 ---
 
-## AUGMECON Yöntemi (M4'ü Çözmek İçin)
+## AUGMECON Yöntemi ve Normalizasyon
 
-Çok amaçlı modelde tek bir optimal çözüm bulunamaz (çatışan hedefler). Bu nedenle **ε-kısıt yöntemi** kullanılır.
+M4 modelini çözmek için kullanılan **Artırılmış ε-kısıt (AUGMECON)** yöntemi, bir amacı ana hedef seçerken diğerlerini kısıt olarak ekler:
 
-### Adımlar:
+**(18)** `Σⱼ∈N  eⱼ⁺ ≤ T̄` (Toplam gecikme üst sınırı)
+**(19)** `Σⱼ∈N  Uⱼ ≤ L̄` (Geciken iş sayısı üst sınırı)
 
-**Adım 1:** f₂ ve f₃ amaç fonksiyonları kısıt haline getirilir:
-
-**(18)**
-```
-Σⱼ∈N  eⱼ⁺  ≤  T̄       (T̄ = kabul edilebilir toplam gecikme süresi üst sınırı)
-```
-
-**(19)**
-```
-Σⱼ∈N  Uⱼ   ≤  L̄       (L̄ = kabul edilebilir geciken iş sayısı üst sınırı)
-```
-
-**Adım 2:** M1, M2, M3 çözülerek **ödeme tablosu** (payoff table) oluşturulur. Her ölçütün en iyi ve en kötü değeri belirlenir.
-
-**Adım 3:** f₂ ve f₃ için aralıklar hesaplanır ve grid noktaları belirlenir.
-
-**Adım 4:** M4, T̄ ve L̄ kombinasyonlarının her biri için çözülür.
-
-**Adım 5:** Baskılanmayan (non-dominated) çözümler → **Pareto çözüm kümesi**
-
----
-
-## Min-Max Normalizasyonu (Pareto Çözümden Seçim İçin)
-
-**(20)** Karar vericinin ağırlıklı seçimi için normalize etme formülü:
-
-```
-x̃ᵢ = (xᵢ - minᵢ{xᵢ}) / (maxᵢ{xᵢ} - minᵢ{xᵢ})
-```
-
-> **Açıklama:** x̃ᵢ normalize edilmiş değer (0–1 arası). Karar verici her ölçüte ağırlık (W) atar: WCmax, WT, WL. Toplam normalize puan = WCmax·x̃(Cmax) + WT·x̃(T) + WL·x̃(L). En düşük puanlı Pareto çözümü seçilir.
-
-### Örnek (P1 için):
-- WCmax = 0.5, WT = 0.4, WL = 0.1 atandığında
-- **Çözüm 6** seçildi: Cmax = 72.14, T = 39.21, L = 3
+### Normalizasyon (Min-Max)
+Farklı birimlerdeki (saat vs. adet) amaçları karşılaştırmak için kullanılır:
+**(20)** `x̃ᵢ = (xᵢ - minᵢ{xᵢ}) / (maxᵢ{xᵢ} - minᵢ{xᵢ})`
+> **Mantık:** Tüm değerleri 0-1 arasına çekerek karar vericinin belirlediği ağırlıklarla ($W$) çarpılmasına olanak tanır.
