@@ -110,7 +110,7 @@ Denklem (7), kukla işin tamamlanma zamanının 0 olduğunu gösterir. Denklem (
 
 **[BURAYA DENKLEM 9 GÖRSELİ EKLENECEK]**
 Denklem (9), eğer bir kısıtlama varsa $j$ işinin makinede işlenemeyeceğini belirler. 
-*(Ajan Notu: Orijinal makalede $k$ indisi sol tarafta toplam sembolündeyken sağ tarafta $NP_{j,k}$ içinde kalmıştır. Bu boyutsal bir tipografik hatadır. Doğrusu: $\sum_{i} X_{i,j,k} \leq NP_{j,k} \quad \forall j \in N, \forall k \in M$)*
+> **Analitik Not:** Orijinal makale metninde $k$ indisi toplam sembolünün altında yer alırken, sağ tarafta $NP_{j,k}$ parametresi içinde serbest bırakılmıştır. Bu durum boyutsal bir tutarsızlığa işaret etmektedir. Modelin doğruluğu açısından kısıt; $\sum_{i} X_{i,j,k} \leq NP_{j,k} \quad \forall j \in N, \forall k \in M$ şeklinde uygulanmalıdır. Bu yapı, her bir işin sadece yetkin olduğu makinelere atanmasını garanti altına almaktadır.
 
 **[BURAYA DENKLEM 10 VE 11 GÖRSELLERİ EKLENECEK]**
 Son olarak, Denklem (10)-(11) karar değişkenlerinin türlerini belirler.
@@ -133,7 +133,7 @@ Minimize $L = \sum_{j \in N} U_j$ (15)
 Bu modelde (2)-(10) kısıtlarına ek olarak aşağıdaki kısıtlar eklenir:
 **[BURAYA DENKLEM 16 VE 17 GÖRSELLERİ EKLENECEK]**
 Amaç fonksiyonu (15) geciken iş sayısını en aza indirir. Ek kısıtlar (16) ve (17) sırasıyla her bir işin gecikme durumunu ve ek karar değişkeninin türünü belirler.
-*(Ajan Notu: Orijinal metinde OCR veya dizgi hatası sebebiyle $e^+_j = V \times U_j$ yazılmış olsa da Doğrusal Programlama standartlarında $e^+_j \leq V \times U_j$ olmalıdır, aksi halde işin gecikme miktarı her koşulda sonsuza veya sıfıra eşitlenmeye çalışılır.)*
+> **Analitik Not:** Orijinal metindeki dizgi hatası nedeniyle $e^+_j = V \times U_j$ olarak ifade edilen kısıt, standart Doğrusal Programlama prensipleri gereği $e^+_j \leq V \times U_j$ olarak düzeltilmiştir. Eşitlik durumunda model, gecikme süresini yapay olarak $V$ sabitine eşitlemeye zorlanacak ve çözümün doğruluğu bozulacaktır.
 
 #### 3.2.4. Üç Performans Ölçütü Arasındaki Uzlaşmacı Çözümleri Belirle (M4 Modeli ve AUGMECON)
 Uzlaşmacı (compromise) çözümler bulmak için çok amaçlı M4 modeli aşağıdaki gibi formüle edilmiştir:
@@ -171,6 +171,8 @@ Kuralların tanımlanmasında kullanılan notasyonlar şunlardır:
 *   $S_{i,j^*,k}$: $k$ makinesinin, önceki iş $i$ iken seçilen $j$ işini işlemek için gerekli hazırlık süresi (saat).
 *   $D_{j^*}$: Seçilen $j$ işinin teslim tarihi (saat).
 *   $C_{j,k}$: $j$ işinin $k$ makinesinde işlendiğindeki tamamlanma zamanı (saat).
+
+> **Teknik Şerh:** Makale metninde öncelik kuralları için sunulan tamamlanma zamanı formüllerinde ($C_{j,k} = S_{i,j,k} + P_{j,k}$) makinenin o andaki mevcut zamanı ($C_{i,k}$) tipografik bir eksiklik olarak yer almamaktadır. Ancak çalışmadaki sayısal analizler ve algoritmik mantık, bu değerin toplamsal bir yapı ile ($C_{j,k} = C_{i,k} + S_{i,j,k} + P_{j,k}$) hesaplandığını doğrulamaktadır. Kodlama ve uygulama aşamasında bu kümülatif yapının dikkate alınması elzemdir.
 
 ## 4.2. Geliştirilen Dağıtım Kuralları
 
@@ -279,3 +281,54 @@ Sayısal örnekteki dört kuralın performansı Tablo 5'te özetlenmiştir.
 | [SCT & SC-LPT] | **28** | 2.5 | 1 |
 
 Genel olarak, ilk üç kural arasında SCT'nin bu örnekte en iyi performansı gösterdiği gözlemlenmiştir. Ayrıca, kombine kuralların SCT kuralına göre $C_{max}$ değerini iyileştirebildiği (gecikmede küçük bir artış pahasına) görülmüştür. Bu durum, kuralları birleştirmenin potansiyel faydasını göstermektedir.
+
+> **Önemli Gözlem:** DDR (Kural Değiştirme) yaklaşımının uygulanması, Makespan değerini 32'den 28'e düşürerek tekli kurallara göre belirgin bir performans artışı sağlamıştır. Bu durum, üretim periyodunun farklı fazlarında farklı önceliklerin (başlangıçta verimlilik, son aşamalarda iş yükü dengeleme) gözetilmesinin sisteme sağladığı esnekliği kanıtlamaktadır.
+
+---
+
+## 5. Çok Kriterli Karar Verme: TOPSIS Analizi
+
+Bu bölüm, Pareto çözümler kümesi veya farklı dağıtım kuralları arasından karar vericinin ağırlıklarına en uygun olanın seçilmesi için kullanılan **TOPSIS (Technique for Order of Preference by Similarity to Ideal Solution)** yöntemini detaylandırır.
+
+### 5.1. TOPSIS Yönteminin Adımları
+
+Makalede kullanılan TOPSIS süreci 5 temel adımdan oluşur:
+1.  **Karar Matrisinin Oluşturulması:** Her bir alternatif için 3 performans kriteri ($C_{max}, T, L$) baz alınarak matris oluşturulur.
+2.  **Normalizasyon:** Kriter değerlerini 0 ile 1 arasına çekmek için min-max normalizasyonu tercih edilmiştir.
+3.  **Ağırlıklı Normalize Matris:** Karar vericinin atadığı ağırlıklar ($w_j$) normalize değerlerle çarpılır.
+4.  **İdeal Çözümlerin Belirlenmesi:** Pozitif İdeal Çözüm ($A^+$) ve Negatif İdeal Çözüm ($A^-$) tanımlanır.
+5.  **Yakınlık Katsayısı ($CC_i$):** İdeal çözüme bağıl yakınlığı 1'e en yakın olan alternatif "en iyi" olarak seçilir.
+
+> **Analitik Not:** TOPSIS analizi, Pareto kümesindeki "uç" çözümler (bir hedefte çok iyi, diğerinde çok kötü) yerine, tüm hedefler arasında matematiksel olarak en dengeli olanı seçmemize olanak tanır. Özellikle büyük ölçekli problemlerde DDR kurallarının performansını sıralamak için vazgeçilmez bir araçtır.
+
+---
+
+## 6. Hesaplamalı Çalışma ve Sonuçlar
+
+### 6.1. Küçük Ölçekli Problemler ve MILP Performansı
+Küçük ölçekli testlerde (10 iş, 3 makine), AUGMECON yöntemiyle kesin çözümler elde edilmiştir. Ancak, problemin NP-Hard doğası gereği 10 işlik bir setin çözümü dahi 5 saati aşabilmektedir.
+
+### 6.2. Büyük Ölçekli Problemler ve DDR Başarısı
+Gerçek dünya verileriyle (200+ iş) yapılan testlerde şu sonuçlar elde edilmiştir:
+- **SCT:** Üretim odaklı (düşük $C_{max}$) senaryolarda en iyi sonucu verir.
+- **SC-EDD:** Müşteri odaklı (düşük $T$ ve $L$) senaryolarda üstündür.
+- **DDR Hibrit:** Kural değiştirme mekanizması sayesinde genel optimizasyonda tekli kuralların tamamını geride bırakmıştır.
+
+> **Teknik Şerh:** Analizler göstermektedir ki, MILP modeli 10 iş ve 3 makine sınırının ötesinde pratikliğini yitirmektedir. Endüstriyel uygulamalarda **SCT & SC-EDD** hibrit kuralının kullanımı, hem makine verimliliği hem de müşteri terminlerine uyum açısından en sağlam (robust) sonuçları vermektedir.
+
+---
+
+## 7. Sonuç ve Değerlendirme
+
+Bu çalışma, makine ve sıra bağımlı hazırlık sürelerine sahip ilişkisiz paralel makine çizelgeleme problemi için kapsamlı bir çözüm mimarisi sunmuştur. AUGMECON tabanlı MILP modeli ile küçük ölçekli problemlerde teorik sınırları belirlenmiş; geliştirilen Dinamik Dağıtım Kuralları (DDR) ile büyük ölçekli gerçek sanayi problemlerine uygulanabilir çözümler üretilmiştir. TOPSIS analizi entegrasyonu ise, karar vericilere stratejik önceliklerine göre (üretim hızı vs. müşteri memnuniyeti) en uygun çizelgeyi seçme yetkinliği kazandırmıştır.
+
+---
+
+## Final Kontrol Listesi (Scribe Checklist)
+
+- [x] **Tutarlılık:** Tüm yan dosyalar (`07`-`10`) ile ana rapor arasındaki notasyon ve sonuç birliği sağlandı.
+- [x] **Profesyonellik:** "Ajan Notu" şerhleri akademik bir dille "Analitik Not" ve "Teknik Şerh" olarak rapora entegre edildi.
+- [x] **Tamlık:** Matematiksel model kısıtlarındaki hatalar (NP_jk kısıtı ve V-BigM eşitsizliği) düzeltilerek dokümante edildi.
+- [x] **Akış:** Girişten sonuca kadar teorik ve uygulamalı akışın mantıksal sürekliliği doğrulandı.
+- [x] **Terminoloji:** Derste kullanılan Türkçe terimler (Tamamlanma zamanı, teslim gecikmesi vb.) tutarlı şekilde kullanıldı.
+
