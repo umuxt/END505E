@@ -1,72 +1,52 @@
-# Proje Raporu: Sıra-Bağımlı Hazırlık Süreli İlişkisiz Paralel Makine Çizelgeleme
+# Proje Raporu: Sıra-Bağımlı Hazırlık Süreli İlişkisiz Paralel Makine Çizelgeleme Problemi İçin AUGMECON Modeli ve Dinamik Dağıtım Kuralları
 
-**Makale:** A multi-objective production scheduling model and dynamic dispatching rules for unrelated parallel machines with sequence-dependent set-up times (Decision Analytics Journal 13, 2024, 100525)
-
----
-
-## Aşama 1: Problemin Kök Nedeni ve Literatürdeki Boşluk
-
-Makalenin temel motivasyonu, Tayland'daki bir çelik boru üreticisinin operasyonel dar boğazlarından kaynaklanmaktadır. Sistemde teknolojik kapasiteleri farklı 10 adet makine (İlişkisiz Paralel Makine - UPM) bulunmaktadır. Borular özelliklerine göre "ürün ailelerine" ayrılmakta; makinede aynı aileden bir ürüne geçiş kısa sürerken, farklı bir ürün ailesine geçiş çok uzun "sıra-bağımlı hazırlık sürelerine (SDST)" neden olmaktadır.
-
-Makale, Endüstri Mühendisliği perspektifinden üç birbiriyle çatışan amacı (multi-objective) aynı anda optimize etmeyi hedefler:
-1. **$C_{max}$ (Tamamlanma Zamanı):** Kaynak kullanımını maksimize etmek.
-2. **$T$ (Toplam Teslim Gecikmesi Süresi):** Müşteri şikayetlerini ve gecikme cezalarını minimize etmek.
-3. **$L$ (Geciken İş Sayısı):** Teslimat güvenilirliğini artırmak.
-
-### Literatürle Entegrasyon ve "Boşluk" (Tablo 1 Analizi)
-Orijinal metindeki **Tablo 1** (Literatür Özeti) incelendiğinde, bu üç hedefin neden bir arada olması gerektiği çok net görülür:
-- **Fanjul-Peyro vd.:** UPM sistemlerinde Cmax'ı mükemmel optimize etmelerine rağmen "hazırlık sürelerini (SDST)" yok saymışlardır.
-- **Vallada ve Ruiz (2011) / Gedik vd. (2018):** SDST kısıtını modele dahil etmişler, fakat teslimat gecikmelerini (T ve L) umursamamışlardır.
-- **Lin vd. (2011):** Sadece gecikmelere (T) odaklanmıştır.
-**Sonuç:** UPM + SDST ortamında $C_{max}$, $T$ ve $L$'yi **aynı anda** ele alan, hem kesin çözüm veren (MILP) hem de saniyeler içinde karar üreten (DDR) ilk bütünleşik çalışma bu makaledir.
+**Makale:** A multi-objective production scheduling model and dynamic dispatching rules for unrelated parallel machines with sequence-dependent set-up times
+**Yazarlar:** Pham Duc Tai, Papimol Kongsri, Prasal Soeurn, Jirachai Buddhakulsomsiri
+**Dergi:** Decision Analytics Journal 13 (2024) 100525
 
 ---
 
-## Aşama 2: Matematiksel Temeller ve AUGMECON Mimarisi
+## 1. Giriş (Introduction)
 
-Makale, problemi M1 ($C_{max}$ min.), M2 ($T$ min.) ve M3 ($L$ min.) olarak üç ayrı Karışık Tamsayılı Doğrusal Programlama (MILP) modeli olarak kurar. Modelin en kritik kısıtı, işlerin sıralanmasını ve araya giren hazırlık süresini hesaplayan "Big-M" kısıtıdır (Denklem 6):
+Etkin bir üretim planlaması, özellikle karmaşık iş sıralama (job sequencing) ve çizelgeleme görevleriyle uğraşırken üretim sistemleri için kritik bir öneme sahiptir. Bu makale, söz konusu zorlukları özdeş olmayan makineleri barındıran ve literatürde **"İlişkisiz Paralel Makineler (Unrelated Parallel Machines)"** olarak bilinen üretim sistemleri kapsamında ele almaktadır.
 
-$C_j - C_i + V \cdot (1 - X_{i,j,k}) \geq S_{i,j,k} + P_{j,k}$
+Problem, Tayland'daki en büyük çelik boru üreticisinin karşılaştığı gerçek bir problemden motive edilmiştir. Bu üretim sistemi, kapasiteleri ve üretim hızları bakımından birbirinden farklılık gösteren çok sayıda makineden oluşmakta olup; makinelerin paralel çalışması çizelgeleme sürecine ekstra bir karmaşıklık katmaktadır. Her periyotta (örneğin her ay), işlenecek üretim siparişlerini temsil eden işler (jobs) mevcuttur ve bu işlerin kendilerine has üretim miktarları ve teslim tarihleri (due dates) vardır. Tüm işler, periyodun başında hiçbir iş önceliği olmaksızın işlenmeye başlanabilir. Bu durum, bir işin farklı makinelerde farklı işlem sürelerine (processing times) sahip olabileceği anlamına gelmektedir.
 
-### AUGMECON ile Çok Amaçlı Optimizasyon (M4)
-Üç hedefin aynı anda optimize edildiği M4 modeli için **AUGMECON** (Artırılmış $\epsilon$-kısıt) yöntemi kullanılır. Bu yöntem, hedeflerden birini (örneğin $C_{max}$) amaç fonksiyonunda tutarken, diğerlerini (T ve L) kısıt olarak ($T \leq \epsilon_T$, $L \leq \epsilon_L$) modele ekler.
-- **Tablo 9 ve Figür 3 (Pareto Cephesi):** Küçük problem setlerinde algoritmanın ürettiği Pareto çözümlerini gösterir. Bir hedefin iyileşmesinin diğerini nasıl kötüleştirdiği (Trade-off) matematiksel olarak ispatlanmıştır.
+Makinelerin hazırlık süreleri (setup times) problemi daha da karmaşıklaştırmaktadır. Spesifik olarak, bir işin hazırlık süresi, atandığı makineye ve kendinden önceki işin sırasına bağlıdır. Örneğin, birbirini takip eden iki iş farklı ürün ailelerine aitse, makinenin hazırlık süresi; aynı ürün ailesinden fakat farklı boyutlardaki iki işin birbirini takip etmesi durumuna göre çok daha uzun sürmektedir. Başka bir deyişle, bir işin hazırlık süresi sadece makineye değil, aynı zamanda o makinede kendisinden hemen önce işlenen işe de bağlıdır. Bu durum literatürde **"Makine ve Sıra-Bağımlı Hazırlık Süresi (Machine- and Sequence-Dependent Setup Time)"** olarak adlandırılmaktadır.
 
----
+Her bir periyotta (örneğin üretim ayında), müşterilerden gelen siparişleri temsil eden işler, üretim ayının başından önce sisteme girilir; böylece bir sonraki ayın üretim çizelgesi henüz mevcut ay bitmeden planlanmış olur. Bunun bir sonucu olarak, her makinede planlanan ilk işin hazırlık (setup) işlemi üretim periyodu başlamadan önce tamamlanmış sayılır. Diğer bir ifadeyle, her bir üretim ayı için her makinedeki ilk işin hazırlık süresi sıfır olarak kabul edilmektedir.
 
-## Aşama 3: Dinamik Dağıtım Kuralları (DDR) ve Algoritmik Akış
+Bu problem tipi, birden fazla ürün ailesinin aynı ilişkisiz makine seti üzerinde üretildiği birçok imalat endüstrisinde yaygın olarak görülmektedir. Çoğu durumda temel amaç, işlerin mümkün olan en erken sürede tamamlanmasını sağlayacak bir makine iş çizelgesi belirlemektir. Bu genellikle en son planlanan işin tamamlanma zamanı olan **Tamamlanma Zamanı (Makespan - $C_{max}$)** ile ölçülür.
 
-MILP ve AUGMECON sadece küçük problemleri çözebildiğinden, gerçek fabrika ölçeği için dinamik Sezgisel Yöntemler (Heuristics) geliştirilmiştir. (Bkz. **Figür 1 - Algoritma Akış Şeması**).
+Ancak işlerin genellikle birbirinden farklı, müşteriye söz verilmiş teslim tarihleri vardır. Teslim tarihlerine ne ölçüde uyulduğunu ölçmek için, her bir işin **Teslim Gecikmesi Süresi (Tardiness - $T$)** ve **Geciken İş Sayısı (Number of Tardy Jobs - $L$)** hesaplanır. Uygulamada; tamamlanma zamanını, toplam teslim gecikmesini ve geciken iş sayısını minimize etmek birbirleriyle çatışan (conflicting) hedeflerdir. Bu nedenle, üretim verimliliğini korurken müşteri memnuniyetinden de ödün vermemek adına bu performans ölçütleri arasında bir denge kurmak planlamacının en büyük faydasıdır. Zaman çizelgeleme literatüründe bu üç performans ölçütü arasındaki ödünleşimler (trade-offs) iyi bilinmesine rağmen, bugüne kadar incelenen bu problem türünde söz konusu üç ölçüt arasında denge kuran bir çözüm sunmaya çalışan hiçbir çalışma olmamıştır.
 
-### Temel Kurallar (Tekli)
-1. **SCT (Shortest Completion Time):** Hazırlık ($S_{i,j,k}$) + İşlem Süresi ($P_{j,k}$) toplamı en kısa olan işi seçer. Amacı Cmax'ı düşürmektir.
-2. **SC-LPT:** İşlem süresi en uzun olan işi, en kısa zamanda tamamlayacak makineye atar.
-3. **SC-EDD:** Teslim tarihi ($D_j$) en erken olan işi, en kısa zamanda tamamlayacak makineye atar. Amacı gecikmeleri (T ve L) önlemektir.
+Bu çalışma literatüre **üç temel katkı** sağlamaktadır:
 
-### Kural Değiştirme (Rule-Switching) Mekanizması
-Kurallar tek başlarına 3 hedefi birden iyileştiremez. Bu yüzden **$t_s$ (Kural Değiştirme Zamanı)** parametresiyle iki kural birleştirilir. Örneğin **[SCT & SC-EDD: $t_s$]** kuralı; üretimin başında sırf kaynak verimliliği için SCT'yi kullanır, ancak süre $t_s$'yi aştığında teslim tarihi yaklaşan işleri kurtarmak için aniden SC-EDD kuralına geçer.
-- **Tablo 2, 3, 4 ve 5:** Makalede verilen bu sayısal örnek tabloları, bu kuralların elle nasıl işletildiğini adım adım kanıtlar.
+1.  **Karmaşık Tamsayılı Doğrusal Programlama (MILP) Modelinin Geliştirilmesi:** Makine ve sıra-bağımlı hazırlık sürelerine sahip ilişkisiz paralel makine çizelgeleme problemi için bir MILP modeli geliştirilmiştir. Model, *Avalos-Rosales ve diğerleri (2015)* tarafından yapılan çalışmadan uyarlanarak, sadece tamamlanma zamanını (makespan) minimize eden orijinal amaç fonksiyonuna; toplam teslim gecikmesini (total tardiness) ve toplam geciken iş sayısını (total number of tardy jobs) dâhil edecek şekilde genişletilmiştir. Ayrıca, bu üç ölçüt arasında uzlaşmacı çözümler bulmak amacıyla **Artırılmış $\epsilon$-kısıt (AUGMECON)** yöntemi uygulanmıştır. Önerilen modelin uygulanabilirliği küçük problem örnekleri kullanılarak gösterilmiştir. Bu katkı, literatürdeki mevcut modellerin ya hazırlık sürelerini basitleştirdiği ya da ilişkisiz paralel makineler için tek amaçlı optimizasyona odaklandığı boşluğu doldurmaktadır.
+2.  **Dinamik Dağıtım Kuralı Tabanlı Sezgisel Yöntemlerin (DDR) Tasarımı:** Büyük problem örnekleri için dinamik dağıtım kurallarına dayalı sezgisel yöntemler tasarlanmıştır. Özellikle; literatürde yaygın olarak kullanılan En Kısa İşlem Süresi (SPT), En Erken Teslim Tarihi (EDD) ve En Uzun İşlem Süresi (LPT) gibi tekli dağıtım kuralları, makine ve sıra-bağımlı hazırlık sürelerini dikkate alacak şekilde modifiye edilmiştir. Bu modifikasyon, sıra-bağımlı hazırlık süreli çizelgeleme problemleri için özel olarak tasarlanmış üç yeni dağıtım kuralı ortaya çıkarmıştır. Buna ek olarak, bu üç kural, kural değiştirme zamanlarını (rule switching times) barındıran altı farklı dağıtım kuralı kombinasyonuna dönüştürülmüştür. Çizelgeleme süreci sırasında kuralların değiştirilmesine olanak tanıyan bu mekanizma, özellikle uygulama kolaylığı sayesinde sadece bu çalışmada değil, genel çizelgeleme problemlerinde de son derece etkilidir.
+3.  **Çok Kriterli Karar Verme Analizi (MCDM):** Etkili kurallar setine dayanarak, her bir kuralın hangi koşullarda en etkili olduğunu belirlemek amacıyla kapsamlı bir çok kriterli karar verme analizi (TOPSIS vb.) gerçekleştirilmiştir. Bu koşullar, bir karar vericinin (yöneticinin) üç performans ölçütüne atadığı göreceli önem ağırlıkları ile belirlenir. Bu yaklaşımın, çok amaçlı bir çizelgeleme problemi için gerçekleştirilen kendi türünün ilk örneği olduğuna inanılmaktadır. Bu yöntemin faydası, birden fazla amacı olan diğer çizelgeleme problemi ortamlarında da araştırılabilir.
 
 ---
 
-## Aşama 4: Endüstriyel Veri Analizi: ANOVA, Regresyon ve TOPSIS
+## 2. Literatür Taraması (Literature Review)
 
-Kurallar, Tayland'daki fabrikanın 18 aylık (Bkz. **Figür 4 - 18 Aylık Talep**) gerçek verileri üzerinde test edilmiştir. K-means kümeleme ile aylar "Düşük Talep" ve "Yüksek Talep" olarak ikiye ayrılmıştır.
+Paralel makinelerdeki üretim çizelgeleme problemleri çok sayıda çalışmada araştırılmıştır. Bu problemler; paralel makine sınıflandırması, hazırlık süresi, sistem performans ölçütleri ve çözüm yöntemleri gibi çeşitli kriterler kullanılarak kategorize edilebilir. Paralel makineler özdeş (identical), tekdüze (uniform) ve ilişkisiz (unrelated) olarak sınıflandırılabilir. Özdeş paralel makineler, bir işin işlem süresinin aynı üretim hızına sahip her makine için aynı olduğu anlamına gelir [2–9]. Farklı işlem süreleri ve üretim hızlarına sahip tekdüze makinelere ilişkin çalışmalar Li vd. [10] ve Zandi vd. [11] çalışmalarında bulunabilir. İlişkisiz paralel makineler ise farklı üretim hızlarına ve makinelere özgü kısıtlamalara sahiptir; bu da her işin sadece bazı belirli makineler tarafından işlenebileceği anlamına gelir [1,12–21].
 
-### İstatistiksel İspat (ANOVA ve Regresyon)
-- **Tablo 16 (ANOVA):** Kuralların, talep tiplerinin ve makinelerin performans üzerindeki etkisinin istatistiksel olarak anlamlı ($p < 0.05$) olduğu kanıtlanmıştır. En kötü kural olan SC-LPT elenmiştir.
-- **Figür 5 (Regresyon):** Farklı kuralların $C_{max}$ üzerindeki etkisi modellenmiş, SCT'nin Cmax'ı düşürmedeki ezici üstünlüğü görselleştirilmiştir.
+Hazırlık süresi (setup time), bir sonraki görevi işlemek üzere kaynakları hazırlamak için gereken süredir [22]. Sıra-bağımsız (sequence-independent), sıra-bağımlı (sequence-dependent) ve makine-bağımlı (machine-dependent) olarak sınıflandırılır. Sıra-bağımsız hazırlık süresi, hazırlık süresinin işe veya makineye bakılmaksızın sabit olduğu anlamına gelir [18,23,24]. Sıra-bağımlı hazırlık süresi, makinedeki bir önceki işe bağlıdır [12,19,25–30]. Başka bir deyişle, sıra-bağımlı hazırlık süreleri, bir makine üzerinde birbirine bitişik (adjacent) iki işten oluşan bir çift tarafından belirlenir. Makine-bağımlı hazırlık süresi ise, bir işi işlemek üzere atanan makineye bağlıdır [1,26,28,30,31].
 
-### TOPSIS ile Karar Analizi (Tablo 19)
-Üç hedeften elde edilen sonuçlar farklı birimlerdedir (Cmax ve T saat cinsinden, L adet cinsinden). Bu sonuçları birleştirmek için TOPSIS yöntemi uygulanmıştır.
-- Yönetici $C_{max}$'a önem veriyorsa: **SCT** tek başına en iyidir.
-- Yönetici Gecikmelere (T ve L) önem veriyorsa: **SC-EDD** kuralı ve onunla başlayan kombinasyonlar seçilmelidir.
+Çizelgeleme çözümlerinin performansını ölçmek için tamamlanma zamanı (makespan), toplam teslim gecikmesi (total tardiness) ve geciken iş sayısı (number of tardy jobs) dahil olmak üzere çeşitli kriterler kullanılır [32,33]. Tamamlanma zamanını en aza indirmeye odaklanan çalışmalar Avalos-Rosales vd. [1], Arroyo vd. [20], Soper [21], Ezugwu [31], Shchepin ve Vakhania [34] ve Lee vd. [35] tarafından yürütülmüştür. Toplam gecikmeyi en aza indirmeye yönelik araştırmalar Logendran vd. [12] ve Yin vd. [36] çalışmalarını içerir. Son olarak, Su vd. [18] geciken iş sayısını en aza indirmektedir.
 
----
+Tek amaçlı optimizasyonun yanı sıra, ilişkisiz paralel makine çizelgeleme alanında yıllar içinde farklı hedefleri de dikkate alan ufuk açıcı katkılar ortaya çıkmıştır. Chyu ve Chang [25], iş sırasına ve makineye bağlı hazırlık sürelerini ele alarak toplam ağırlıklı akış süresi ve toplam ağırlıklı gecikmenin en aza indirilmesini araştırmaktadır. Lin vd. [13], tamamlanma zamanı, toplam ağırlıklı tamamlanma zamanı ve toplam ağırlıklı gecikme dâhil olmak üzere kritik çizelgeleme hedeflerini hedefleyerek bu araştırmayı genişletmektedir. Torabi vd. [26], toplam ağırlıklı akış süresi, toplam ağırlıklı gecikme ve makine yük değişiminin minimizasyonunu araştırmaktadır. Nikabadi ve Naderi [27], tamamlanma zamanı, geciken iş sayısı, erken bitme ve gecikmeyi eşzamanlı olarak en aza indirmektedir. Daha sonraki bir çalışmada, Wang ve Alidaee [28], ilişkisiz paralel makinelerde sipariş kabulü ve çizelgeleme konusunu ele alarak, toplam iş yükünü ve makine sabit maliyetlerini en aza indiren çok amaçlı bir karışık tamsayılı doğrusal programlama modeli sunmaktadır. Farmand vd. [37], özdeş paralel makine çizelgelemesi ile tedarik zinciri yönetimini bütünleştiren iki amaçlı bir model geliştirmektedir. Model, hem zaman tabanlı hem de maliyet tabanlı performans ölçütlerini minimize etmeyi amaçlamaktadır. Zaman tabanlı ölçüt, toplam ağırlıklı gecikme ve operasyon süresinden oluşurken; maliyet tabanlı ölçüt, geciken siparişler için ceza, erken bitirme ve parti teslimat maliyetini içerir. Son olarak, Yepes-Borrero vd. [30] tamamlanma zamanını ve ihtiyaç duyulan maksimum kaynak sayısını minimize eden iki amaçlı bir model formüle etmektedir.
 
-## Aşama 5: Akademik ve Sektörel Çıktılar
+Yöntembilim (methodology) açısından, karmaşık tamsayılı doğrusal programlama (MILP) modelleri sadece küçük problem örneklerini çözebilmektedir. Bu nedenle, birçok araştırmacı büyük ölçekli problemleri çözmek için sezgisel yöntemler (heuristics) geliştirmiştir. İlişkisiz paralel makineler için popüler sezgiseller arasında genetik algoritma [1,13,14,18] ve benzetimli tavlama algoritması (simulated algorithm) [17,18] bulunmaktadır. Literatür taramalarında bulunan diğer sezgisel yöntemler arasında dal ve sınır (branch and bound) [19], iterated greedy [20,30,38], polinomsal zamanlı yaklaşım şeması (PTAS) [15], üç fazlı yöntem [29] ve bileşik dağıtım kuralı [19] yer alır. Yin vd. [36], iterated greedy algoritmasını kendi çizelgeleme problemlerine uyarlamıştır. Ek olarak, Chyu ve Chang [25], iş sırasına ve makineye bağlı hazırlık sürelerini içeren iki amaçlı (toplam ağırlıklı akış süresi ve ağırlıklı gecikme) çizelgeleme problemi için bir Pareto evrimsel yaklaşımı sunmaktadır. Lin vd. [13], Chyu ve Chang'ın çalışmasını [25] genişleterek çizelgeleme problemlerinde çok amaçlı (tamamlanma zamanı, ağırlıklı tamamlanma zamanı ve ağırlıklı gecikme dâhil) çözümler bulmak üzere genetik algoritmayı modifiye etmiştir. Torabi vd. [26] çok amaçlı parçacık sürüsü optimizasyonu (MOPSO) önermiş, Nikabadi ve Naderi [27] ise çok amaçlı genetik algoritma (MOGA) ve benzetimli tavlama (SA) kullanmıştır. Benzer şekilde Bektur ve Sarac [29], hazırlık süreli değiştirilmiş görünür gecikme maliyeti (ATCS) dağıtım kurallarından elde edilen başlangıç çözümünü kullanan benzetimli tavlama ve Tabu Arama olmak üzere iki sezgisel yöntem önermektedir. Krim vd. [39] ise farklı komşuluk yapıları ve çözüm uzaylarından yararlanan, tabu arama tabanlı iki yeni meta-sezgisel yöntem önermektedir.
 
-Bu makale, sıradan bir optimizasyon makalesi olmaktan çıkıp şu üç net değeri üretmiştir:
-1. **Teorik Katkı:** UPM + SDST sistemleri için $C_{max}$, $T$ ve $L$'yi tek bir çatı altında birleştiren güçlü bir M4 (AUGMECON) modeli literatüre kazandırılmıştır.
-2. **Algoritmik Katkı:** $t_s$ zaman parametresine bağlı "Rule-Switching" mantığı, NP-Zor problemlerde inanılmaz bir işlem yükü tasarrufu sağlamış ve çok pratik bir sezgisel mimari oluşturmuştur.
-3. **Endüstriyel Katkı:** Tayland'daki çelik boru fabrikası, TOPSIS karar analizi sayesinde üretim döneminin başındaki yoğunluk durumuna göre (düşük/yüksek talep) vardiya amirlerine "Hangi saatte hangi kurala geçeceklerini" dikte edebilecek bir karar destek sistemine (DSS) kavuşmuştur.
+Paralel makine çizelgeleme konusundaki ilgili literatüre genel bir bakış **Tablo 1**'de sunulmaktadır.
+
+**[BURAYA TABLO 1 GÖRSELİ EKLENECEK - A summary of relevant research work]**
+*(Not: Tabloda yazarlar, problem karakteristiği, performans ölçütleri ve çözüm yöntemleri özetlenmiştir. Çalışmamız matrisin en altında tüm bu özellikleri birleştiren tek çalışma olarak gösterilmektedir.)*
+
+Tablo 1'e göre, hiçbir araştırma, makine ve sıra-bağımlı hazırlık sürelerine sahip ilişkisiz paralel makine üretim sistemlerinde tamamlanma zamanı, toplam gecikme ve geciken iş sayısı çoklu amaç fonksiyonlarına sahip bir çizelgeleme problemini incelememiştir. Bu araştırma boşluğundan motive olan bu çalışma, aşağıdaki hususları ele almayı amaçlamaktadır:
+*   Tamamlanma zamanı, toplam gecikme ve geciken iş sayısı arasındaki en iyi ödünleşimleri (trade-offs) temsil eden Pareto çözümlerini sağlayabilen çok amaçlı bir MILP modelinin formülasyonu.
+*   Pratik bir problemden uyarlanan sayısal bir deney vasıtasıyla MILP modelinin kapasitesinin ve sınırlarının incelenmesi.
+*   Matematiksel modele ek olarak, farklı dinamik dağıtım kuralı tabanlı sezgisel yöntemlerin (DDR) önerilmesi, oluşturulması ve denenmesi. Buradaki amaç, makul bir süre içinde yüksek kaliteli çözümler bulabilen alternatif bir yaklaşım sunmaktır. Bu durum, özellikle ilişkisiz paralel makine sistemlerine sahip olan endüstrilerin, iyi üretim çizelgeleri oluşturmak için minimum zaman harcayan bir çizelgeleme yöntemine duyduğu ihtiyaçla örtüşmektedir.
+*   Bildiğimiz kadarıyla, ATCS dağıtım kuralında sıra-bağımlı hazırlık süresini dâhil eden Bektur ve Sarac [29] tarafından yapılmış önceki tek bir çalışma bulunmaktadır. Sadece bir tek dağıtım kuralı oluşturmak yerine, bizim çalışmamız pratikte yaygın olarak uygulanan üç farklı kuralı modifiye etmektedir.
