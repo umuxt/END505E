@@ -1,138 +1,59 @@
-# Sunum Hazırlık Rehberi
+# Sunum Hazırlama Rehberi (15-20 Dakika - Detaylı Akış)
 
-## Hocamızın Beklentileri (Özet)
-
-- Bire-bir çeviri değil → **özet anlatım**
-- Her formülü ayrı resim olarak yansıt + Türkçe açıklaması
-- Derste kullanılan notasyonu kullan
-- Kapak slaytı: ders adı, İng/Tr başlık, öğrenci bilgisi, fotoğraf
-- 2. slayt: orijinal makalenin künyesi (küçük resim)
+Bu rehber, ders hocasının 6 maddelik şartnamesine %100 uyumlu, 15-20 dakikalık bir sunum için tasarlanmış 22 slaytlık bir plandır.
 
 ---
 
-## Önerilen Slayt Yapısı (≈12-14 Slayt)
-
-### Slayt 1 — Kapak
-- Ders: END505E
-- İngilizce başlık (makale orijinali)
-- Türkçe başlık (çeviri)
-- Ad, soyad, öğrenci numarası, fotoğraf
-
-### Slayt 2 — Makale Künyesi
-- Derginin orijinal başlık sayfasının küçük resmi
-- Decision Analytics Journal 13 (2024) 100525
-- Yazarlar, DOI
-
-### Slayt 3 — Motivasyon ve Problem
-- Gerçek sanayi problemi: Tayland çelik boru üreticisi
-- 10 ilişkisiz paralel makine, yüzlerce iş/ay
-- Makine ve sıra bağımlı hazırlık süresi
-- Çatışan 3 hedef: Cₘₐₓ, T, L
-
-### Slayt 4 — Problem Tanımı
-- n iş, m makine, hazırlık süresi yapısı
-- İş ailesi kavramı (aynı aile → kısa hazırlık, farklı aile → uzun hazırlık)
-- Küçük örnek ile sezgiselleştir (3 iş, 2 makine tablosu)
-
-### Slayt 5 — MILP Modeli (Notasyon)
-- Parametreler ve karar değişkenleri tablosu
-- **Resim: M1 amaç fonksiyonu (1) ve kısıt (6) formülleri**
-- Kısa Türkçe açıklama
-
-### Slayt 6 — Çok Amaçlı Model (M4) ve AUGMECON
-- 3 amaç fonksiyonu (resim olarak)
-- Pareto çözüm kavramı → şema veya Pareto cephesi grafiği (Şekil 3)
-- Ödeme tablosu (P1 için)
-
-### Slayt 7 — Pareto Çözümden Seçim
-- Min-Max normalizasyon formülü (resim)
-- Karar vericinin ağırlık ataması
-- P1 örneği: Çözüm 6 seçildi
-
-### Slayt 8 — Sezgisel Yöntem: 3 Temel Kural
-- SCT, SC-LPT, SC-EDD formülleri (resim)
-- Her birinin mantığı (1-2 cümle)
-
-### Slayt 9 — Kombine Kurallar ve Algoritma
-- Kural değiştirme mekanizması şeması (Şekil 1)
-- 6 kombine kural listesi
-- tₛ örneği: [SC-EDD & SC-LPT: 200]
-
-### Slayt 10 — Sayısal Örnek (SCT Adım Adım)
-- 3 iş, 2 makine tablosu
-- Adım adım SCT uygulaması (Tablo 3)
-- Sonuç: Cₘₐₓ=31, T=2, L=1
-
-### Slayt 11 — Büyük Örnekler: Veri ve Sonuçlar
-- 18 aylık gerçek veri özeti
-- Düşük vs. yüksek talep senaryosu
-- Tek kural ANOVA sonuçları (Tablo 16)
-- SC-LPT elendi
-
-### Slayt 12 — TOPSIS ile Kural Seçimi
-- TOPSIS adımları (formüller resim olarak)
-- Hangi ağırlık koşulunda hangi kural daha iyi → tablo
-- Ana mesaj: wT önemine göre kural değişiyor
-
-### Slayt 13 — Sonuçlar ve Katkı
-- 3 ana katkı (MILP + DDR + TOPSIS)
-- Sanayi uygulaması sonuçları tablosu
-- Gelecek araştırma yönleri
-
-### Slayt 14 — Teşekkür / Sorular
+## Genel Kurallar
+- **Format:** Sadece PowerPoint (.pptx).
+- **Görsel:** Formülleri metin olarak yazmayın, makaleden kesip resim olarak yapıştırın.
+- **Dil:** Formül altındaki açıklamalar ve sunum dili tamamen Türkçe.
+- **Terminoloji:** "Tamamlanma Zamanı", "Yayılma Süresi", "Teslim Gecikmesi Süresi" gibi dersteki terimleri kullanın.
 
 ---
 
-## Sunumda Kullanılacak Türkçe Terimler
+## Slayt Detayları
 
-| İngilizce | Türkçe (Derste Kullanılan) |
-|-----------|--------------------------|
-| Makespan | Tamamlanma zamanı |
-| Total tardiness | Toplam teslim gecikmesi süresi |
-| Number of tardy jobs | Geciken iş sayısı |
-| Processing time | İşlem süresi |
-| Setup time | Hazırlık süresi |
-| Due date | Teslim tarihi |
-| Completion time | Tamamlanma zamanı |
-| Dispatching rule | Öncelik kuralı |
-| Heuristic | Sezgisel yöntem |
-| Unrelated parallel machine | İlişkisiz paralel makine |
-| Sequence-dependent | Sıra bağımlı |
-| Machine-dependent | Makine bağımlı |
-| Pareto solution | Pareto çözümü |
-| Rule-switching time | Kural değiştirme zamanı |
-| Tardiness | Teslim gecikmesi süresi |
-| Earliness | Erken teslim süresi |
+### BÖLÜM 1: GİRİŞ VE KİMLİK (2 Slayt)
+- **Slayt 1: Kapak** (Hocanın şartı: Ders adı, makale İng/Tr başlıkları, numara, ad-soyad, fotoğraf).
+- **Slayt 2: Makale Tanıtımı** (Hocanın şartı: Orijinal makale başlığı, dergi künyesi ekran görüntüsü).
 
----
+### BÖLÜM 2: PROBLEMİN TANIMI VE ÖNEMİ (3 Slayt)
+- **Slayt 3: Endüstriyel Motivasyon:** Tayland'daki çelik boru fabrikası örneği. Karmaşık makine yapısı ve yüksek hazırlık süreleri.
+- **Slayt 4: UPMSP ve SDST Kavramları:** "İlişkisiz Paralel Makineler" ve "Sıra-Bağımlı Hazırlık Süreleri"nin üretimdeki karşılığı.
+- **Slayt 5: Amaçlar (Objectives):** Çatışan 3 hedefin tanıtımı:
+    1. Yayılma Süresi ($C_{max}$) - Verimlilik.
+    2. Toplam Teslim Gecikmesi Süresi ($T$) - Müşteri Memnuniyeti.
+    3. Geciken İş Sayısı ($L$) - Güvenilirlik.
 
-## Sunumda Resim Olarak Yansıtılacak Formüller
+### BÖLÜM 3: MATEMATİKSEL MODEL - MILP (6 Slayt)
+- **Slayt 6: İndeksler ve Parametreler:** $i, j, k, P_{j,k}, S_{i,j,k}, D_j, V, NP_{j,k}$. (Zaman ve Süre ayrımına dikkat ederek açıkla).
+- **Slayt 7: M1 Modeli (Yayılma Süresi):** [Denklem 1 resmi] + Türkçe açıklama.
+- **Slayt 8: Temel Atama Kısıtları:** [Denklem 2, 3, 4 resimleri] + Akış dengesi ve tekil atama mantığı.
+- **Slayt 9: Hazırlık Süreli Zaman Kısıtı:** [Denklem 6 resmi] + Big-M mantığının ve $S_{i,j,k}$'nın modele yedirilmesinin anlatımı.
+- **Slayt 10: M2 & M3 Modelleri (Gecikme ve İş Sayısı):** [Denklem 12-16 resimleri] + Gecikme ($e_j^+$) ve Geciken İş ($U_j$) değişkenleri.
+- **Slayt 11: Analitik Denetim (Hata Düzeltme):** Makaledeki Denklem 9 ve 16'daki hataları ve yaptığımız düzeltmeleri (Eşitlik -> Eşitsizlik) teknik olarak açıkla. (Hocanın ilgisini çekecek kısımdır).
 
-Aşağıdaki formüller PDF'den kesilerek slayta resim olarak eklenecek, altına Türkçe açıklamaları yazılacak:
+### BÖLÜM 4: SEZGİSEL YÖNTEM - DDR (5 Slayt)
+- **Slayt 12: Neden Sezgisel?** MILP'in 10 işten sonra tıkanması ve gerçek dünyadaki 250+ işlik ihtiyaç.
+- **Slayt 13: Modifiye Dağıtım Kuralları:** SCT (Shortest Completion Time), SC-EDD ve SC-LPT.
+- **Slayt 14: Algoritma Akış Şeması:** [Figür 1 resmi] + Adım adım (Step 0-6) sürecin anlatımı.
+- **Slayt 15: Kural Değiştirme Mantığı ($t_s$):** Üretimin belirli bir AN'ında strateji değiştirmenin mantığı (Dinamik yaklaşım).
+- **Slayt 16: DDR Algoritmasının Teorik Hatası:** Makaledeki kümülatif zaman formülü eksikliği ve bizim "Ajan Notu" ile yaptığımız düzeltme.
 
-| # | Formül | Türkçe Açıklama |
-|---|--------|-----------------|
-| 1 | Denklem (1) | M1 amaç: Tamamlanma zamanını en küçükle |
-| 2 | Denklem (6) | Tamamlanma zamanı hesabı (Big-M kısıtı) |
-| 3 | Denklem (12) | M2 amaç: Toplam teslim gecikmesi süresini en küçükle |
-| 4 | Denklem (13) | Gecikme–erken bitme denge kısıtı |
-| 5 | Denklem (15) | M3 amaç: Geciken iş sayısını en küçükle |
-| 6 | SCT formülü | En kısa toplam süre (hazırlık+işlem) olan işi seç |
-| 7 | SC-LPT formülü | En uzun işlemli işi, en kısa tamamlanma sağlayan makineye ata |
-| 8 | SC-EDD formülü | En erken teslimli işi, en kısa tamamlanma sağlayan makineye ata |
-| 9 | TOPSIS S⁺, S⁻ | İdeal çözümlere ağırlıklı uzaklık |
-| 10 | TOPSIS C* | Göreli yakınlık — büyük olan kural daha iyi |
-| 11 | Min-Max normalize | Pareto çözümden seçim için normalleştirme |
+### BÖLÜM 5: SAYISAL ÖRNEK VE TOPSIS (4 Slayt)
+- **Slayt 17: Sayısal Örnek Verileri:** [Tablo 2-3 resimleri]. 2 makine 5 işlik senaryo.
+- **Slayt 18: Çözüm Süreci:** DDR'ın adım adım atamaları ve final çizelgesi.
+- **Slayt 19: TOPSIS Metodolojisi:** [TOPSIS formül resimleri]. Çok Kriterli Karar Verme adımları.
+- **Slayt 20: Karar Verici Senaryoları:** Üretim odaklı ağırlıklar vs. Müşteri odaklı ağırlıklar sonucu seçilen kurallar.
+
+### BÖLÜM 6: HESAPLAMALI SONUÇLAR VE KAPANIŞ (2 Slayt)
+- **Slayt 21: MILP vs DDR Performansı:** [Tablo 12 özeti]. Sezgisellerin hızı ve Pareto çözümlerine yakınlığı (%95+).
+- **Slayt 22: Genel Değerlendirme ve Sonuç:** Çalışmanın endüstriyel esnekliği ve hibrit kuralların başarısı.
 
 ---
 
-## Word Çevirisi İçin Bölüm Planı
-
-1. **Giriş** — Motivasyon, problem, katkılar
-2. **Literatür Özeti** — Tablo 1 ile birlikte
-3. **Problem Tanımı** — Varsayımlar, parametreler
-4. **Matematiksel Modeller** — M1, M2, M3, M4, AUGMECON
-5. **Sezgisel Yöntem** — SCT, SC-LPT, SC-EDD, kombine kurallar, algoritma
-6. **Sayısal Örnek** — Tablo 2, 3, 4, 5
-7. **Hesaplamalı Çalışma** — Küçük ve büyük örnekler, ANOVA, TOPSIS
-8. **Sonuç**
+## Anlatım İçin Anahtar İpuçları
+1.  **Zaman/Süre Farkı:** Anlatırken "Cj işin tamamlanma zamanıdır (AN), Pjk ise işlem süresidir (ARALIK)" vurgusunu en az bir kez yapın.
+2.  **Özet Anlatım:** Slaytlara uzun metinler yazmayın. Formül altındaki açıklamalar tek cümlelik ve net olsun.
+3.  **Algı Kolaylığı:** Karmaşık tablolar yerine, o tabloların bize ne söylediğini (örn: "SCT Makespan'de daha iyi") vurgulayın.
