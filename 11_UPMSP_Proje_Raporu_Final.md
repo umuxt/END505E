@@ -156,3 +156,126 @@ Burada $T$, kabul edilebilir toplam gecikmeyi; $L$, kabul edilebilir geciken iş
 **Adım 4:** M4 modelini, $T$ ve $L$ aralıklarındaki grid noktalarının her bir kombinasyonu için çözün.
 
 **Adım 5:** Üç amaç fonksiyonuna göre baskılanmayan (non-dominant) çözümler olan Pareto çözümlerini belirleyin.
+# 4. Dinamik Dağıtım Kuralı Tabanlı Sezgisel Yöntemler (Dynamic Dispatching Rule Based Heuristics)
+
+Önceki bölümde sunulan MILP modelleri ile yalnızca küçük problem örnekleri çözülebildiği için, bu bölümde gerçek problemleri temsil eden büyük ölçekli örnekleri çözmek üzere dinamik dağıtım kurallarını uygulayan sezgisel yöntemler (heuristics) geliştirilmiştir. Önerilen sezgisel yöntemler; En Kısa İşlem Süresi (SPT), En Uzun İşlem Süresi (LPT) ve En Erken Teslim Tarihi (EDD) gibi yaygın olarak benimsenen dağıtım kurallarını temel alır. Bu kurallar, problemin karakteristikleri olan sıra ve makine bağımlı hazırlık sürelerini ve ilişkisiz paralel makineleri dikkate alacak şekilde modifiye edilmiştir. Modifiye edilen kurallar sırasıyla SCT, SC-LPT ve SC-EDD olarak adlandırılmıştır.
+
+## 4.1. Notasyon ve Tanımlar
+
+Kuralların tanımlanmasında kullanılan notasyonlar şunlardır:
+
+*   $N_i$: Çizelgelenmiş işler kümesi.
+*   $N_j$: Kalan işler kümesi ($N = N_i \cup N_j$).
+*   $M_j$: $j$ işini işleyebilen makineler kümesi.
+*   $P_{j^*,k}$: Seçilen $j$ işinin $k$ makinesindeki işlem süresi (saat).
+*   $S_{i,j^*,k}$: $k$ makinesinin, önceki iş $i$ iken seçilen $j$ işini işlemek için gerekli hazırlık süresi (saat).
+*   $D_{j^*}$: Seçilen $j$ işinin teslim tarihi (saat).
+*   $C_{j,k}$: $j$ işinin $k$ makinesinde işlendiğindeki tamamlanma zamanı (saat).
+
+## 4.2. Geliştirilen Dağıtım Kuralları
+
+### 1. SCT (En Kısa İş Tamamlanma Zamanı - Shortest Job Completion Time)
+Bu kural, bir sonraki işlenecek $j \in N_j$ işini ve bu işi işleyecek $k \in M_j$ makinesini, işin tamamlanma zamanı minimize edilecek şekilde eş zamanlı olarak seçer:
+$$SCT: \min_{j \in N_j, k \in M_j} (S_{i,j,k} + P_{j,k})$$
+Not: Çoğu durumda seçilen $k$ makinesi, $j$ işinin öncülü olan $i$ işini işlemektedir. Bu durum hazırlık süresi $S_{i,j,k}$'yı etkiler. Seçilen $j$ işi en kısa işlem süresine sahip iş olmayabilir; bunun yerine en kısa "hazırlık + işlem" süresine sahip iştir.
+
+### 2. SC-LPT (En Uzun İşlem Süresine Dayalı En Kısa Tamamlanma Zamanı)
+Bu kural, önce en uzun işlem süresine sahip işi ($j^* \in N_j$) seçer. Ardından, bu iş için en kısa tamamlanma zamanını sağlayacak makineyi ($k \in M_{j^*}$) hazırlık süresini dikkate alarak belirler:
+$$SC-LPT: \min_{k \in M_{j^*}} (S_{i,j^*,k} + P_{j^*,k}) \quad \text{şartıyla} \quad [P_{j^*,k} = \max_{j \in N_j, k \in M_j} P_{j,k}]$$
+
+### 3. SC-EDD (En Erken Teslim Tarihine Dayalı En Kısa Tamamlanma Zamanı)
+Bu kural, önce teslim tarihi en yakın (en erken) olan işi ($j^* \in N_j$) seçer. Daha sonra, seçilen makine $k$'nın bir önceki iş $i$'yi işlediği bilgisini kullanarak, iş için en kısa tamamlanma zamanını veren makineyi ($k \in M_{j^*}$) seçer:
+$$SC-EDD: \min_{k \in M_{j^*}} (S_{i,j^*,k} + P_{j^*,k}) \quad \text{şartıyla} \quad [D_{j^*} = \min_{j \in N_j, k \in M_j} D_j]$$
+
+## 4.3. Kombine Kurallar ve Kural Değiştirme Mekanizması
+
+Yukarıdaki kurallara ek olarak, altı adet kombine kural geliştirilmiştir. Her biri, belirli bir kural değiştirme zamanı ($t_s$) ile sıralı olarak uygulanan bir çift kuraldan oluşur. Örneğin, `[SC-EDD & SC-LPT: 200]` kuralı, işleri önce SC-EDD kuralına göre çizelgeler. En son çizelgelenen işin tamamlanma zamanı $t_s = 200$ saati aştığında, tüm işler çizelgelenene kadar SC-LPT kuralına geçiş yapar. Geliştirilen kombine kurallar şunlardır:
+*   [SCT & SC-LPT: $t_s$]
+*   [SC-LPT & SCT: $t_s$]
+*   [SCT & SC-EDD: $t_s$]
+*   [SC-EDD & SCT: $t_s$]
+*   [SC-LPT & SC-EDD: $t_s$]
+*   [SC-EDD & SC-LPT: $t_s$]
+
+## 4.4. Algoritma Akışı
+
+Algoritmanın adımları Şekil 1'de gösterilmiştir.
+
+**[BURAYA ŞEKİL 1 GELECEK - Flow chart of the dynamic dispatching rule algorithm]**
+
+1.  $N_i = \{0\}$, $N_j = N$ ve parametreler ($P_{j,k}, S_{i,j,k}, D_j$) ayarlanır.
+2.  Kukla işin tamamlanma zamanı $C_0 = 0$ olarak belirlenir.
+3.  Tüm işlerin tüm olası makinelerdeki başlangıç tamamlanma zamanları hesaplanır ($C_{j,k} = P_{j,k}, \forall j \in N_j, \forall k \in M_j$).
+4.  Algoritma Kural 1'i kullanmaya başlar.
+5.  Seçilen $j^*$ işi $k^*$ makinesine atandıktan sonra listeler güncellenir ($N_i, N_j$).
+6.  $i = j^*$ olarak atanır ve $k^*$ makinesinde işlenebilecek kalan tüm işlerin tamamlanma zamanları güncellenir ($C_{j,k^*} = S_{i,j,k^*} + P_{j,k^*}, \forall j \in N_j$).
+7.  Tüm işlerin çizelgelenip çizelgelenmediği kontrol edilir ($N_j$ boş mu?).
+    -   Boşsa: Algoritma durur.
+    -   Boş değilse: Mevcut tamamlanma zamanının kural değiştirme zamanı $t_s$'yi aşıp aşmadığı kontrol edilir.
+        -   Aşmadıysa: Kural 1 ile devam edilir.
+        -   Aştıysa: Kural 2'ye geçilir ve kalan işler için süreç devam eder.
+
+Algoritma Python programlama dili kullanılarak uygulanmıştır.
+
+## 4.5. Sayısal Örnek (Numerical Example)
+
+Önerilen dağıtım kurallarını göstermek için sayısal bir örnek sunulmuştur. İki ilişkisiz paralel makine tarafından işlenecek üç iş varsayalım. İşlem süreleri, hazırlık süreleri ve teslim tarihleri Tablo 2'de listelenmiştir. İş 1 ve 2 aynı ailede olduğu için hazırlık süreleri kısadır. İş 3 farklı bir ailede olduğu için hazırlık süreleri daha uzundur.
+
+### Tablo 2: Sayısal Örnek Verileri (Numerical example data)
+
+| $j$ | $P_{j,1}$ | $P_{j,2}$ | $D_j$ | $i$ | $S_{i,j,1}$ ($j=1,2,3$) | $S_{i,j,2}$ ($j=1,2,3$) |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| 1 | 9 | 6 | 30 | 1 | 0 | 0 |
+| 2 | 22 | 16 | 20 | 2 | 0.5, 0, 5 | 0.5, 0, 3 |
+| 3 | 28 | 22 | 32 | 3 | 5, 5, 0 | 3, 3, 0 |
+
+*(Not: Tablodaki hazırlık süreleri matris formundadır. Örneğin $S_{i,j,1}$ için sütunlar $j=1,2,3$'ü, satırlar $i=1,2,3$'ü temsil eder.)*
+
+### 4.5.1. SCT Kuralı Uygulaması
+
+SCT kuralının adımları Tablo 3'te sunulmuştur.
+
+**Tablo 3: SCT Adımları**
+
+| Adım | $j$ | $D_j$ | $P_{j,1}$ | $P_{j,2}$ | $S_{i,j,1}$ | $S_{i,j,2}$ | $C_{j,1}$ | $C_{j,2}$ | $j^*$ | $M_{j^*}$ |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| 1 | 1 | 30 | 9 | 6 | 0 | 0 | 9 | **6** | 1 | 2 |
+| | 2 | 20 | 22 | 16 | 0 | 0 | 22 | 16 | | |
+| | 3 | 32 | 28 | 22 | 0 | 0 | 28 | 22 | | |
+| 2 | 2 | 20 | 22 | 16 | 0 | 0.5 | **22** | 22.5 | 2 | 1 |
+| | 3 | 32 | 28 | 22 | 0 | 3 | 28 | 31 | | |
+| 3 | 3 | 32 | 28 | 22 | 5 | 3 | 55 | **31** | 3 | 2 |
+
+Bu çizelge sonucunda: $C_{max} = 31$ saat, toplam gecikme $T = 2$ saat ve yalnızca iş 2 gecikmiştir ($L = 1$).
+
+### 4.5.2. Kombine Kural Uygulaması [SCT & SC-LPT: $t_s=5$]
+
+SCT ile başlayıp 5. saatten sonra SC-LPT'ye geçen kuralın adımları Tablo 4'te gösterilmiştir.
+
+**Tablo 4: [SCT & SC-LPT: $t_s=5$] Adımları**
+
+| Adım | $j$ | $D_j$ | $P_{j,1}$ | $P_{j,2}$ | $S_{i,j,1}$ | $S_{i,j,2}$ | $C_{j,1}$ | $C_{j,2}$ | $j^*$ | $M_{j^*}$ |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| 1 | 1 | 30 | 9 | 6 | 0 | 0 | 9 | **6** | 1 | 2 |
+| | 2 | 20 | 22 | 16 | 0 | 0 | 22 | 16 | | |
+| | 3 | 32 | 28 | 22 | 0 | 0 | 28 | 22 | | |
+| 2 | 3 | 32 | 28 | 22 | 0 | 3 | **28** | 31 | 3 | 1 |
+| | 2 | 20 | 22 | 16 | 0 | 0.5 | 22 | 22.5 | | |
+| 3 | 2 | 20 | 22 | 16 | 5 | 0.5 | 55 | **22.5** | 2 | 2 |
+
+Kombine kural ile: $C_{max} = 28$ saat, $T = 2.5$ saat ve $L = 1$.
+
+### 4.5.3. Sonuçların Özeti
+
+Sayısal örnekteki dört kuralın performansı Tablo 5'te özetlenmiştir.
+
+**Tablo 5: Dört Kural İçin Sonuçların Özeti**
+
+| Kural | $C_{max}$ | $T$ | $L$ |
+|:---|:---:|:---:|:---:|
+| SCT | 31 | 2 | 1 |
+| SC-LPT | 31 | 3 | 2 |
+| SC-EDD | 41 | 9 | 1 |
+| [SCT & SC-LPT] | **28** | 2.5 | 1 |
+
+Genel olarak, ilk üç kural arasında SCT'nin bu örnekte en iyi performansı gösterdiği gözlemlenmiştir. Ayrıca, kombine kuralların SCT kuralına göre $C_{max}$ değerini iyileştirebildiği (gecikmede küçük bir artış pahasına) görülmüştür. Bu durum, kuralları birleştirmenin potansiyel faydasını göstermektedir.
