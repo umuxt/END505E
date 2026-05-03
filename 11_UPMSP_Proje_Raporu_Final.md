@@ -1,108 +1,72 @@
-# Proje Raporu: Sıra-Bağımlı Hazırlık Süreli İlişkisiz Paralel Makine Çizelgeleme Problemi İçin AUGMECON Modeli ve Dinamik Dağıtım Kuralları
+# Proje Raporu: Sıra-Bağımlı Hazırlık Süreli İlişkisiz Paralel Makine Çizelgeleme
 
-*(Orijinal Makale: "An augmented ε-constraint model and dynamic dispatching rules for unrelated parallel machine scheduling with sequence-dependent setup times" - Decision Analytics Journal 13 (2024) 100525)*
-
----
-
-## 1. Giriş (Introduction)
-
-Modern üretim sistemlerinde rekabetçilik, sadece maliyet ve kalite ile değil, aynı zamanda müşteriye verilen "teslimat sözlerinin" ne kadar tutarlı yerine getirildiği ile ölçülmektedir. Zamanında teslimat (On-time delivery), bir işletmenin pazar itibarını koruması, müşteri sadakatini artırması ve gecikme cezalarından kaçınması için hayati bir unsurdur. Üretim süreçlerinin verimli bir şekilde yönetilmesi, özellikle karmaşık makine konfigürasyonlarında, stratejik bir karar destek mekanizması olan "üretim çizelgeleme" (production scheduling) ile mümkündür.
-
-Bu çalışma, Tayland'daki bir çelik boru üreticisinin operasyonel verilerinden ve karşılaştığı zorluklardan esinlenmiştir. Söz konusu fabrikada, teknolojik özellikleri ve üretim hızları birbirinden farklı olan "ilişkisiz paralel makineler" (Unrelated Parallel Machines - UPM) bulunmaktadır. Bu makinelerde işlenen ürünler; boyut, et kalınlığı ve malzeme özelliklerine göre farklı "ürün ailelerine" ayrılmaktadır. Makineler bir üründen diğerine geçerken, eğer ürün ailesi değişiyorsa çok uzun süren; aynı aile içinde kalınıyorsa daha kısa süren "sıra-bağımlı hazırlık süreleri" (Sequence-Dependent Setup Times - SDST) ile karşılaşılmaktadır.
-
-UPMSP (Unrelated Parallel Machine Scheduling Problem), SDST kısıtı ile birleştiğinde, tüm kombinasyonların hesaplanması imkansız hale gelen "NP-Zor" (NP-Hard) bir problem sınıfına girmektedir. Fabrika yönetimi, kaynak verimliliğini (makespan - Cₘₐₓ) optimize ederken, aynı zamanda müşteri memnuniyetini yansıtan toplam teslim gecikmesi süresini (T) ve geciken iş sayısını (L) da minimize etmek zorundadır. Bu rapor, bu karmaşık problemin çözümü için makalede önerilen matematiksel modelleri (MILP), AUGMECON metodolojisini ve Dinamik Dağıtım Kurallarını (DDR) en ince detayına kadar incelemektedir.
+**Makale:** A multi-objective production scheduling model and dynamic dispatching rules for unrelated parallel machines with sequence-dependent set-up times (Decision Analytics Journal 13, 2024, 100525)
 
 ---
 
-## 2. Literatür Analizi
+## Aşama 1: Problemin Kök Nedeni ve Literatürdeki Boşluk
 
-Literatürde UPMSP problemi uzun süredir incelenmektedir, ancak sıra-bağımlı hazırlık süreleri ve çok amaçlı optimizasyonun bir arada ele alınması nispeten yenidir.
+Makalenin temel motivasyonu, Tayland'daki bir çelik boru üreticisinin operasyonel dar boğazlarından kaynaklanmaktadır. Sistemde teknolojik kapasiteleri farklı 10 adet makine (İlişkisiz Paralel Makine - UPM) bulunmaktadır. Borular özelliklerine göre "ürün ailelerine" ayrılmakta; makinede aynı aileden bir ürüne geçiş kısa sürerken, farklı bir ürün ailesine geçiş çok uzun "sıra-bağımlı hazırlık sürelerine (SDST)" neden olmaktadır.
 
-**Fanjul-Peyro (2020)**, sadece işlem sürelerine odaklanarak Cₘₐₓ minimizasyonu için güçlü matematiksel modeller geliştirmiştir. Ancak çelik boru üretimi gibi hazırlık sürelerinin (setup) toplam sürenin önemli bir kısmını oluşturduğu sektörlerde bu modeller eksik kalmaktadır. **Vallada ve Ruiz (2011)** ile **Gedik vd. (2018)**, SDST kısıtlarını modele dahil ederek literatürü bir adım ileri taşımışlardır. 
+Makale, Endüstri Mühendisliği perspektifinden üç birbiriyle çatışan amacı (multi-objective) aynı anda optimize etmeyi hedefler:
+1. **$C_{max}$ (Tamamlanma Zamanı):** Kaynak kullanımını maksimize etmek.
+2. **$T$ (Toplam Teslim Gecikmesi Süresi):** Müşteri şikayetlerini ve gecikme cezalarını minimize etmek.
+3. **$L$ (Geciken İş Sayısı):** Teslimat güvenilirliğini artırmak.
 
-Teslimat tarihlerini odağa alan **Lin vd. (2011)** ve **Wang vd. (2020)** ise gecikme süreleri (T) üzerine yoğunlaşmışlardır. Bu makalenin temel farkı, literatürde genellikle ayrı ayrı ele alınan üç farklı hedefi (Cₘₐₓ, T, L) aynı anda optimize eden ve AUGMECON gibi ileri bir teknikle Pareto kümesi üreten bütünleşik bir yaklaşım sunmasıdır.
-
----
-
-## 3. Problem Tanımı ve Notasyon
-
-Problem, n adet işin m adet teknolojik olarak birbirinden farklı paralel makinede çizelgelenmesini kapsar. Tüm işler sıfır anında hazırdır ve her iş tam olarak bir makineye atanmalıdır.
-
-### 3.1. Kümeler
-- N: İş kümesi {1, 2, ..., n}
-- N₀: Kukla iş "0"ı içeren genişletilmiş iş kümesi {0, 1, 2, ..., n}
-- M: Makineler kümesi {1, 2, ..., m}
-- K: Ürün aileleri kümesi
-
-### 3.2. Parametreler
-- Pⱼₖ: j işinin k makinesindeki işlem süresi.
-- Sᵢⱼₖ: k makinesinde, i işinden hemen sonra j işi yapılacaksa gereken sıra-bağımlı hazırlık süresi.
-- Dⱼ: j işinin teslim tarihi (due date).
-- NPⱼₖ: Makine kısıtı göstergesi. Eğer j işi k makinesinde işlenemezse NPⱼₖ=0, aksi halde 1.
-- V: Çok büyük pozitif bir sayı (Big-M).
-
-### 3.3. Karar Değişkenleri
-- Xᵢⱼₖ: Eğer k makinesinde j işi, i işinden hemen sonra yapılıyorsa 1, aksi halde 0 olan ikili değişken.
-- Cⱼ: j işinin tamamlanma zamanı.
-- Cₘₐₓ: Maksimum tamamlanma zamanı (Makespan).
-- eⱼ⁺: j işinin teslim gecikmesi (tardiness) miktarı.
-- eⱼ⁻: j işinin teslim tarihinden erken bitme (earliness) miktarı.
-- Uⱼ: Eğer j işi gecikmişse (Cⱼ > Dⱼ) 1, aksi halde 0 olan ikili değişken.
+### Literatürle Entegrasyon ve "Boşluk" (Tablo 1 Analizi)
+Orijinal metindeki **Tablo 1** (Literatür Özeti) incelendiğinde, bu üç hedefin neden bir arada olması gerektiği çok net görülür:
+- **Fanjul-Peyro vd.:** UPM sistemlerinde Cmax'ı mükemmel optimize etmelerine rağmen "hazırlık sürelerini (SDST)" yok saymışlardır.
+- **Vallada ve Ruiz (2011) / Gedik vd. (2018):** SDST kısıtını modele dahil etmişler, fakat teslimat gecikmelerini (T ve L) umursamamışlardır.
+- **Lin vd. (2011):** Sadece gecikmelere (T) odaklanmıştır.
+**Sonuç:** UPM + SDST ortamında $C_{max}$, $T$ ve $L$'yi **aynı anda** ele alan, hem kesin çözüm veren (MILP) hem de saniyeler içinde karar üreten (DDR) ilk bütünleşik çalışma bu makaledir.
 
 ---
 
-## 4. Matematiksel Modeller (MILP)
+## Aşama 2: Matematiksel Temeller ve AUGMECON Mimarisi
 
-### 4.1. M1 Modeli: Maksimum Tamamlanma Zamanı (Cₘₐₓ) Minimizasyonu
+Makale, problemi M1 ($C_{max}$ min.), M2 ($T$ min.) ve M3 ($L$ min.) olarak üç ayrı Karışık Tamsayılı Doğrusal Programlama (MILP) modeli olarak kurar. Modelin en kritik kısıtı, işlerin sıralanmasını ve araya giren hazırlık süresini hesaplayan "Big-M" kısıtıdır (Denklem 6):
 
-**Amaç Fonksiyonu:**
-Minimize Cₘₐₓ
+$C_j - C_i + V \cdot (1 - X_{i,j,k}) \geq S_{i,j,k} + P_{j,k}$
 
-**Kısıtlar:**
-(2)  Σₖ Σᵢ Xᵢⱼₖ = 1      ∀j ∈ N
-(3)  Σₖ Σⱼ Xᵢⱼₖ = 1      ∀i ∈ N
-(4)  Σⱼ Xᵢⱼₖ - Σₕ Xₕᵢₖ = 0      ∀k ∈ M, ∀i ∈ N
-(5)  Σⱼ X₀ⱼₖ ≤ 1      ∀k ∈ M
-(6)  Cⱼ - Cᵢ + V · (1 - Xᵢⱼₖ) ≥ Sᵢⱼₖ + Pⱼₖ      ∀i, j, k
-(7)  C₀ = 0
-(8)  Cⱼ ≤ Cₘₐₓ      ∀j ∈ N
-(9)  Σₖ Σᵢ Xᵢⱼₖ ≤ NPⱼₖ      ∀j ∈ N
-(10) Cⱼ ≥ 0,  Xᵢⱼₖ ∈ {0, 1}
-
-### 4.2. Çok Amaçlı Yapı ve AUGMECON — Mavrotas (2009)
-Müşteri memnuniyetini (T = Σ eⱼ⁺) ve geciken iş sayısını (L = Σ Uⱼ) aynı anda yönetmek için AUGMECON kullanılır. Mavrotas'ın 2009 yılında önerdiği bu yöntem, klasik ε-kısıt yöntemindeki "zayıf Pareto" sorunlarını, amaç fonksiyonuna çok küçük bir ε terimi ekleyerek ve lexicographic optimizasyon ile ödeme tablosu oluşturarak çözer.
+### AUGMECON ile Çok Amaçlı Optimizasyon (M4)
+Üç hedefin aynı anda optimize edildiği M4 modeli için **AUGMECON** (Artırılmış $\epsilon$-kısıt) yöntemi kullanılır. Bu yöntem, hedeflerden birini (örneğin $C_{max}$) amaç fonksiyonunda tutarken, diğerlerini (T ve L) kısıt olarak ($T \leq \epsilon_T$, $L \leq \epsilon_L$) modele ekler.
+- **Tablo 9 ve Figür 3 (Pareto Cephesi):** Küçük problem setlerinde algoritmanın ürettiği Pareto çözümlerini gösterir. Bir hedefin iyileşmesinin diğerini nasıl kötüleştirdiği (Trade-off) matematiksel olarak ispatlanmıştır.
 
 ---
 
-## 5. Sezgisel Yöntem: Dinamik Dağıtım Kuralları (DDR)
+## Aşama 3: Dinamik Dağıtım Kuralları (DDR) ve Algoritmik Akış
 
-### 5.1. SCT (Shortest Completion Time)
-İşlem süresi ile birlikte hazırlık süresini de minimize eder:
-min (Sᵢⱼₖ + Pⱼₖ)
+MILP ve AUGMECON sadece küçük problemleri çözebildiğinden, gerçek fabrika ölçeği için dinamik Sezgisel Yöntemler (Heuristics) geliştirilmiştir. (Bkz. **Figür 1 - Algoritma Akış Şeması**).
 
-### 5.2. SC-LPT ve SC-EDD
-Bu kurallar, en uzun işlem süreli (LPT) veya en erken teslim tarihli (EDD) işi seçip, onu en iyi tamamlanma zamanı sağlayan makineye atarlar:
-SC-LPT: min (Sᵢⱼ*ₖ + Pⱼ*ₖ)   şartıyla: Pⱼ* = max Pⱼ
-SC-EDD: min (Sᵢⱼ*ₖ + Pⱼ*ₖ)   şartıyla: Dⱼ* = min Dⱼ
+### Temel Kurallar (Tekli)
+1. **SCT (Shortest Completion Time):** Hazırlık ($S_{i,j,k}$) + İşlem Süresi ($P_{j,k}$) toplamı en kısa olan işi seçer. Amacı Cmax'ı düşürmektir.
+2. **SC-LPT:** İşlem süresi en uzun olan işi, en kısa zamanda tamamlayacak makineye atar.
+3. **SC-EDD:** Teslim tarihi ($D_j$) en erken olan işi, en kısa zamanda tamamlayacak makineye atar. Amacı gecikmeleri (T ve L) önlemektir.
 
----
-
-## 6. Karar Analizi: TOPSIS — Hwang ve Yoon (1981)
-
-**TOPSIS Adımları:**
-1. **Normalizasyon:** Performans değerleri hayali bir "en iyi" değere bölünerek normalize edilir (rₐ,₆).
-2. **Ağırlıklandırma:** Yöneticinin stratejik ağırlıkları (w_C, w_T, w_L) ile çarpılır.
-3. **İdeal Uzaklıklar:** Pozitif ideal (S⁺) ve Negatif ideal (S⁻) hayali çözümlere olan uzaklıklar hesaplanır.
-4. **Göreli Yakınlık (C*):** C* = S⁻ / (S⁺ + S⁻) skoru en yüksek olan kural seçilir.
+### Kural Değiştirme (Rule-Switching) Mekanizması
+Kurallar tek başlarına 3 hedefi birden iyileştiremez. Bu yüzden **$t_s$ (Kural Değiştirme Zamanı)** parametresiyle iki kural birleştirilir. Örneğin **[SCT & SC-EDD: $t_s$]** kuralı; üretimin başında sırf kaynak verimliliği için SCT'yi kullanır, ancak süre $t_s$'yi aştığında teslim tarihi yaklaşan işleri kurtarmak için aniden SC-EDD kuralına geçer.
+- **Tablo 2, 3, 4 ve 5:** Makalede verilen bu sayısal örnek tabloları, bu kuralların elle nasıl işletildiğini adım adım kanıtlar.
 
 ---
 
-## 7. Hesaplamalı Çalışma ve Uygulama Kanıtı
+## Aşama 4: Endüstriyel Veri Analizi: ANOVA, Regresyon ve TOPSIS
 
-Rapor kapsamında geliştirdiğimiz Python (Google OR-Tools CP-SAT) uygulaması, makaledeki MTZ kısıtlarını (Denklem 6) ve AUGMECON iterasyonlarını tam sadakatle koşturmuştur. Gantt şemasında gözlemlenen pembe bloklar (SDST), işlerin önüne tam olarak makaledeki mantıkla yerleşmiştir.
+Kurallar, Tayland'daki fabrikanın 18 aylık (Bkz. **Figür 4 - 18 Aylık Talep**) gerçek verileri üzerinde test edilmiştir. K-means kümeleme ile aylar "Düşük Talep" ve "Yüksek Talep" olarak ikiye ayrılmıştır.
+
+### İstatistiksel İspat (ANOVA ve Regresyon)
+- **Tablo 16 (ANOVA):** Kuralların, talep tiplerinin ve makinelerin performans üzerindeki etkisinin istatistiksel olarak anlamlı ($p < 0.05$) olduğu kanıtlanmıştır. En kötü kural olan SC-LPT elenmiştir.
+- **Figür 5 (Regresyon):** Farklı kuralların $C_{max}$ üzerindeki etkisi modellenmiş, SCT'nin Cmax'ı düşürmedeki ezici üstünlüğü görselleştirilmiştir.
+
+### TOPSIS ile Karar Analizi (Tablo 19)
+Üç hedeften elde edilen sonuçlar farklı birimlerdedir (Cmax ve T saat cinsinden, L adet cinsinden). Bu sonuçları birleştirmek için TOPSIS yöntemi uygulanmıştır.
+- Yönetici $C_{max}$'a önem veriyorsa: **SCT** tek başına en iyidir.
+- Yönetici Gecikmelere (T ve L) önem veriyorsa: **SC-EDD** kuralı ve onunla başlayan kombinasyonlar seçilmelidir.
 
 ---
 
-## 8. Sonuç
+## Aşama 5: Akademik ve Sektörel Çıktılar
 
-Bu çalışma, sıra-bağımlı hazırlık sürelerinin (SDST) ve çoklu hedeflerin (Cₘₐₓ, T, L) yönetildiği UPMSP problemi için uçtan uca bir çözüm sunmaktadır. AUGMECON ile kesin çözümler, DDR ve TOPSIS ile ise endüstriyel hızda pratik kararlar üretilmektedir.
+Bu makale, sıradan bir optimizasyon makalesi olmaktan çıkıp şu üç net değeri üretmiştir:
+1. **Teorik Katkı:** UPM + SDST sistemleri için $C_{max}$, $T$ ve $L$'yi tek bir çatı altında birleştiren güçlü bir M4 (AUGMECON) modeli literatüre kazandırılmıştır.
+2. **Algoritmik Katkı:** $t_s$ zaman parametresine bağlı "Rule-Switching" mantığı, NP-Zor problemlerde inanılmaz bir işlem yükü tasarrufu sağlamış ve çok pratik bir sezgisel mimari oluşturmuştur.
+3. **Endüstriyel Katkı:** Tayland'daki çelik boru fabrikası, TOPSIS karar analizi sayesinde üretim döneminin başındaki yoğunluk durumuna göre (düşük/yüksek talep) vardiya amirlerine "Hangi saatte hangi kurala geçeceklerini" dikte edebilecek bir karar destek sistemine (DSS) kavuşmuştur.
