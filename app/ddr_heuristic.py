@@ -70,7 +70,7 @@ class DDRResult:
 def _select_sct(remaining: set, eligible: dict, machine_end: dict,
                 last_job: dict, P: dict, S: dict, m: int) -> tuple[int, int]:
     """
-    SCT: Tüm (j, k) çiftlerinden  min(S[last_job[k]][j][k] + P[j][k])  seçer.
+    SCT: Tüm (j, k) çiftlerinden  min(machine_end[k] + S[last_job[k]][j][k] + P[j][k])  seçer.
     Tie-break: iş indeksi küçük olan.
     """
     best_val = float("inf")
@@ -80,7 +80,7 @@ def _select_sct(remaining: set, eligible: dict, machine_end: dict,
             if k not in eligible.get(j, set()):
                 continue
             prev = last_job[k]  # -1 = dummy
-            val = S[prev][j][k] + P[j][k]
+            val = machine_end[k] + S[prev][j][k] + P[j][k]
             if val < best_val or (val == best_val and j < best_j):
                 best_val = val
                 best_j, best_k = j, k
@@ -92,7 +92,7 @@ def _select_sclpt(remaining: set, eligible: dict, machine_end: dict,
     """
     SC-LPT:
       1. j* = argmax_{j∈Nj, k∈Mj}  P[j][k]   (en uzun işlem süreli iş)
-      2. k* = argmin_{k∈Mj*}  (S[last[k]][j*][k] + P[j*][k])
+      2. k* = argmin_{k∈Mj*}  (machine_end[k] + S[last[k]][j*][k] + P[j*][k])
     """
     # Adım 1: En uzun P[j][k] — tüm uygun (j,k) çiftlerinde
     best_p = -1
@@ -103,12 +103,12 @@ def _select_sclpt(remaining: set, eligible: dict, machine_end: dict,
                 best_p = P[j][k]
                 best_j = j
 
-    # Adım 2: j* için en iyi makine
+    # Adım 2: j* için en iyi makine (en erken bitiren)
     best_val = float("inf")
     best_k   = -1
     for k in eligible.get(best_j, set()):
         prev = last_job[k]
-        val  = S[prev][best_j][k] + P[best_j][k]
+        val  = machine_end[k] + S[prev][best_j][k] + P[best_j][k]
         if val < best_val:
             best_val = val
             best_k   = k
@@ -121,7 +121,7 @@ def _select_scedd(remaining: set, eligible: dict, machine_end: dict,
     """
     SC-EDD:
       1. j* = argmin_{j∈Nj}  D[j]   (en erken termin)
-      2. k* = argmin_{k∈Mj*}  (S[last[k]][j*][k] + P[j*][k])
+      2. k* = argmin_{k∈Mj*}  (machine_end[k] + S[last[k]][j*][k] + P[j*][k])
     """
     # Adım 1: En erken teslim tarihi
     best_d = float("inf")
@@ -131,12 +131,12 @@ def _select_scedd(remaining: set, eligible: dict, machine_end: dict,
             best_d = D[j]
             best_j = j
 
-    # Adım 2: j* için en iyi makine
+    # Adım 2: j* için en iyi makine (en erken bitiren)
     best_val = float("inf")
     best_k   = -1
     for k in eligible.get(best_j, set()):
         prev = last_job[k]
-        val  = S[prev][best_j][k] + P[best_j][k]
+        val  = machine_end[k] + S[prev][best_j][k] + P[best_j][k]
         if val < best_val:
             best_val = val
             best_k   = k

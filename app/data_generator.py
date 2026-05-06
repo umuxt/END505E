@@ -123,14 +123,20 @@ def generate_problem(n: int, m: int, seed: int = 42,
           f"(aile bazlı: aynı={S_MIN_SAME}-{S_MAX_SAME}, farklı={S_MIN_DIFF}-{S_MAX_DIFF})")
 
     # ── Teslim Tarihleri: D[j] ───────────────────────────────────────────────
-    # D_j = slack × (toplam ortalama yük / makine sayısı)
-    # Sadece yapılabilir (NP=1) işlem sürelerini kullan
+    # Teslim tarihleri sistemin beklenen makespan'ine (ortalama yük) göre,
+    # başlangıçtan maksimum bir slack zamanına kadar düzgün (uniform) dağılmalıdır.
+    # Aksi takdirde tüm işlerin teslim tarihi 4000+ olur ve gecikme 0 çıkar.
     eligible_p = [P[j][k] for j in range(n) for k in range(m) if NP[j][k] == 1]
     avg_p = sum(eligible_p) / len(eligible_p) if eligible_p else 20
+    expected_cmax = (n / m) * avg_p
     D = {}
     for j in range(n):
         slack = rng.uniform(D_SLACK_MIN, D_SLACK_MAX)
-        D[j] = round(slack * avg_p * n / m, 2)
+        max_d = slack * expected_cmax
+        # J işinin yapılabildiği makinelerdeki en kısa işlem süresi
+        min_p = min([P[j][k] for k in range(m) if NP[j][k] == 1])
+        # Teslim tarihi, [min_p, max_d] aralığında rastgele seçilir
+        D[j] = round(rng.uniform(min_p, max_d), 2)
 
     print(f"[GEN]  ✓ Teslim tarihleri D[j] üretildi  (ortalama yapılabilir P={avg_p:.1f})")
 

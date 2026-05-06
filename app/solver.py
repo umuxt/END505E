@@ -160,7 +160,6 @@ def solve(data: ProblemData, cfg: SolverConfig) -> SolverResult:
             # Kısıt (5,6): Eğer j ilk iş ise, start >= S[-1][j][k]
             s_dummy = data.S[-1][j][k] * sc
             model.Add(start[j][k] >= s_dummy).OnlyEnforceIf(b_dj)
-            model.Add(end_[j][k] == start[j][k] + data.P[j][k] * sc).OnlyEnforceIf(b_dj)
 
             # 4. j -> DUMMY : j bu makinedeki SON iş
             b_jd = model.NewBoolVar(f"a_{k}_{j}_d")
@@ -177,7 +176,6 @@ def solve(data: ProblemData, cfg: SolverConfig) -> SolverResult:
                 # Kısıt (6): Eğer i'den sonra j geliyorsa, start_j >= end_i + S[i][j]
                 sij = data.S[i][j][k] * sc
                 model.Add(start[j][k] >= end_[i][k] + sij).OnlyEnforceIf(b_ij)
-                model.Add(end_[j][k] == start[j][k] + data.P[j][k] * sc).OnlyEnforceIf(b_ij)
 
         # CP-SAT devreyi kurar
         model.AddCircuit(arcs)
@@ -187,8 +185,12 @@ def solve(data: ProblemData, cfg: SolverConfig) -> SolverResult:
     # ── Performans Değişkenleri ───────────────────────────────────────────────
     C_j = [model.NewIntVar(0, BIG, f"C_{j}") for j in range(n)]
     for j in range(n):
+        # C_j = Σ_k C_{j,k} (Eksik olan C_{i,k} toplamaları)
+        model.Add(C_j[j] == sum(end_[j][k] for k in range(m)))
+
         for k in range(m):
-            model.Add(C_j[j] == end_[j][k]).OnlyEnforceIf(assign[j][k])
+            # Eğer iş k makinesindeyse, bitiş = başlama + işlem süresi
+            model.Add(end_[j][k] == start[j][k] + data.P[j][k] * sc).OnlyEnforceIf(assign[j][k])
 
     Cmax = model.NewIntVar(0, BIG, "Cmax")
     model.AddMaxEquality(Cmax, C_j)
@@ -200,7 +202,11 @@ def solve(data: ProblemData, cfg: SolverConfig) -> SolverResult:
         tard = model.NewIntVar(0, BIG, f"tard_{j}")
         model.AddMaxEquality(tard, [C_j[j] - D_sc[j], model.NewConstant(0)])
         tards.append(tard)
+        
         uj = model.NewBoolVar(f"U_{j}")
+        # Kısıt (16): ej+ ≤ V × Uj (Gecikme varsa Uj=1 olmalı)
+        model.Add(tard <= BIG * uj)
+        # Mantıksal bağ: tard > 0 <-> uj=1
         model.Add(tard > 0).OnlyEnforceIf(uj)
         model.Add(tard == 0).OnlyEnforceIf(uj.Not())
         U_j.append(uj)

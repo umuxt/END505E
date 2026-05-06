@@ -60,6 +60,7 @@ def menu():
     print("  [4]  " + Colors.CYAN + "DDR Sezgisel — Tek Kural (Adım Adım Log)" + Colors.ENDC)
     print("  [5]  " + Colors.HEADER + "TOPSIS Analizi (DDR sonuçlarından en iyi kuralı seç)" + Colors.ENDC)
     print("  [6]  " + Colors.HEADER + "AUGMECON (ε-constraint ile Pareto Kümesi Çözümü)" + Colors.ENDC)
+    print("  [8]  " + Colors.YELLOW + "Raporu PDF Olarak Çıktı Al (Unicode Uyumlu)" + Colors.ENDC)
     print("  [7]  " + Colors.RED + "Çıkış" + Colors.ENDC)
     print(Colors.BLUE + "─" * 62 + Colors.ENDC)
     return input(Colors.BOLD + "  Seçiminiz: " + Colors.ENDC).strip()
@@ -354,6 +355,28 @@ def flow_augmecon():
         select_best_pareto(pareto_set, wC, wT, wL)
 
 
+# ─── Akış 8: PDF Çıktı Al ───────────────────────────────────────────────────
+
+def flow_export_pdf():
+    print("\n  ─── PDF Üretiliyor ───────────────────────────────────────")
+    print("  [BİLGİ] 'npx md-to-pdf' kütüphanesi kullanılıyor...")
+    print("  [BİLGİ] Lütfen bekleyin, bu işlem biraz zaman alabilir (arka planda Chrome çalıştırılır).")
+    
+    report_file = os.path.join(ROOT, "11_UPMSP_Proje_Raporu_Final.md")
+    if not os.path.exists(report_file):
+        print(f"  [HATA] '{report_file}' bulunamadı.")
+        return
+        
+    ret = os.system(f"npx md-to-pdf \"{report_file}\"")
+    if ret == 0:
+        pdf_file = report_file.replace(".md", ".pdf")
+        print(f"\n  [OK] Rapor başarıyla PDF'e dönüştürüldü!")
+        print(f"  [OK] Dosya Konumu: {pdf_file}")
+    else:
+        print(f"\n  [HATA] PDF dönüştürme işlemi başarısız oldu (Hata Kodu: {ret}).")
+        print("  Sisteminizde Node.js ve npx kurulu olduğundan emin olun.")
+
+
 # ─── Ana Döngü ──────────────────────────────────────────────────────────────
 
 def main():
@@ -367,6 +390,7 @@ def main():
         elif choice == "4": flow_ddr_single()
         elif choice == "5": flow_topsis()
         elif choice == "6": flow_augmecon()
+        elif choice == "8": flow_export_pdf()
         elif choice == "7":
             print("\n  İyi çalışmalar!\n")
             break
