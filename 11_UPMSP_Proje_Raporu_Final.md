@@ -110,7 +110,7 @@ Denklem (7), kukla işin tamamlanma zamanının 0 olduğunu gösterir. Denklem (
 
 **[BURAYA DENKLEM 9 GÖRSELİ EKLENECEK]**
 Denklem (9), eğer bir kısıtlama varsa $j$ işinin makinede işlenemeyeceğini belirler. 
-> **Analitik Not:** Orijinal makale metninde $k$ indisi toplam sembolünün altında yer alırken, sağ tarafta $NP_{j,k}$ parametresi içinde serbest bırakılmıştır. Bu durum boyutsal bir tutarsızlığa işaret etmektedir. Modelin doğruluğu açısından kısıt; $\sum_{i} X_{i,j,k} \leq NP_{j,k} \quad \forall j \in N, \forall k \in M$ şeklinde uygulanmalıdır. Bu yapı, her bir işin sadece yetkin olduğu makinelere atanmasını garanti altına almaktadır.
+> **Analitik Not:** Orijinal makale metninde $k$ indisi toplam sembolünün altında yer alırken, sağ tarafta $NP_{j,k}$ parametresi içinde serbest bırakılmıştır. Bu durum **notasyonel bir çelişkiye** işaret etmektedir. Modelin doğruluğu açısından kısıt; $\sum_{i} X_{i,j,k} \leq NP_{j,k} \quad \forall j \in N, \forall k \in M$ şeklinde uygulanmalıdır. Bu yapı, her bir işin sadece yetkin olduğu makinelere atanmasını garanti altına almaktadır. Uygulama kodumuzda (`solver_milp.py`) bu kısıt düzeltilmiş haliyle modellenmiştir.
 
 **[BURAYA DENKLEM 10 VE 11 GÖRSELLERİ EKLENECEK]**
 Son olarak, Denklem (10)-(11) karar değişkenlerinin türlerini belirler.
@@ -133,7 +133,7 @@ Minimize $L = \sum_{j \in N} U_j$ (15)
 Bu modelde (2)-(10) kısıtlarına ek olarak aşağıdaki kısıtlar eklenir:
 **[BURAYA DENKLEM 16 VE 17 GÖRSELLERİ EKLENECEK]**
 Amaç fonksiyonu (15) geciken iş sayısını en aza indirir. Ek kısıtlar (16) ve (17) sırasıyla her bir işin gecikme durumunu ve ek karar değişkeninin türünü belirler.
-> **Analitik Not:** Orijinal metindeki dizgi hatası nedeniyle $e^+_j = V \times U_j$ olarak ifade edilen kısıt, standart Doğrusal Programlama prensipleri gereği $e^+_j \leq V \times U_j$ olarak düzeltilmiştir. Eşitlik durumunda model, gecikme süresini yapay olarak $V$ sabitine eşitlemeye zorlanacak ve çözümün doğruluğu bozulacaktır.
+> **Analitik Not:** Orijinal metindeki dizgi hatası nedeniyle $e^+_j = V \times U_j$ olarak ifade edilen kısıt, standart Doğrusal Programlama prensipleri gereği $e^+_j \leq V \times U_j$ olarak düzeltilmiştir. Eşitlik durumunda model, gecikme süresini yapay olarak $V$ sabitine eşitlemeye zorlanacak ve **çözüm uzayını hatalı şekilde daraltacaktır.**
 
 #### 3.2.4. Üç Performans Ölçütü Arasındaki Uzlaşmacı Çözümleri Belirle (M4 Modeli ve AUGMECON)
 Uzlaşmacı (compromise) çözümler bulmak için çok amaçlı M4 modeli aşağıdaki gibi formüle edilmiştir:
@@ -224,61 +224,22 @@ Algoritma Python programlama dili kullanılarak uygulanmıştır.
 Önerilen dağıtım kurallarını göstermek için sayısal bir örnek sunulmuştur. İki ilişkisiz paralel makine tarafından işlenecek üç iş varsayalım. İşlem süreleri, hazırlık süreleri ve teslim tarihleri Tablo 2'de listelenmiştir. İş 1 ve 2 aynı ailede olduğu için hazırlık süreleri kısadır. İş 3 farklı bir ailede olduğu için hazırlık süreleri daha uzundur.
 
 ### Tablo 2: Sayısal Örnek Verileri (Numerical example data)
+**[BURAYA TABLO 2 GÖRSELİ EKLENECEK - Numerical example data]**
 
-| $j$ | $P_{j,1}$ | $P_{j,2}$ | $D_j$ | $i$ | $S_{i,j,1}$ ($j=1,2,3$) | $S_{i,j,2}$ ($j=1,2,3$) |
-|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| 1 | 9 | 6 | 30 | 1 | 0 | 0 |
-| 2 | 22 | 16 | 20 | 2 | 0.5, 0, 5 | 0.5, 0, 3 |
-| 3 | 28 | 22 | 32 | 3 | 5, 5, 0 | 3, 3, 0 |
-
-*(Not: Tablodaki hazırlık süreleri matris formundadır. Örneğin $S_{i,j,1}$ için sütunlar $j=1,2,3$'ü, satırlar $i=1,2,3$'ü temsil eder.)*
-
-### 4.5.1. SCT Kuralı Uygulaması
-
-SCT kuralının adımları Tablo 3'te sunulmuştur.
+...
 
 **Tablo 3: SCT Adımları**
+**[BURAYA TABLO 3 GÖRSELİ EKLENECEK - SCT rule steps]**
 
-| Adım | $j$ | $D_j$ | $P_{j,1}$ | $P_{j,2}$ | $S_{i,j,1}$ | $S_{i,j,2}$ | $C_{j,1}$ | $C_{j,2}$ | $j^*$ | $M_{j^*}$ |
-|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| 1 | 1 | 30 | 9 | 6 | 0 | 0 | 9 | **6** | 1 | 2 |
-| | 2 | 20 | 22 | 16 | 0 | 0 | 22 | 16 | | |
-| | 3 | 32 | 28 | 22 | 0 | 0 | 28 | 22 | | |
-| 2 | 2 | 20 | 22 | 16 | 0 | 0.5 | **22** | 22.5 | 2 | 1 |
-| | 3 | 32 | 28 | 22 | 0 | 3 | 28 | 31 | | |
-| 3 | 3 | 32 | 28 | 22 | 5 | 3 | 55 | **31** | 3 | 2 |
-
-Bu çizelge sonucunda: $C_{max} = 31$ saat, toplam gecikme $T = 2$ saat ve yalnızca iş 2 gecikmiştir ($L = 1$).
-
-### 4.5.2. Kombine Kural Uygulaması [SCT & SC-LPT: $t_s=5$]
-
-SCT ile başlayıp 5. saatten sonra SC-LPT'ye geçen kuralın adımları Tablo 4'te gösterilmiştir.
+...
 
 **Tablo 4: [SCT & SC-LPT: $t_s=5$] Adımları**
+**[BURAYA TABLO 4 GÖRSELİ EKLENECEK - Combined rule steps]**
 
-| Adım | $j$ | $D_j$ | $P_{j,1}$ | $P_{j,2}$ | $S_{i,j,1}$ | $S_{i,j,2}$ | $C_{j,1}$ | $C_{j,2}$ | $j^*$ | $M_{j^*}$ |
-|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| 1 | 1 | 30 | 9 | 6 | 0 | 0 | 9 | **6** | 1 | 2 |
-| | 2 | 20 | 22 | 16 | 0 | 0 | 22 | 16 | | |
-| | 3 | 32 | 28 | 22 | 0 | 0 | 28 | 22 | | |
-| 2 | 3 | 32 | 28 | 22 | 0 | 3 | **28** | 31 | 3 | 1 |
-| | 2 | 20 | 22 | 16 | 0 | 0.5 | 22 | 22.5 | | |
-| 3 | 2 | 20 | 22 | 16 | 5 | 0.5 | 55 | **22.5** | 2 | 2 |
-
-Kombine kural ile: $C_{max} = 28$ saat, $T = 2.5$ saat ve $L = 1$.
-
-### 4.5.3. Sonuçların Özeti
-
-Sayısal örnekteki dört kuralın performansı Tablo 5'te özetlenmiştir.
+...
 
 **Tablo 5: Dört Kural İçin Sonuçların Özeti**
-
-| Kural | $C_{max}$ | $T$ | $L$ |
-|:---|:---:|:---:|:---:|
-| SCT | 31 | 2 | 1 |
-| SC-LPT | 31 | 3 | 2 |
-| SC-EDD | 41 | 9 | 1 |
-| [SCT & SC-LPT] | **28** | 2.5 | 1 |
+**[BURAYA TABLO 5 GÖRSELİ EKLENECEK - Summary of four rules performance]**
 
 Genel olarak, ilk üç kural arasında SCT'nin bu örnekte en iyi performansı gösterdiği gözlemlenmiştir. Ayrıca, kombine kuralların SCT kuralına göre $C_{max}$ değerini iyileştirebildiği (gecikmede küçük bir artış pahasına) görülmüştür. Bu durum, kuralları birleştirmenin potansiyel faydasını göstermektedir.
 
@@ -305,14 +266,26 @@ Makalede kullanılan TOPSIS süreci 5 temel adımdan oluşur:
 
 ## 6. Hesaplamalı Çalışma ve Sonuçlar
 
-### 6.1. Küçük Ölçekli Problemler ve MILP Performansı
-Küçük ölçekli testlerde (10 iş, 3 makine), AUGMECON yöntemiyle kesin çözümler elde edilmiştir. Ancak, problemin NP-Hard doğası gereği 10 işlik bir setin çözümü dahi 5 saati aşabilmektedir.
+### 6.1. Küçük Ölçekli Problemler ve Çözücü Performansı
+Küçük ölçekli testlerde (10 iş, 3 makine), makale denklemlerine %100 sadık kalan **Akademik MILP (SCIP)** çözücü ve endüstriyel hız sağlayan **CP-SAT** çözücü bir arada kullanılmıştır. 
+
+**[BURAYA TABLO 6 GÖRSELİ EKLENECEK - Computational times for small instances]**
+
+- **Akademik Doğrulama:** SCIP çözücüsü, makaledeki denklemleri (bizim yaptığımız kısıt düzeltmeleriyle birlikte) doğrudan işlemiş ve Tablo 7'deki sonuçları birebir doğrulamıştır.
+- **Performans Farkı:** CP-SAT çözücüsü, aynı optimal sonuçlara SCIP'ten çok daha kısa sürede ulaşarak modelin endüstriyel uygulamalardaki potansiyelini kanıtlamıştır.
+
+**[BURAYA ŞEKİL 2 VE 3 GÖRSELLERİ EKLENECEK - Job sequences from MILP models]**
 
 ### 6.2. Büyük Ölçekli Problemler ve DDR Başarısı
 Gerçek dünya verileriyle (200+ iş) yapılan testlerde şu sonuçlar elde edilmiştir:
+
+**[BURAYA TABLO 12 GÖRSELİ EKLENECEK - Comparison of heuristics results]**
+
 - **SCT:** Üretim odaklı (düşük $C_{max}$) senaryolarda en iyi sonucu verir.
 - **SC-EDD:** Müşteri odaklı (düşük $T$ ve $L$) senaryolarda üstündür.
 - **DDR Hibrit:** Kural değiştirme mekanizması sayesinde genel optimizasyonda tekli kuralların tamamını geride bırakmıştır.
+
+**[BURAYA TABLO 13 GÖRSELİ EKLENECEK - Performance on P1 instance]**
 
 > **Teknik Şerh:** Analizler göstermektedir ki, MILP modeli 10 iş ve 3 makine sınırının ötesinde pratikliğini yitirmektedir. Endüstriyel uygulamalarda **SCT & SC-EDD** hibrit kuralının kullanımı, hem makine verimliliği hem de müşteri terminlerine uyum açısından en sağlam (robust) sonuçları vermektedir.
 
