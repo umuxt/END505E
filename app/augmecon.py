@@ -42,12 +42,14 @@ def is_dominated(sol1: ParetoSolution, sol2: ParetoSolution) -> bool:
 
 
 def run_augmecon(data: ProblemData, time_limit: int = 60,
-                 grid_T: int = 4, grid_L: int = 4) -> list[ParetoSolution]:
+                 grid_T: int = 4, grid_L: int = 4,
+                 solver_func = solve) -> list[ParetoSolution]:
     """
     AUGMECON yöntemini çalıştırarak Pareto çözüm kümesini döndürür.
     """
     print("\n" + "═" * 70)
-    print("  AUGMECON (ε-constraint) YÖNTEMİ BAŞLIYOR (M4 Pareteo Analizi)")
+    solver_name = "CP-SAT" if solver_func == solve else "MILP-SCIP"
+    print(f"  AUGMECON BAŞLIYOR (M4 Pareto Analizi - Çözücü: {solver_name})")
     print("═" * 70)
 
     # ── ADIM 1: Payoff Table (Ödeme Tablosu) ─────────────────────────────
@@ -56,7 +58,7 @@ def run_augmecon(data: ProblemData, time_limit: int = 60,
     # M1: Min Cmax
     print("\n  >> M1: Min Cmax çözülüyor...")
     cfg1 = SolverConfig(obj_type='Cmax', time_limit=time_limit)
-    res1 = solve(data, cfg1)
+    res1 = solver_func(data, cfg1)
     if res1.status not in ("OPTIMAL", "FEASIBLE"):
         print("  [HATA] M1 çözülemedi, AUGMECON iptal ediliyor.")
         return []
@@ -64,7 +66,7 @@ def run_augmecon(data: ProblemData, time_limit: int = 60,
     # M2: Min T
     print("\n  >> M2: Min T çözülüyor...")
     cfg2 = SolverConfig(obj_type='T', time_limit=time_limit)
-    res2 = solve(data, cfg2)
+    res2 = solver_func(data, cfg2)
     if res2.status not in ("OPTIMAL", "FEASIBLE"):
         print("  [HATA] M2 çözülemedi, AUGMECON iptal ediliyor.")
         return []
@@ -72,7 +74,7 @@ def run_augmecon(data: ProblemData, time_limit: int = 60,
     # M3: Min L
     print("\n  >> M3: Min L çözülüyor...")
     cfg3 = SolverConfig(obj_type='L', time_limit=time_limit)
-    res3 = solve(data, cfg3)
+    res3 = solver_func(data, cfg3)
     if res3.status not in ("OPTIMAL", "FEASIBLE"):
         print("  [HATA] M3 çözülemedi, AUGMECON iptal ediliyor.")
         return []
@@ -130,7 +132,7 @@ def run_augmecon(data: ProblemData, time_limit: int = 60,
             # Ancak kapsamlılık için her noktayı çözelim.
             cfg_m4 = SolverConfig(obj_type='Cmax', time_limit=time_limit, T_bar=t_bar, L_bar=l_bar)
             
-            res_m4 = solve(data, cfg_m4)
+            res_m4 = solver_func(data, cfg_m4)
             
             if res_m4.status in ("OPTIMAL", "FEASIBLE"):
                 print(f"    ✓ Çözüm bulundu: Cmax={res_m4.Cmax:.2f}, T={res_m4.total_tardiness:.2f}, L={res_m4.num_tardy}")

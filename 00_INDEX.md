@@ -34,3 +34,6 @@ Bu repo, makaledeki akademik angaryalardan arındırılarak Endüstri Mühendisl
 ## Ana Referans Dosyası
 Tüm projenin teknik özeti ve hocaya sunulacak final anlatım metni tek bir dosyada toplanmıştır:
 👉 **[11_UPMSP_Proje_Raporu_Final.md](./11_UPMSP_Proje_Raporu_Final.md)**
+
+Uygulamanın kurulum ve kullanım detayları için:
+👉 **[README.md](./README.md)**

@@ -32,6 +32,7 @@ from app.ddr_heuristic import (
 )
 from app.topsis import run_topsis, print_topsis_results
 
+from app.solver_milp import solve_milp
 from app.augmecon import run_augmecon, ParetoSolution, select_best_pareto
 from app.utils import Colors, print_gantt_chart
 
@@ -55,7 +56,8 @@ def menu():
     print(Colors.BLUE + "─" * 62 + Colors.ENDC)
     print("  [0]  " + Colors.HEADER + Colors.BOLD + "Makale Akışı (Tüm Analizleri Tek Seferde Çalıştır)" + Colors.ENDC)
     print("  [1]  " + Colors.YELLOW + "Yeni veri seti oluştur" + Colors.ENDC)
-    print("  [2]  " + Colors.GREEN + "OR-Tools CP-SAT ile Exact Çöz (MILP)" + Colors.ENDC)
+    print("  [2]  " + Colors.GREEN + "CP-SAT ile Hızlı Çöz (Constraint Programming)" + Colors.ENDC)
+    print("  [9]  " + Colors.GREEN + "Akademik MILP Çöz (Makale Denklemleri - SCIP)" + Colors.ENDC)
     print("  [3]  " + Colors.CYAN + "DDR Sezgisel — Tüm 39 Kural Konfigürasyonu" + Colors.ENDC)
     print("  [4]  " + Colors.CYAN + "DDR Sezgisel — Tek Kural (Adım Adım Log)" + Colors.ENDC)
     print("  [5]  " + Colors.HEADER + "TOPSIS Analizi (DDR sonuçlarından en iyi kuralı seç)" + Colors.ENDC)
@@ -175,8 +177,9 @@ def flow_full_pipeline():
     print_topsis_results(topsis_results, 0.334, 0.333, 0.333)
     
     if n <= 15:
-        print("\n" + Colors.CYAN + "  [AŞAMA 4] Problem boyutu küçük (n<=15), AUGMECON çalıştırılıyor..." + Colors.ENDC)
-        pareto_set = run_augmecon(data, time_limit=30, grid_T=4, grid_L=4)
+        print("\n" + Colors.CYAN + "  [AŞAMA 4] Problem boyutu küçük (n<=15), Akademik MILP (AUGMECON) çalıştırılıyor..." + Colors.ENDC)
+        # augmecon.py içerisinde solve fonksiyonu kullanılıyor, onu da parametrik yapalım
+        pareto_set = run_augmecon(data, time_limit=30, grid_T=4, grid_L=4, solver_func=solve_milp)
         if pareto_set:
             print("\n" + Colors.CYAN + "  [AŞAMA 5] Nihai Pareto Seçimi (Formül 20)" + Colors.ENDC)
             best_sol = select_best_pareto(pareto_set, 0.5, 0.4, 0.1)
@@ -377,6 +380,31 @@ def flow_export_pdf():
         print("  Sisteminizde Node.js ve npx kurulu olduğundan emin olun.")
 
 
+# ─── Akış 9: MILP Çöz ───────────────────────────────────────────────────────
+
+def flow_milp():
+    if not os.path.exists(DATA_PATH):
+        print("  [HATA] Önce veri seti oluşturun (Menü 1).")
+        return
+
+    raw, n, m, P, S, D, NP = load_and_parse()
+    print_problem_summary(raw)
+
+    print("\n  ─── Amaç Fonksiyonu Ağırlıkları (MILP-SCIP) ─────────")
+    W1 = ask_float("W1 - Cmax ağırlığı", 0.5)
+    W2 = ask_float("W2 - Toplam Gecikme (T) ağırlığı", 0.4)
+    W3 = round(max(0.0, 1.0 - W1 - W2), 4)
+    print(f"  W3 - Geciken İş Sayısı (L) → {W3}")
+    tlimit = ask_int("Zaman limiti (saniye)", 120)
+
+    data   = ProblemData(n=n, m=m, P=P, S=S, D=D, NP=NP)
+    cfg    = SolverConfig(W1=W1, W2=W2, W3=W3, time_limit=tlimit)
+    result = solve_milp(data, cfg)
+    print_cpsat_results(result, raw)
+    if result.status in ("OPTIMAL", "FEASIBLE"):
+        print_gantt_chart(result.schedule, result.Cmax)
+
+
 # ─── Ana Döngü ──────────────────────────────────────────────────────────────
 
 def main():
@@ -386,6 +414,7 @@ def main():
         if   choice == "0": flow_full_pipeline()
         elif choice == "1": flow_generate()
         elif choice == "2": flow_cpsat()
+        elif choice == "9": flow_milp()
         elif choice == "3": flow_ddr_all()
         elif choice == "4": flow_ddr_single()
         elif choice == "5": flow_topsis()
