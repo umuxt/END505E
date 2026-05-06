@@ -18,29 +18,31 @@ class Colors:
 
 
 def get_html_gantt(schedule: dict, cmax: float, families: dict) -> str:
-    """PDF için şık, detaylı ve yatay bir HTML Gantt şeması üretir."""
+    """PDF için geniş, detaylı ve yatay bir HTML Gantt şeması üretir."""
     if cmax <= 0: return "<p>Çizelgelenmiş iş yok.</p>"
     
     html = [
-        "<div style='page-break-before: always;'></div>", # Yeni sayfaya geç
+        "<div style='page-break-before: always;'></div>",
         "<style>",
-        "  @page { size: A4 landscape; margin: 1cm; }", # Bu sayfadan itibaren yatay yap
-        "  .gantt-container { font-family: sans-serif; width: 100%; border-collapse: collapse; table-layout: fixed; border: 1px solid #aaa; }",
-        "  .m-row { height: 40px; border-bottom: 1px solid #ddd; }",
-        "  .m-label { width: 50px; font-weight: bold; background: #f4f4f4; text-align: center; }",
-        "  .gantt-track { position: relative; background: #eee; height: 30px; width: 1000px; overflow: hidden; }",
-        "  .block { position: absolute; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 9px; color: white; overflow: hidden; white-space: nowrap; }",
-        "  .setup { background: #8e44ad; opacity: 0.7; }",
-        "  .job { background: #27ae60; border-left: 1px solid #2ecc71; font-weight: bold; }",
-        "  .time-axis { display: flex; justify-content: space-between; padding: 5px 0 0 50px; font-size: 10px; color: #666; }",
-        "  @page { size: A4 landscape; margin: 1cm; }",
+        "  @page { size: A4 landscape; margin: 0.5cm; }",
+        "  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }",
+        "  .gantt-wrapper { width: 2500px; margin-top: 20px; border: 1px solid #ccc; background: #fff; }",
+        "  .m-row { display: flex; border-bottom: 1px solid #eee; position: relative; height: 50px; }",
+        "  .m-label { width: 60px; background: #34495e; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; z-index: 10; }",
+        "  .gantt-data { position: relative; flex-grow: 1; background: #fdfdfd; overflow: hidden; }",
+        "  .block { position: absolute; height: 36px; top: 7px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 8px; line-height: 1; color: white; border-radius: 2px; box-shadow: inset 0 0 2px rgba(0,0,0,0.2); overflow: hidden; }",
+        "  .setup { background: #9b59b6; opacity: 0.8; z-index: 1; }",
+        "  .job { background: #27ae60; z-index: 2; border: 1px solid #1e8449; }",
+        "  .time-scale { display: flex; justify-content: space-between; margin-left: 60px; padding: 5px 0; font-size: 11px; font-weight: bold; color: #2c3e50; border-top: 2px solid #34495e; }",
+        "  h2 { color: #2c3e50; border-bottom: 2px solid #34495e; padding-bottom: 5px; }",
         "</style>",
-        "<div style='overflow-x: auto;'>",
-        "  <table class='gantt-container'>",
+        "<div style='width: 100%; overflow-x: visible;'>",
+        "  <h2>Yüksek Çözünürlüklü Makine Çizelgesi (Gantt Şeması)</h2>",
+        "  <div class='gantt-wrapper'>",
     ]
 
     for k in sorted(schedule.keys()):
-        html.append(f"    <tr class='m-row'><td class='m-label'>M{k}</td><td style='position:relative; height:40px;'>")
+        html.append(f"    <div class='m-row'><div class='m-label'>M{k}</div><div class='gantt-data'>")
         current_t = 0.0
         for (j, start, end) in schedule[k]:
             # Setup
@@ -55,12 +57,14 @@ def get_html_gantt(schedule: dict, cmax: float, families: dict) -> str:
             left = (start / cmax) * 100
             width = (j_dur / cmax) * 100
             f_code = families.get(str(j), "?")
-            html.append(f"<div class='block job' style='left:{left}%; width:{width}%;' title='İş {j} (Aile {f_code})'>J{j}<br>F{f_code}</div>")
+            # Metin sığmıyorsa sadece J numarasını yaz
+            label = f"J{j}<br>F{f_code}" if width > 2 else f"{j}"
+            html.append(f"<div class='block job' style='left:{left}%; width:{width}%;' title='İş {j} (Aile {f_code})'>{label}</div>")
             current_t = end
-        html.append("    </td></tr>")
+        html.append("    </div></div>")
 
-    html.append("  </table>")
-    html.append(f"  <div class='time-axis'><span>0</span><span>{cmax:.1f} (Zaman)</span></div>")
+    html.append("  </div>")
+    html.append(f"  <div class='time-scale'><span>BAŞLANGIÇ (0)</span><span>TAMAMLANMA ZAMANI ({cmax:.1f} saat)</span></div>")
     html.append("</div>")
     
     return "\n".join(html)

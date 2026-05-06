@@ -27,8 +27,8 @@ import os
 P_MIN, P_MAX           = 5,  50    # İşlem süresi (saat)
 S_MIN_SAME, S_MAX_SAME = 1,  5     # Aynı ürün ailesinden hazırlık süresi (kısa)
 S_MIN_DIFF, S_MAX_DIFF = 5,  20    # Farklı ürün ailesinden hazırlık süresi (uzun)
-D_SLACK_MIN            = 0.1       # Teslim tarihi slack katsayısı (alt) - SIKILAŞTIRILDI
-D_SLACK_MAX            = 1.1       # Teslim tarihi slack katsayısı (üst) - SIKILAŞTIRILDI
+D_SLACK_MIN            = 0.1       # Teslim tarihi slack katsayısı (alt) - MAKALE ÖRNEĞİNE GÖRE SIKILAŞTIRILDI
+D_SLACK_MAX            = 0.6       # Teslim tarihi slack katsayısı (üst) - MAKALE ÖRNEĞİNE GÖRE SIKILAŞTIRILDI
 # ─────────────────────────────────────────────────────────────────────────────
 
 
