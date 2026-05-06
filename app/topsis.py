@@ -36,7 +36,8 @@ class TOPSISResult:
 
 
 def run_topsis(candidates: list[dict],
-               wC: float = 1/3, wT: float = 1/3, wL: float = 1/3
+               wC: float = 1/3, wT: float = 1/3, wL: float = 1/3,
+               mode: str = "academic"
                ) -> list[TOPSISResult]:
     """
     TOPSIS analizi çalıştırır.
@@ -44,6 +45,7 @@ def run_topsis(candidates: list[dict],
     Args:
         candidates: [{"name": ..., "Cmax": ..., "T": ..., "L": ...}, ...]
         wC, wT, wL: Ağırlıklar (wC + wT + wL = 1)
+        mode: "academic" (Makale: min/x) veya "performance" (Rasyonel: min+1/x+1)
 
     Returns:
         TOPSISResult listesi (skor büyükten küçüğe sıralı)
@@ -60,21 +62,24 @@ def run_topsis(candidates: list[dict],
     # ── Adım 1: Performans matrisi ───────────────────────────────────────────
     x = [[c["Cmax"], c["T"], c["L"]] for c in candidates]
 
-    # ── Adım 2: Normalizasyon  r_{a,b} = x̃_b / x_{a,b} ─────────────────────
+    # ── Adım 2: Normalizasyon ────────────────────────────────────────────────
     # x̃_b = min_a { x_{a,b} }  (her kriterdeki en iyi değer)
     x_tilde = [min(x[a][b] for a in range(n)) for b in range(3)]
 
-    # Sıfır bölme koruma: tüm değerler 0 ise r=1
     r = []
     for a in range(n):
         row = []
         for b in range(3):
-            if x[a][b] == 0:
-                row.append(1.0)
-            elif x_tilde[b] == 0:
-                row.append(0.0)
+            if mode == "academic":
+                # Makale Orijinal: r_ab = min_b / x_ab
+                if x[a][b] == 0:
+                    val = 1.0 if x_tilde[b] == 0 else 10.0 # 0/0 -> 1.0, else large
+                else:
+                    val = x_tilde[b] / x[a][b]
             else:
-                row.append(x_tilde[b] / x[a][b])
+                # Performans (Rasyonel): r_ab = (min_b + 1) / (x_ab + 1)
+                val = (x_tilde[b] + 1.0) / (x[a][b] + 1.0)
+            row.append(val)
         r.append(row)
 
     # ── Adım 3: İdeal çözümler ───────────────────────────────────────────────
