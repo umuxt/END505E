@@ -25,7 +25,7 @@ from app.ddr_heuristic import (
 )
 from app.topsis import run_topsis, print_topsis_results
 from app.augmecon import run_augmecon, ParetoSolution, select_best_pareto
-from app.utils import Colors, print_gantt_chart
+from app.utils import Colors, print_gantt_chart, get_gantt_str
 
 DATA_PATH = os.path.join(ROOT, "data", "seed_input.json")
 
@@ -163,7 +163,25 @@ def flow_pipeline(solver_mode="academic"):
     extra_pdf_content = f"## Seçilen En İyi Kural: {best_rule_name}\n\n"
     extra_pdf_content += "### Performans Değerleri:\n"
     extra_pdf_content += f"- Makespan: {best_ddr.Cmax}\n- Toplam Gecikme: {best_ddr.total_tardiness}\n- Geciken İş Sayısı: {best_ddr.num_tardy}\n\n"
-    extra_pdf_content += "### Tam Gantt Şeması (Yüksek Çözünürlük):\n\n```text\n"
+    
+    extra_pdf_content += "### İş Bazlı Teslim Tarihleri ve Sonuçlar:\n"
+    extra_pdf_content += "| İş (j) | Teslim Tarihi ($D_j$) | Tamamlanma Zamanı ($C_j$) | Gecikme ($e_j^+$) | Durum |\n"
+    extra_pdf_content += "| :--- | :--- | :--- | :--- | :--- |\n"
+    
+    # Tüm işleri listele (sıralı)
+    job_results = []
+    for k_val, jobs_list in best_ddr.schedule.items():
+        for j_idx, s_time, e_time in jobs_list:
+            dj_val = D[j_idx]
+            lat_val = max(0.0, e_time - dj_val)
+            job_results.append((j_idx, dj_val, e_time, lat_val))
+    job_results.sort(key=lambda x: x[0])
+    
+    for jr in job_results:
+        st_label = "**GECİKTİ**" if jr[3] > 0 else "Zamanında"
+        extra_pdf_content += f"| J{jr[0]:03d} | {jr[1]:8.2f} | {jr[2]:8.2f} | {jr[3]:8.2f} | {st_label} |\n"
+    
+    extra_pdf_content += "\n### Tam Gantt Şeması (Yüksek Çözünürlük):\n\n```text\n"
     extra_pdf_content += get_gantt_str(best_ddr.schedule, best_ddr.Cmax, width=120)
     extra_pdf_content += "\n```\n"
 
