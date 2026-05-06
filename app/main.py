@@ -25,7 +25,7 @@ from app.ddr_heuristic import (
 )
 from app.topsis import run_topsis, print_topsis_results
 from app.augmecon import run_augmecon, ParetoSolution, select_best_pareto
-from app.utils import Colors, print_gantt_chart, get_gantt_str
+from app.utils import Colors, print_gantt_chart, get_gantt_str, get_html_gantt
 
 DATA_PATH = os.path.join(ROOT, "data", "seed_input.json")
 
@@ -156,34 +156,35 @@ def flow_pipeline(solver_mode="academic"):
             if best_ddr:
                 print_gantt_chart(best_ddr.schedule, best_ddr.Cmax)
         
-    # PDF içeriği için sonuçları metin olarak topla
+    # PDF içeriği için sonuçları topla
     best_rule_name = topsis_results[0].rule_name
     best_ddr = next((r for r in ddr_results if r.rule_name == best_rule_name), None)
     
     extra_pdf_content = f"## Seçilen En İyi Kural: {best_rule_name}\n\n"
-    extra_pdf_content += "### Performans Değerleri:\n"
-    extra_pdf_content += f"- Makespan: {best_ddr.Cmax}\n- Toplam Gecikme: {best_ddr.total_tardiness}\n- Geciken İş Sayısı: {best_ddr.num_tardy}\n\n"
+    extra_pdf_content += "### 1. Özet Performans Değerleri:\n"
+    extra_pdf_content += f"- **Makespan ($C_{{max}}$):** {best_ddr.Cmax} saat\n"
+    extra_pdf_content += f"- **Toplam Teslim Gecikmesi ($T$):** {best_ddr.total_tardiness} saat\n"
+    extra_pdf_content += f"- **Geciken İş Sayısı ($L$):** {best_ddr.num_tardy}\n\n"
     
-    extra_pdf_content += "### İş Bazlı Teslim Tarihleri ve Sonuçlar:\n"
+    extra_pdf_content += "### 2. İş Bazlı Teslim Tarihleri ve Sonuçlar:\n"
     extra_pdf_content += "| İş (j) | Teslim Tarihi ($D_j$) | Tamamlanma Zamanı ($C_j$) | Gecikme ($e_j^+$) | Durum |\n"
     extra_pdf_content += "| :--- | :--- | :--- | :--- | :--- |\n"
     
-    # Tüm işleri listele (sıralı)
     job_results = []
     for k_val, jobs_list in best_ddr.schedule.items():
         for j_idx, s_time, e_time in jobs_list:
-            dj_val = D[j_idx]
-            lat_val = max(0.0, e_time - dj_val)
+            dj_val = D[j_idx]; lat_val = max(0.0, e_time - dj_val)
             job_results.append((j_idx, dj_val, e_time, lat_val))
     job_results.sort(key=lambda x: x[0])
     
     for jr in job_results:
-        st_label = "**GECİKTİ**" if jr[3] > 0 else "Zamanında"
+        st_label = "<span style='color:red;'>**GECİKTİ**</span>" if jr[3] > 0 else "Zamanında"
         extra_pdf_content += f"| J{jr[0]:03d} | {jr[1]:8.2f} | {jr[2]:8.2f} | {jr[3]:8.2f} | {st_label} |\n"
     
-    extra_pdf_content += "\n### Tam Gantt Şeması (Yüksek Çözünürlük):\n\n```text\n"
-    extra_pdf_content += get_gantt_str(best_ddr.schedule, best_ddr.Cmax, width=120)
-    extra_pdf_content += "\n```\n"
+    extra_pdf_content += "\n### 3. Yüksek Çözünürlüklü Gantt Şeması (Yatay Görünüm):\n\n"
+    # HTML Gantt şemasını ekle (aile verisiyle birlikte)
+    extra_pdf_content += get_html_gantt(best_ddr.schedule, best_ddr.Cmax, raw.get("family", {}))
+    extra_pdf_content += "\n\n*Açıklama: Mor (S) = Hazırlık Süresi, Yeşil (J) = İşlem Süresi.*\n"
 
     print(Colors.GREEN + Colors.BOLD + f"\n  ✓ {mode_name} TAMAMLANDI." + Colors.ENDC)
 
@@ -247,30 +248,38 @@ def flow_topsis_augmecon():
         with open(ddr_cache) as f: candidates = json.load(f)
         print_topsis_results(run_topsis(candidates, 0.34, 0.33, 0.33, mode="academic"), 0.34, 0.33, 0.33)
     # AUGMECON Check
-    run_augmecon(data, solver_func=solve)
+    from app.utils import Colors, print_gantt_chart, get_gantt_str, get_html_gantt
+    ...
+    def flow_export_pdf(extra_content: str = ""):
+        """Sadece deneysel sonuçları içeren bağımsız bir PDF üretir."""
+        print("\n  ─── Deneysel Sonuçlar PDF'i Üretiliyor ───────────────────")
+        result_file = os.path.join(ROOT, "12_DENEYSEL_SONUCLAR_RAPORU.md")
 
-def flow_export_pdf(extra_content: str = ""):
-    print("\n  ─── PDF Üretiliyor ───────────────────────────────────────")
-    report_file = os.path.join(ROOT, "11_UPMSP_Proje_Raporu_Final.md")
-    temp_file = os.path.join(ROOT, "11_TEMP_REPORT.md")
-    
-    if not os.path.exists(report_file): return print(f"  [HATA] '{report_file}' yok.")
+        header = f"""# UPMSP Çizelgeleme Problemi - Deneysel Analiz Raporu
+    ---
+    **Tarih:** 2026-05-06
+    **Çalışma:** Akademik Doğrulama ve Performans Analizi
+    **Metodoloji:** MILP (SCIP) / CP-SAT + DDR + TOPSIS
 
-    with open(report_file, "r") as f: content = f.read()
-    with open(temp_file, "w") as f:
-        f.write(content)
-        if extra_content:
-            f.write("\n\n---\n# EK: Deneysel Analiz Çıktıları\n" + extra_content)
-    
-    ret = os.system(f"npx md-to-pdf \"{temp_file}\"")
-    if ret == 0:
-        pdf_file = temp_file.replace(".md", ".pdf")
-        final_pdf = report_file.replace(".md", ".pdf")
-        if os.path.exists(final_pdf): os.remove(final_pdf)
-        os.rename(pdf_file, final_pdf)
-        if os.path.exists(temp_file): os.remove(temp_file)
-        print(f"\n  [OK] PDF başarıyla oluşturuldu: {final_pdf}")
-    else: print(f"\n  [HATA] PDF başarısız.")
+    {extra_content}
+
+    ---
+    *Bu rapor UPMSP Terminal Uygulaması tarafından otomatik olarak üretilmiştir.*
+    """
+
+        with open(result_file, "w", encoding="utf-8") as f:
+            f.write(header)
+
+        print("  [BİLGİ] PDF motoru (md-to-pdf) başlatılıyor...")
+        ret = os.system(f"npx md-to-pdf \"{result_file}\"")
+
+        if ret == 0:
+            pdf_path = result_file.replace(".md", ".pdf")
+            print(f"\n  [OK] Deneysel sonuçlar başarıyla PDF'e dönüştürüldü!")
+            print(f"  [OK] Dosya Konumu: {pdf_path}")
+        else:
+            print(f"\n  [HATA] PDF dönüştürme başarısız.")
+
 
 
 # ─── Ana Döngü ──────────────────────────────────────────────────────────────
