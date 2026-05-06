@@ -51,6 +51,8 @@ Tablo 1'e göre, hiçbir araştırma, makine ve sıra-bağımlı hazırlık sür
 *   Matematiksel modele ek olarak, farklı dinamik dağıtım kuralı tabanlı sezgisel yöntemlerin (DDR) önerilmesi, oluşturulması ve denenmesi. Buradaki amaç, makul bir süre içinde yüksek kaliteli çözümler bulabilen alternatif bir yaklaşım sunmaktır. Bu durum, özellikle ilişkisiz paralel makine sistemlerine sahip olan endüstrilerin, iyi üretim çizelgeleri oluşturmak için minimum zaman harcayan bir çizelgeleme yöntemine duyduğu ihtiyaçla örtüşmektedir.
 *   Bildiğimiz kadarıyla, ATCS dağıtım kuralında sıra-bağımlı hazırlık süresini dâhil eden Bektur ve Sarac (2019) tarafından yapılmış önceki tek bir çalışma bulunmaktadır. Sadece bir tek dağıtım kuralı oluşturmak yerine, bizim çalışmamız pratikte yaygın olarak uygulanan üç farklı kuralı modifiye etmektedir.
 
+> **Proje Uygulama Notu (Out-of-Scope):** Bu dönem ödevi kapsamında sadece makale çevirisi ve raporlaması beklenmesine rağmen; makalede sunulan matematiksel modellerin ve sezgisel algoritmaların doğruluğunu bizzat test etmek, teorik kısıtları daha derinlemesine kavramak amacıyla tarafımızca kapsamlı bir Python uygulaması geliştirilmiştir. Bu "kapsam dışı" uygulama süreci; makaledeki dizgi hatalarının (Denklem 9 ve 16) ve algoritmik eksikliklerin (kümülatif zaman toplama) tespit edilmesinde kilit rol oynamış ve teorik bilginin pratik bir "Karar Destek Sistemine" dönüşmesini sağlamıştır.
+
 ---
 
 ## 3. Model Geliştirme (Model Development)
