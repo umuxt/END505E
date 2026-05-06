@@ -17,22 +17,46 @@ class Colors:
     UNDERLINE = '\033[4m'
 
 
+def get_gantt_str(schedule: dict, cmax: float, width: int = 100) -> str:
+    """Gantt şemasını metin (string) olarak döndürür."""
+    if cmax <= 0: return "Çizelgelenmiş iş yok."
+    output = []
+    for k in sorted(schedule.keys()):
+        line = f"M{k:2d} | "
+        current_t = 0.0
+        for (j, start, end) in schedule[k]:
+            setup_time = start - current_t
+            if setup_time > 0:
+                line += "▒" * max(1, int((setup_time / cmax) * width))
+            job_time = end - start
+            line += "█" * max(1, int((job_time / cmax) * width))
+            current_t = end
+        output.append(line)
+    output.append("-" * (width + 8))
+    output.append(f"     0 {' ' * (width-4)} {cmax:.1f}")
+    return "\n".join(output)
+
+
 def print_gantt_chart(schedule: dict, cmax: float, width: int = 70) -> None:
     """
     Terminal üzerinde basit bir Gantt şeması (Zaman Çizelgesi) çizer.
-    
-    Args:
-        schedule: {k: [(j, start, end), ...]} formatında çizelge sözlüğü
-        cmax: Maksimum tamamlanma zamanı (ölçekleme için)
-        width: Gantt şemasının terminaldeki maksimum karakter genişliği
     """
     print("\n" + Colors.CYAN + Colors.BOLD + "  GANTT ŞEMASI (ZAMAN ÇİZELGESİ)" + Colors.ENDC)
     print(f"  {Colors.BOLD}Y EKSENİ:{Colors.ENDC} Makineler   |   {Colors.BOLD}X EKSENİ:{Colors.ENDC} Zaman")
     print(f"  {Colors.MAGENTA}▒▒▒{Colors.ENDC} = Hazırlık (Setup) Süresi   |   {Colors.GREEN}███{Colors.ENDC} = İşlem Süresi")
     print("  " + "═" * (width + 12))
     
-    if cmax == 0:
-        print("  Çizelgelenmiş iş yok.")
+    # Büyük veri setleri için terminal Gantt şeması okunmaz, özet geçelim
+    num_jobs = sum(len(v) for v in schedule.values())
+    if num_jobs > 50:
+        print(f"\n  [BİLGİ] {num_jobs} iş için terminal Gantt şeması çok yoğun.")
+        print(Colors.YELLOW + "  [BİLGİ] Tam (yüksek çözünürlüklü) şema PDF raporunda mevcuttur." + Colors.ENDC)
+        print("\n  Makine yük özetleri:")
+        for k in sorted(schedule.keys()):
+            jobs = schedule[k]
+            if not jobs: continue
+            total_p = sum(e-s for j,s,e in jobs)
+            print(f"    M{k:2d}: {len(jobs):3d} İş | Toplam İşlem: {total_p:8.2f} | Bitiş: {jobs[-1][2]:8.2f}")
         return
 
     # Eğer Cmax çok küçükse, ölçeği çok büyütmeyelim

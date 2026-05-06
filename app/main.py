@@ -156,6 +156,17 @@ def flow_pipeline(solver_mode="academic"):
             if best_ddr:
                 print_gantt_chart(best_ddr.schedule, best_ddr.Cmax)
         
+    # PDF içeriği için sonuçları metin olarak topla
+    best_rule_name = topsis_results[0].rule_name
+    best_ddr = next((r for r in ddr_results if r.rule_name == best_rule_name), None)
+    
+    extra_pdf_content = f"## Seçilen En İyi Kural: {best_rule_name}\n\n"
+    extra_pdf_content += "### Performans Değerleri:\n"
+    extra_pdf_content += f"- Makespan: {best_ddr.Cmax}\n- Toplam Gecikme: {best_ddr.total_tardiness}\n- Geciken İş Sayısı: {best_ddr.num_tardy}\n\n"
+    extra_pdf_content += "### Tam Gantt Şeması (Yüksek Çözünürlük):\n\n```text\n"
+    extra_pdf_content += get_gantt_str(best_ddr.schedule, best_ddr.Cmax, width=120)
+    extra_pdf_content += "\n```\n"
+
     print(Colors.GREEN + Colors.BOLD + f"\n  ✓ {mode_name} TAMAMLANDI." + Colors.ENDC)
 
     # ─── Post-Run Menü ───────────────────────────────────────────────────────
@@ -168,7 +179,7 @@ def flow_pipeline(solver_mode="academic"):
     
     choice = input(Colors.BOLD + "  Seçiminiz: " + Colors.ENDC).strip()
     if choice == "1":
-        flow_export_pdf()
+        flow_export_pdf(extra_content=extra_pdf_content)
         input(Colors.YELLOW + "\n  Devam etmek için ENTER tuşuna basın..." + Colors.ENDC)
     elif choice == "0":
         print("\n  İyi çalışmalar!\n")
@@ -220,9 +231,28 @@ def flow_topsis_augmecon():
     # AUGMECON Check
     run_augmecon(data, solver_func=solve)
 
-def flow_export_pdf():
+def flow_export_pdf(extra_content: str = ""):
+    print("\n  ─── PDF Üretiliyor ───────────────────────────────────────")
     report_file = os.path.join(ROOT, "11_UPMSP_Proje_Raporu_Final.md")
-    os.system(f"npx md-to-pdf \"{report_file}\"")
+    temp_file = os.path.join(ROOT, "11_TEMP_REPORT.md")
+    
+    if not os.path.exists(report_file): return print(f"  [HATA] '{report_file}' yok.")
+
+    with open(report_file, "r") as f: content = f.read()
+    with open(temp_file, "w") as f:
+        f.write(content)
+        if extra_content:
+            f.write("\n\n---\n# EK: Deneysel Analiz Çıktıları\n" + extra_content)
+    
+    ret = os.system(f"npx md-to-pdf \"{temp_file}\"")
+    if ret == 0:
+        pdf_file = temp_file.replace(".md", ".pdf")
+        final_pdf = report_file.replace(".md", ".pdf")
+        if os.path.exists(final_pdf): os.remove(final_pdf)
+        os.rename(pdf_file, final_pdf)
+        if os.path.exists(temp_file): os.remove(temp_file)
+        print(f"\n  [OK] PDF başarıyla oluşturuldu: {final_pdf}")
+    else: print(f"\n  [HATA] PDF başarısız.")
 
 
 # ─── Ana Döngü ──────────────────────────────────────────────────────────────
