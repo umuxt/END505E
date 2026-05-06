@@ -8,7 +8,7 @@
 
 ## Başlık
 - **İngilizce:** A multi-objective production scheduling model and dynamic dispatching rules for unrelated parallel machines with sequence-dependent set-up times
-- **Türkçe (Öneri):** Sıra Bağımlı Hazırlık Süreleri ile İlişkisiz Paralel Makineler için Çok Amaçlı Üretim Çizelgeleme Modeli ve Dinamik Öncelik Kuralları
+- **Türkçe (Öneri):** Sıra Bağımlı Hazırlık Süreleri ile İlişkisiz Paralel Tezgahlar için Çok Amaçlı Üretim Çizelgeleme Modeli ve Dinamik Öncelik Kuralları
 
 ## Yazarlar
 - Pham Duc Tai
@@ -22,7 +22,7 @@
 
 ## Özet (Türkçe)
 
-Bu çalışma, **makine ve iş sırası bağımlı hazırlık süreleri** olan **ilişkisiz paralel makineler** için üretim çizelgelemesini ele almaktadır.
+Bu çalışma, **tezgah ve sıra-bağımlı hazırlık süreleri** olan **ilişkisiz paralel tezgahlar** için üretim çizelgelemesini ele almaktadır.
 
 **Minimize edilmek istenen performans ölçütleri:**
 1. Tamamlanma zamanı (makespan — C_max)
@@ -33,17 +33,17 @@ Bu çalışma, **makine ve iş sırası bağımlı hazırlık süreleri** olan *
 1. **MILP Modeli:** Küçük problem örnekleri için karma tamsayılı doğrusal programlama modeli ve AUGMECON yöntemiyle Pareto çözüm kümesi
 2. **DDR Sezgiseli:** Büyük problem örnekleri için dinamik öncelik kuralı tabanlı sezgiseller (SCT, SC-LPT, SC-EDD ve bunların 6 kombinasyonu)
 
-**Uygulama:** Tayland'ın en büyük çelik boru üreticisinden alınan gerçek veri (18 aylık üretim verisi, 244–298 iş/ay, 10 makine)
+**Uygulama:** Tayland'ın en büyük çelik boru üreticisinden alınan gerçek veri (18 aylık üretim verisi, 244–298 iş/ay, 10 tezgah)
 
 ---
 
 ## Problem Tanımı
 
-- **n** iş, **m** ilişkisiz paralel makine
+- **n** iş, **m** ilişkisiz paralel tezgah
 - Tüm işler dönem başında hazır (aynı serbest bırakma zamanı)
-- İşin hazırlık süresi: hem makineye hem de o makinedeki bir önceki işe bağlı
+- İşin hazırlık süresi: hem tezgaha hem de o tezgahtaki bir önceki işe bağlı
 - İlk iş için hazırlık süresi = 0 (dönem başında yapılıyor)
-- Her iş yalnızca belirli makinelerde işlenebilir (makine kısıtı)
+- Her iş yalnızca belirli tezgahlarda işlenebilir (tezgah kısıtı)
 
 ---
 
@@ -62,4 +62,4 @@ Bu çalışma, **makine ve iş sırası bağımlı hazırlık süreleri** olan *
 
 ## Literatürdeki Boşluk (Research Gap)
 
-Tablo 1'e göre, **ilişkisiz paralel makineler + makine & sıra bağımlı hazırlık süresi + makespan & toplam gecikme & geciken iş sayısı** üç ölçütünü birlikte ele alan **daha önce hiçbir çalışma yoktur**. Bu makale bu boşluğu doldurmaktadır.
+Tablo 1'e göre, **ilişkisiz paralel tezgahlar + tezgah ve sıra-bağımlı hazırlık süresi + makespan & toplam gecikme & geciken iş sayısı** üç ölçütünü birlikte ele alan **daha önce hiçbir çalışma yoktur**. Bu makale bu boşluğu doldurmaktadır.

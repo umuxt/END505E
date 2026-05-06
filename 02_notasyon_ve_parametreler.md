@@ -11,9 +11,9 @@
 | i, j | İş (job) indeksleri |
 | N | Tüm işlerin kümesi: N = {1, 2, …, n} |
 | N₀ | Kukla iş (0) dahil işler kümesi: N₀ = {0} ∪ N |
-| k | Makine indeksi |
-| M | Tüm makineler kümesi: M = {1, 2, …, m} |
-| Mⱼ | j işini işleyebilen makineler alt kümesi |
+| k | Tezgah indeksi |
+| M | Tüm tezgahlar kümesi: M = {1, 2, …, m} |
+| Mⱼ | j işini işleyebilen tezgahlar alt kümesi |
 
 ---
 
@@ -21,11 +21,11 @@
 
 | Sembol | Açıklama | Derste Kullanılan Karşılık |
 |--------|----------|---------------------------|
-| Pⱼ,ₖ | j işinin k makinesindeki **işlem süresi** (saat) | pⱼ |
-| Sᵢ,ⱼ,ₖ | k makinesinde i işinden sonra j işi geldiğinde gereken **hazırlık süresi** | sᵢⱼ |
+| Pⱼ,ₖ | j işinin k tezgahındaki **işlem süresi** (saat) | pⱼ |
+| Sᵢ,ⱼ,ₖ | k tezgahında i işinden sonra j işi geldiğinde gereken **hazırlık süresi** | sᵢⱼ |
 | Dⱼ | j işinin **teslim tarihi** (saat) | dⱼ |
 | V | Büyük sayı (Big-M yöntemi) | M |
-| NPⱼ,ₖ | j işinin k makinesinde işlenip işlenemeyeceği (1=evet, 0=hayır) | — |
+| NPⱼ,ₖ | j işinin k tezgahında işlenip işlenemeyeceği (1=evet, 0=hayır) | — |
 
 ---
 
@@ -33,7 +33,7 @@
 
 | Sembol | Tür | Açıklama |
 |--------|-----|----------|
-| Xᵢ,ⱼ,ₖ | İkili (0/1) | k makinesinde i işinden hemen sonra j işi çizelgeleniyorsa 1, değilse 0 |
+| Xᵢ,ⱼ,ₖ | İkili (0/1) | k tezgahında i işinden hemen sonra j işi çizelgeleniyorsa 1, değilse 0 |
 | Cⱼ | Sürekli (≥0) | j işinin **tamamlanma zamanı** (saat) |
 | Cₘₐₓ | Sürekli (≥0) | **Tamamlanma zamanı** = tüm işlerin en geç tamamlanma zamanı |
 | eⱼ⁺ | Sürekli (≥0) | j işinin **gecikmesi** (saat): max(Cⱼ - Dⱼ, 0) |
@@ -46,7 +46,7 @@
 
 | Sembol | Türkçe | İngilizce | Formül |
 |--------|--------|-----------|--------|
-| Cₘₐₓ | Tamamlanma zamanı | Makespan | max{Cⱼ}, j ∈ N |
+| Cₘₐₓ | Tamamlanma zamanı | Yayılma Süresi | max{Cⱼ}, j ∈ N |
 | T | Toplam teslim gecikmesi süresi | Total tardiness | Σ eⱼ⁺ |
 | L | Geciken iş sayısı | Number of tardy jobs | Σ Uⱼ |
 
@@ -58,10 +58,10 @@
 |--------|----------|
 | Nᵢ | Çizelgelenmiş işler kümesi |
 | Nⱼ | Kalan (henüz çizelgelenmemiş) işler kümesi; N = Nᵢ ∪ Nⱼ |
-| Pⱼ*,ₖ | Seçilen j* işinin k makinesindeki işlem süresi |
-| Sᵢ,ⱼ*,ₖ | Seçilen j* işinin k makinesindeki hazırlık süresi (önceki iş i) |
+| Pⱼ*,ₖ | Seçilen j* işinin k tezgahındaki işlem süresi |
+| Sᵢ,ⱼ*,ₖ | Seçilen j* işinin k tezgahındaki hazırlık süresi (önceki iş i) |
 | Dⱼ* | Seçilen j* işinin teslim tarihi |
-| Cⱼ,ₖ | j işinin k makinesinde tamamlanma zamanı |
+| Cⱼ,ₖ | j işinin k tezgahında tamamlanma zamanı |
 | tₛ | Kural değiştirme zamanı (rule-switching time) |
 
 ---

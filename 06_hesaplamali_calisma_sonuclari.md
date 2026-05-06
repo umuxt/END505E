@@ -7,12 +7,12 @@ Bu bölüm, MILP modellerinin (AUGMECON) ve DDR sezgisellerinin performans karş
 Küçük ölçekli problemlerde amaç, MILP modelinin kesin çözümlerini elde etmek ve sezgisellerin başarısını bu çözümlere göre ölçmektir.
 
 ### Tablo 6: Problem Örneklerinin Karakteristikleri
-| Problem | İş Sayısı ($n$) | Makine Sayısı ($m$) | Talep Seviyesi | Kısıt Durumu |
+| Problem | İş Sayısı ($n$) | Tezgah Sayısı ($m$) | Talep Seviyesi | Kısıt Durumu |
 | :--- | :--- | :--- | :--- | :--- |
-| P1 | 10 | 3 | Düşük | Bazı makineler kısıtlı |
-| P2 | 10 | 3 | Düşük | Tüm makineler uygun |
-| P3 | 10 | 3 | Yüksek | Bazı makineler kısıtlı |
-| P4 | 10 | 3 | Yüksek | Tüm makineler uygun |
+| P1 | 10 | 3 | Düşük | Bazı tezgahlar kısıtlı |
+| P2 | 10 | 3 | Düşük | Tüm tezgahlar uygun |
+| P3 | 10 | 3 | Yüksek | Bazı tezgahlar kısıtlı |
+| P4 | 10 | 3 | Yüksek | Tüm tezgahlar uygun |
 
 ### Performans Karşılaştırması
 - **MILP Süresi:** AUGMECON yöntemiyle 10 işlik bir problemin çözümü 5 saatten fazla sürebilmektedir.
@@ -32,7 +32,7 @@ Gerçek dünya verileriyle (200+ iş) yapılan testlerde sadece DDR sezgiselleri
 | SC-LPT | Yüksek | Çok Yüksek | Yüksek | Tavsiye Edilmez |
 | **DDR Hibrit** | **En Düşük** | **Düşük** | **Düşük** | Genel Optimizasyon |
 
-> **Ajan Notu (Endüstri Mühendisi):** Analizler göstermektedir ki, MILP modeli 10 iş ve 3 makine sınırının ötesinde pratikliğini yitirmektedir. Endüstriyel uygulamalarda **SCT & SC-EDD** hibrit kuralının kullanımı, hem makine verimliliği hem de müşteri terminlerine uyum açısından en sağlam (robust) sonuçları vermektedir.
+> **Ajan Notu (Endüstri Mühendisi):** Analizler göstermektedir ki, MILP modeli 10 iş ve 3 tezgah sınırının ötesinde pratikliğini yitirmektedir. Endüstriyel uygulamalarda **SCT & SC-EDD** hibrit kuralının kullanımı, hem tezgah verimliliği hem de müşteri terminlerine uyum açısından en sağlam (robust) sonuçları vermektedir.
 
 ---
 

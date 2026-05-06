@@ -32,7 +32,7 @@ Her bir alternatifin ideal çözüme olan bağıl yakınlığı hesaplanır.
 
 Makale, karar vericinin stratejik önceliklerine göre üç ana senaryo üzerinde durmaktadır:
 
-1.  **Üretim Odaklı (Production-oriented):** $C_{max}$ (Makespan) ağırlığı yüksek tutulur. Amaç makine kullanım verimliliğidir.
+1.  **Üretim Odaklı (Production-oriented):** $C_{max}$ (Yayılma Süresi) ağırlığı yüksek tutulur. Amaç tezgah kullanım verimliliğidir.
 2.  **Müşteri Odaklı (Customer-oriented):** $T$ (Toplam gecikme) ve $L$ (Geciken iş sayısı) ağırlığı yüksek tutulur. Amaç teslimat taahhütlerine uymaktır.
 3.  **Dengeli (Balanced):** Tüm kriterlere yakın ağırlıklar verilir.
 

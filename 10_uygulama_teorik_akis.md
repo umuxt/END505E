@@ -1,6 +1,6 @@
 # Uygulamanın Teorik Veri ve İşlem Akışı
 
-Bu belgede, eşisiz paralel makine çizelgeleme (UPMSP) probleminin çözümüne yönelik uygulamanın teorik akışı ele alınmaktadır. Verinin sahadan toplanması, algoritma parametrelerine dönüşümü ve nihai sonuçlara ulaşılması bir bütün halinde gösterilmektedir.
+Bu belgede, ilişkisiz paralel tezgah çizelgeleme (UPMSP) probleminin çözümüne yönelik uygulamanın teorik akışı ele alınmaktadır. Verinin sahadan toplanması, algoritma parametrelerine dönüşümü ve nihai sonuçlara ulaşılması bir bütün halinde gösterilmektedir.
 
 ## 1. Genel Sistem ve Veri Akış Mimarisi (Makro Akış)
 
@@ -10,7 +10,7 @@ Uygulamanın genel veri akışı aşağıdaki şemada gösterilmektedir. Sahadan
 graph TD
     subgraph "1. Veri Toplama (Ham Veri)"
         A[Üretim Planı / İş Emirleri]
-        B[Makine Parkuru Bilgileri]
+        B[Tezgah Parkuru Bilgileri]
         C[Geçmiş Üretim Kayıtları]
     end
 
@@ -57,15 +57,15 @@ Uygulamanın çalışması için gerekli olan girdiler ile karar değişkenleri 
 | Sembol | Tür | Açıklama | Kaynak / Elde Ediliş |
 |--------|-----|----------|----------------------|
 | $N$ | Sabit | Toplam iş (sipariş) sayısı | ERP/Üretim planlama modülü |
-| $M$ | Sabit | Toplam makine sayısı | Sahadaki kullanılabilir makineler |
-| $P_{j,k}$ | Parametre | $j$ işinin $k$ makinesindeki işlem süresi | İşin miktarı / Makine üretim hızı |
-| $S_{i,j,k}$ | Parametre | $k$ makinesinde $i$ işinden sonra $j$ işi için hazırlık süresi | Makine kalıp değiştirme/temizlik süreleri veri tabanı |
+| $M$ | Sabit | Toplam tezgah sayısı | Sahadaki kullanılabilir tezgahlar |
+| $P_{j,k}$ | Parametre | $j$ işinin $k$ tezgahındaki işlem süresi | İşin miktarı / Tezgah üretim hızı |
+| $S_{i,j,k}$ | Parametre | $k$ tezgahında $i$ işinden sonra $j$ işi için hazırlık süresi | Tezgah kalıp değiştirme/temizlik süreleri veri tabanı |
 | $D_j$ | Parametre | $j$ işinin teslim tarihi | Müşteri sipariş sözleşmesi |
 
 ### Karar Değişkenleri ve Ara Değerler
 | Sembol | Tür | Açıklama |
 |--------|-----|----------|
-| $X_{i,j,k}$| İkili (0/1) | $k$ makinesinde $i$ işinden hemen sonra $j$ işi yapılıyorsa 1, aksi halde 0 |
+| $X_{i,j,k}$| İkili (0/1) | $k$ tezgahında $i$ işinden hemen sonra $j$ işi yapılıyorsa 1, aksi halde 0 |
 | $C_j$ | Sürekli | $j$ işinin tamamlanma zamanı ($C_j \ge 0$) |
 | $U_j$ | İkili (0/1) | $j$ işi gecikiyorsa 1, aksi halde 0 |
 | $e_j^+$ | Sürekli | $j$ işinin gecikme miktarı ($max(0, C_j - D_j)$) |
@@ -82,8 +82,8 @@ flowchart TD
     
     Check -- Evet --> CalcPriority[Her j işi için Öncelik İndeksi Hesapla]
     CalcPriority --> SelectJob[En yüksek öncelikli işi j* seç]
-    SelectJob --> SelectMachine[j* işi için en uygun makineyi k* seç]
-    SelectMachine --> AssignJob[j* işini k* makinesine ata]
+    SelectJob --> SelectMachine[j* işi için en uygun tezgahı k* seç]
+    SelectMachine --> AssignJob[j* işini k* tezgahına ata]
     AssignJob --> UpdateTime[Zamanı t ve Hazırlık Durumunu Güncelle]
     UpdateTime --> Check
     
@@ -103,7 +103,7 @@ sequenceDiagram
     participant Metrik as Çıktı & Hedefler
 
     Veri->>Model: İşlem, Hazırlık Süreleri ve Teslim Tarihleri
-    Note over Model: Kısıt: Her iş sadece 1 makineye <br>ve 1 pozisyona atanabilir.
+    Note over Model: Kısıt: Her iş sadece 1 tezgaha <br>ve 1 pozisyona atanabilir.
     Model->>Degisken: Atama Kararı (X_i,j,k = 1)
     
     Note over Degisken: Sürelerin Toplanması:<br>C_j = C_i + S_i,j,k + P_j,k
@@ -118,7 +118,7 @@ sequenceDiagram
 
 ### Algoritmik İlişkilerin Formül Özeti:
 
-1. **Zaman Akışı:** $k$ makinesinde $i$ işinden sonra $j$ işi geliyorsa ($X_{i,j,k}=1$), $j$'nin bitiş zamanı şöyledir:
+1. **Zaman Akışı:** $k$ tezgahında $i$ işinden sonra $j$ işi geliyorsa ($X_{i,j,k}=1$), $j$'nin bitiş zamanı şöyledir:
    $$ C_j \ge C_i + S_{i,j,k} + P_{j,k} $$
 2. **Gecikme Tespiti:** İşin bitiş zamanı ($C_j$) teslim tarihinden ($D_j$) büyükse iş gecikmiştir:
    $$ e_j^+ \ge C_j - D_j $$
@@ -138,7 +138,7 @@ Mermaid diyagramlarının desteklenmediği ortamlar veya düz metin okumaları i
 |  1. HAM VERİLER     |     |  2. PARAMETRELER      |     |  3. ÇÖZÜM          |
 |---------------------|     |-----------------------|     |--------------------|
 | - Üretim Planı      |     | - İşlem Süreleri (P)  |     | - MILP Modeli      |
-| - Makine Bilgileri  | --> | - Teslim Tarihleri (D)| --> | - DDR Sezgiseli    |
+| - Tezgah Bilgileri  | --> | - Teslim Tarihleri (D)| --> | - DDR Sezgiseli    |
 | - Geçmiş Kayıtlar   |     | - Hazırlık Süreleri(S)|     |                    |
 +---------------------+     +-----------------------+     +---------+----------+
                                                                     |
@@ -186,7 +186,7 @@ Mermaid diyagramlarının desteklenmediği ortamlar veya düz metin okumaları i
               |
               v
 +-----------------------------+
-| j* için en uygun k* makinesi|
+| j* için en uygun k* tezgahı|
 | seç ve ata                  |
 +-----------------------------+
               |

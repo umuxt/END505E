@@ -8,7 +8,7 @@ Makaledeki gerçek veri yapısına uygunluk:
       Aynı aileden → kısa hazırlık [S_MIN_SAME, S_MAX_SAME]
       Farklı aileden → uzun hazırlık [S_MIN_DIFF, S_MAX_DIFF]
   - NP[j][k] makine uygunluk matrisi (bazı işler bazı makinelerde yapılamaz)
-  - İşlem süreleri: eşisiz (unrelated) → makineye göre değişir
+  - İşlem süreleri: ilişkisiz (unrelated) → makineye göre değişir
   - Teslim tarihleri: toplam yük bazlı slack faktörü
 
 Parametreler:

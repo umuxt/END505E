@@ -6,26 +6,26 @@ Bu bölüm, makalede sunulan Karmaşık Tamsayılı Doğrusal Programlama (MILP)
 
 ### İndeksler
 - $i, j$: İş indeksleri ($N = \{1, 2, ..., n\}$; $N_0 = \{0\} \cup N$ dummy iş dahil).
-- $k$: Makine indeksi ($M = \{1, 2, ..., m\}$).
+- $k$: Tezgah indeksi ($M = \{1, 2, ..., m\}$).
 
 ### Parametreler
-- $P_{j,k}$: $j$ işinin $k$ makinesindeki işlem süresi.
-- $S_{i,j,k}$: $k$ makinesinde $i$ işinden hemen sonra $j$ işi işleneceğinde gereken hazırlık süresi.
+- $P_{j,k}$: $j$ işinin $k$ tezgahındaki işlem süresi.
+- $S_{i,j,k}$: $k$ tezgahında $i$ işinden hemen sonra $j$ işi işleneceğinde gereken hazırlık süresi.
 - $D_j$: $j$ işinin teslim tarihi (due date).
 - $V$: Çok büyük bir sayı (Big-M katsayısı).
-- $NP_{j,k}$: $j$ işinin $k$ makinesinde işlenebilirliğini gösteren kısıt durumu (1 ise işlenebilir, 0 ise işlenemez).
+- $NP_{j,k}$: $j$ işinin $k$ tezgahında işlenebilirliğini gösteren kısıt durumu (1 ise işlenebilir, 0 ise işlenemez).
 
 ### Karar Değişkenleri
-- $X_{i,j,k}$: Eğer $j$ işi $k$ makinesinde $i$ işinden hemen sonra planlanmışsa 1, aksi halde 0.
+- $X_{i,j,k}$: Eğer $j$ işi $k$ tezgahında $i$ işinden hemen sonra planlanmışsa 1, aksi halde 0.
 - $C_j$: $j$ işinin tamamlanma zamanı (saat).
-- $C_{max}$: Tamamlanma zamanı (Makespan - tüm işlerin maksimum tamamlanma zamanı).
+- $C_{max}$: Tamamlanma zamanı (Yayılma Süresi - tüm işlerin maksimum tamamlanma zamanı).
 - $e^+_j$: $j$ işinin teslim gecikmesi (tardiness) süresi.
 - $e^-_j$: $j$ işinin erken bitme (earliness) süresi.
 - $U_j$: $j$ işi gecikmişse 1, aksi halde 0 (binary gösterge).
 
 ---
 
-## M1 — Tamamlanma Zamanını (Makespan) En Küçükle
+## M1 — Tamamlanma Zamanını (Yayılma Süresi) En Küçükle
 
 ### Amaç Fonksiyonu
 **(1)** `Minimize Cₘₐₓ`
@@ -34,16 +34,16 @@ Bu bölüm, makalede sunulan Karmaşık Tamsayılı Doğrusal Programlama (MILP)
 ### Kısıtlar
 
 **(2)** `Σₖ∈M  Σᵢ∈N₀, i≠j  Xᵢ,ⱼ,ₖ = 1      ∀j ∈ N`
-> **Açıklama:** Her $j$ işinin tam olarak bir önceki işi olmasını sağlar. Yani her iş mutlaka bir makineye atanmalı ve bir sıraya yerleştirilmelidir.
+> **Açıklama:** Her $j$ işinin tam olarak bir önceki işi olmasını sağlar. Yani her iş mutlaka bir tezgaha atanmalı ve bir sıraya yerleştirilmelidir.
 
 **(3)** `Σₖ∈M  Σⱼ∈N₀, j≠i  Xᵢ,ⱼ,ₖ = 1      ∀i ∈ N`
 > **Açıklama:** Her $i$ işinin tam olarak bir sonraki işi olmasını sağlar.
 
 **(4)** `Σⱼ∈N₀,j≠i  Xᵢ,ⱼ,ₖ - Σₕ∈N₀,h≠i  Xₕ,ᵢ,ₖ = 0      ∀k ∈ M, ∀i ∈ N`
-> **Açıklama:** Akış dengesi kısıtıdır. Eğer bir iş bir makineye girmişse (bir önceki iş olarak atanmışsa), o makineden çıkmalıdır (bir sonraki işin öncülü olmalıdır).
+> **Açıklama:** Akış dengesi kısıtıdır. Eğer bir iş bir tezgaha girmişse (bir önceki iş olarak atanmışsa), o tezgahtan çıkmalıdır (bir sonraki işin öncülü olmalıdır).
 
 **(5)** `Σⱼ∈N  X₀,ⱼ,ₖ ≤ 1      ∀k ∈ M`
-> **Açıklama:** Her makinenin en fazla bir kukla iş (0) ile başlayabileceğini belirtir. Bu, makine başına tek bir iş dizisi (sequence) başlatılmasını garanti eder.
+> **Açıklama:** Her tezgahın en fazla bir kukla iş (0) ile başlayabileceğini belirtir. Bu, tezgah başına tek bir iş dizisi (sequence) başlatılmasını garanti eder.
 
 **(6)** `Cⱼ - Cᵢ + V·(1 - Xᵢ,ⱼ,ₖ) ≥ Sᵢ,ⱼ,ₖ + Pⱼ,ₖ      ∀i ∈ N₀, ∀j ∈ N: i≠j, ∀k ∈ M`
 > **Açıklama:** Tamamlanma zamanı hesaplama ve çakışma önleme kısıtıdır. Eğer $j$ işi $i$ işinden sonra geliyorsa ($X_{i,j,k}=1$), $j$'nin bitişi en az ($i$'nin bitişi + hazırlık süresi + işlem süresi) kadar olmalıdır. $X_{i,j,k}=0$ ise Big-M ($V$) sayesinde kısıt etkisizleşir.
@@ -55,7 +55,7 @@ Bu bölüm, makalede sunulan Karmaşık Tamsayılı Doğrusal Programlama (MILP)
 > **Açıklama:** $C_{max}$ değişkenini tüm işlerin tamamlanma zamanlarının en büyüğüne eşit veya ondan büyük olmaya zorlar.
 
 **(9)** `Σᵢ∈N₀,i≠j  Xᵢ,ⱼ,ₖ ≤ NPⱼ,ₖ      ∀j ∈ N, ∀k ∈ M`
-> **Ajan Notu (Matematikçi & Yöneylemci):** Orijinal makalede burada $k$ üzerinden toplam alınmıştır ancak sağ tarafta $NP_{j,k}$ serbest bırakılmıştır. Doğrusu budur: Her makine için işin uygunluğu ($NP_{j,k}$) ayrı kontrol edilmelidir. Bu kısıt, işin sadece yetkin makinelere atanmasını sağlar.
+> **Ajan Notu (Matematikçi & Yöneylemci):** Orijinal makalede burada $k$ üzerinden toplam alınmıştır ancak sağ tarafta $NP_{j,k}$ serbest bırakılmıştır. Doğrusu budur: Her tezgah için işin uygunluğu ($NP_{j,k}$) ayrı kontrol edilmelidir. Bu kısıt, işin sadece yetkin tezgahlara atanmasını sağlar.
 
 **(10)** `Cⱼ ≥ 0      ∀j ∈ N`
 > **Açıklama:** Tamamlanma zamanlarının negatif olamayacağını belirtir.

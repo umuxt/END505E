@@ -130,21 +130,31 @@ def flow_pipeline(solver_mode="academic"):
     ddr_results = run_all_rules(n, m, P, S, D, NP, verbose=False)
     print_ddr_summary(ddr_results)
     
-    print("\n" + Colors.CYAN + "  [AŞAMA 3] TOPSIS Analizi (Scenario C: wC=0.34, wT=0.33, wL=0.33)..." + Colors.ENDC)
+    print("\n" + Colors.CYAN + "  [AŞAMA 3] TOPSIS Analizi (Kural Seçimi)" + Colors.ENDC)
+    wC = ask_float("wCmax (Yayılma Süresi Ağırlığı)", 0.34)
+    wT = ask_float("wT    (Toplam Gecikme Ağırlığı)", 0.33)
+    wL = round(max(0.0, 1.0 - wC - wT), 4)
+    print(f"  wL    (Geciken İş Sayısı)  → {wL}")
+
     candidates = [
         {"name": r.rule_name, "Cmax": r.Cmax, "T": r.total_tardiness, "L": r.num_tardy}
         for r in ddr_results
     ]
-    topsis_results = run_topsis(candidates, 0.34, 0.33, 0.33, mode=solver_mode)
-    print_topsis_results(topsis_results, 0.34, 0.33, 0.33)
+    topsis_results = run_topsis(candidates, wC, wT, wL, mode=solver_mode)
+    print_topsis_results(topsis_results, wC, wT, wL)
     
     # Küçük problemlerde AUGMECON
     if n <= 15:
         print("\n" + Colors.CYAN + f"  [AŞAMA 4] Problem boyutu küçük (n<=15), {mode_name} (AUGMECON) çalıştırılıyor..." + Colors.ENDC)
         pareto_set = run_augmecon(data, time_limit=30, grid_T=4, grid_L=4, solver_func=solver_func)
         if pareto_set:
-            print("\n" + Colors.CYAN + "  [AŞAMA 5] Nihai Pareto Seçimi (Scenario C & Formül 20)" + Colors.ENDC)
-            best_sol = select_best_pareto(pareto_set, 0.34, 0.33, 0.33)
+            print("\n" + Colors.CYAN + "  [AŞAMA 5] Nihai Pareto Seçimi (Ağırlık Onayı)" + Colors.ENDC)
+            pWC = ask_float("Pareto wCmax", wC)
+            pWT = ask_float("Pareto wT", wT)
+            pWL = round(max(0.0, 1.0 - pWC - pWT), 4)
+            print(f"  Pareto wL → {pWL}")
+            
+            best_sol = select_best_pareto(pareto_set, pWC, pWT, pWL)
             if best_sol:
                 print_gantt_chart(best_sol.schedule, best_sol.Cmax)
     else:
@@ -182,7 +192,6 @@ def flow_pipeline(solver_mode="academic"):
         extra_pdf_content += f"| J{jr[0]:03d} | {jr[1]:8.2f} | {jr[2]:8.2f} | {jr[3]:8.2f} | {st_label} |\n"
     
     extra_pdf_content += "\n### 3. Yüksek Çözünürlüklü Gantt Şeması (Yatay Görünüm):\n\n"
-    # HTML Gantt şemasını ekle (aile verisiyle birlikte)
     extra_pdf_content += get_html_gantt(best_ddr.schedule, best_ddr.Cmax, raw.get("family", {}))
     extra_pdf_content += "\n\n*Açıklama: Mor (S) = Hazırlık Süresi, Yeşil (J) = İşlem Süresi.*\n"
 
@@ -234,7 +243,7 @@ def flow_ddr_single():
     raw, n, m, P, S, D, NP = load_and_parse()
     print("\n  [1] SCT [2] SC-LPT [3] SC-EDD [4-9] Kombinasyonlar...")
     choice = input("  Seçim: ").strip() or "1"
-    single_rules = {"1":(RULE_SCT,None,None),"2":(RULE_SCLPT,None,None),"3":(RULE_SCEDD,None,None)} # Basitleştirildi
+    single_rules = {"1":(RULE_SCT,None,None),"2":(RULE_SCLPT,None,None),"3":(RULE_SCEDD,None,None)}
     r1, r2, ts = single_rules.get(choice, (RULE_SCT, RULE_SCEDD, 300.0))
     res = run_ddr(n, m, P, S, D, NP, r1, r2, ts if ts else 300, verbose=True)
     print_gantt_chart(res.schedule, res.Cmax)
@@ -242,44 +251,20 @@ def flow_ddr_single():
 def flow_topsis_augmecon():
     raw, n, m, P, S, D, NP = load_and_parse()
     data = ProblemData(n=n, m=m, P=P, S=S, D=D, NP=NP)
-    # TOPSIS Check
     ddr_cache = os.path.join(ROOT, "data", "ddr_results.json")
     if os.path.exists(ddr_cache):
         with open(ddr_cache) as f: candidates = json.load(f)
         print_topsis_results(run_topsis(candidates, 0.34, 0.33, 0.33, mode="academic"), 0.34, 0.33, 0.33)
-    # AUGMECON Check
-    from app.utils import Colors, print_gantt_chart, get_gantt_str, get_html_gantt
-    ...
-    def flow_export_pdf(extra_content: str = ""):
-        """Sadece deneysel sonuçları içeren bağımsız bir PDF üretir."""
-        print("\n  ─── Deneysel Sonuçlar PDF'i Üretiliyor ───────────────────")
-        result_file = os.path.join(ROOT, "12_DENEYSEL_SONUCLAR_RAPORU.md")
+    run_augmecon(data, solver_func=solve)
 
-        header = f"""# UPMSP Çizelgeleme Problemi - Deneysel Analiz Raporu
-    ---
-    **Tarih:** 2026-05-06
-    **Çalışma:** Akademik Doğrulama ve Performans Analizi
-    **Metodoloji:** MILP (SCIP) / CP-SAT + DDR + TOPSIS
-
-    {extra_content}
-
-    ---
-    *Bu rapor UPMSP Terminal Uygulaması tarafından otomatik olarak üretilmiştir.*
-    """
-
-        with open(result_file, "w", encoding="utf-8") as f:
-            f.write(header)
-
-        print("  [BİLGİ] PDF motoru (md-to-pdf) başlatılıyor...")
-        ret = os.system(f"npx md-to-pdf \"{result_file}\"")
-
-        if ret == 0:
-            pdf_path = result_file.replace(".md", ".pdf")
-            print(f"\n  [OK] Deneysel sonuçlar başarıyla PDF'e dönüştürüldü!")
-            print(f"  [OK] Dosya Konumu: {pdf_path}")
-        else:
-            print(f"\n  [HATA] PDF dönüştürme başarısız.")
-
+def flow_export_pdf(extra_content: str = ""):
+    """Sadece deneysel sonuçları içeren bağımsız bir PDF üretir."""
+    print("\n  ─── Deneysel Sonuçlar PDF'i Üretiliyor ───────────────────")
+    result_file = os.path.join(ROOT, "12_DENEYSEL_SONUCLAR_RAPORU.md")
+    header = f"# UPMSP Çizelgeleme Problemi - Deneysel Analiz Raporu\n---\n**Çalışma:** Akademik Doğrulama ve Performans Analizi\n\n{extra_content}\n"
+    with open(result_file, "w", encoding="utf-8") as f: f.write(header)
+    os.system(f"npx md-to-pdf \"{result_file}\"")
+    print(f"\n  [OK] PDF oluşturuldu: {result_file.replace('.md', '.pdf')}")
 
 
 # ─── Ana Döngü ──────────────────────────────────────────────────────────────

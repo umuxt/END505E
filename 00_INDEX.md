@@ -25,7 +25,7 @@ Bu repo, makaledeki akademik angaryalardan arındırılarak Endüstri Mühendisl
 | Formül / Kural | Açıklama |
 |----------------|----------|
 | **Denklem (6)** | $C_j - C_i + V \cdot (1 - X_{i,j,k}) \geq S_{i,j,k} + P_{j,k}$ <br> *Sıra bağımlı hazırlık süresini hesaplayan kritik Big-M kısıtı.* |
-| **SCT (Shortest Completion Time)** | $\min(S_{i,j,k} + P_{j,k})$ <br> *Makineyi en az meşgul eden (işlem + hazırlık) işi seçme kuralı.* |
+| **SCT (Shortest Completion Time)** | $\min(S_{i,j,k} + P_{j,k})$ <br> *Tezgahı en az meşgul eden (işlem + hazırlık) işi seçme kuralı.* |
 | **SC-EDD** | $\min(S_{i,j,k} + P_{j,k})$ şartıyla en küçük $D_j$'li işi seçme. <br> *Teslim tarihi patlayan işleri kurtarma hamlesi.* |
 | **AUGMECON** | $\min f_1(x)$ subject to $f_2(x) \leq \epsilon_2, f_3(x) \leq \epsilon_3$ <br> *T ve L amaçlarını belirli eşiklerin ($\epsilon$) altında tutma mantığı.* |
 
