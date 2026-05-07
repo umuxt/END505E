@@ -8,18 +8,18 @@ Bu bölüm, büyük ölçekli problemlerin makul sürelerde çözülmesi için g
 
 ### SCT (Shortest Completion Time) - Modifiye SPT
 Geleneksel SPT (En Kısa İşlem Süresi) kuralı, hazırlık sürelerini içerecek şekilde genişletilmiştir.
-- **Kriter:** Tezgahtaki işlem süresi ($P_{j,k}$) ve hazırlık süresinin ($S_{i,j,k}$) toplamını minimize eden işi seçer.
-- **Formül:** $\min \{ S_{i,j,k} + P_{j,k} \}$
+- **Kriter:** Tezgahtaki işlem süresi (Pⱼ,ₖ) ve hazırlık süresinin (Sᵢ,ⱼ,ₖ) toplamını minimize eden işi seçer.
+- **Formül:** min { Sᵢ,ⱼ,ₖ + Pⱼ,ₖ }
 
 ### SC-EDD (Sequence-Dependent Earliest Due Date)
 Geleneksel EDD kuralını hazırlık süreleriyle birleştirir.
-- **Kriter:** Teslim tarihi ($D_j$) en yakın olan işler arasından, hazırlık süresini de gözeterek seçim yapar.
+- **Kriter:** Teslim tarihi (Dⱼ) en yakın olan işler arasından, hazırlık süresini de gözeterek seçim yapar.
 
 ### SC-LPT (Sequence-Dependent Longest Processing Time)
 Geleneksel LPT kuralının hazırlık süresi eklenmiş halidir.
 - **Kriter:** İşlem süresi ve hazırlık süresi toplamı en uzun olan işe öncelik verir (genellikle iş yükünü dengelemek için kullanılır).
 
-> **Ajan Notu (Matematikçi):** Makale metninde bu kurallar için verilen tamamlanma zamanı formüllerinde ($C_{j,k} = S_{i,j,k} + P_{j,k}$) tezgahın mevcut zamanı ($C_{i,k}$) tipografik olarak eksik bırakılmıştır. Ancak sayısal örneklerde hesaplamalar doğru şekilde ($C_{j,k} = C_{i,k} + S_{i,j,k} + P_{j,k}$) yapılmıştır. Kodlamada bu toplamsal yapı kullanılmalıdır.
+> **Teknik Not:** Makale metninde bu kurallar için verilen tamamlanma zamanı formüllerinde tezgahın mevcut zamanı tipografik olarak eksik bırakılmıştır. Uygulama aşamasında hesaplamalar doğru şekilde (Cⱼ,ₖ = Cᵢ,ₖ + Sᵢ,ⱼ,ₖ + Pⱼ,ₖ) yapılmıştır.
 
 ---
 
@@ -27,13 +27,13 @@ Geleneksel LPT kuralının hazırlık süresi eklenmiş halidir.
 
 Algoritma, tüm işler çizelgelenene kadar aşağıdaki adımları izler:
 
-- **Adım 0:** Tüm işleri çizelgelenmemiş kümesine ($N_j$) koy. Tüm tezgahların hazır olma zamanını 0 yap.
+- **Adım 0:** Tüm işleri çizelgelenmemiş kümesine (Nⱼ) koy. Tüm tezgahların hazır olma zamanını 0 yap.
 - **Adım 1:** Mevcut kuralı (örneğin SCT) seç.
-- **Adım 2:** $N_j$ kümesindeki her bir iş $j$ ve her bir tezgah $k$ için tamamlanma zamanını ($C_{j,k}$) hesapla.
-- **Adım 3:** Seçilen kurala göre en iyi (iş, tezgah) çiftini ($j^*, k^*$) belirle.
-- **Adım 4:** $j^*$ işini $k^*$ tezgahına ata. $j^*$ işini $N_j$ kümesinden çıkar.
-- **Adım 5:** Tezgahın hazır olma zamanını $C_{j^*, k^*}$ olarak güncelle.
-- **Adım 6 (Kural Değiştirme):** Eğer kural değiştirme zamanı ($t_s$) tanımlanmışsa ve herhangi bir tezgahtaki tamamlanma zamanı $t_s$'yi aşmışsa, ikinci kurala (örneğin SC-EDD) geçiş yap. Tüm işler bitene kadar Adım 2-5'i tekrarla.
+- **Adım 2:** Nⱼ kümesindeki her bir iş j ve her bir tezgah k için tamamlanma zamanını (Cⱼ,ₖ) hesapla.
+- **Adım 3:** Seçilen kurala göre en iyi (iş, tezgah) çiftini (j*, k*) belirle.
+- **Adım 4:** j* işini k* tezgahına ata. j* işini Nⱼ kümesinden çıkar.
+- **Adım 5:** Tezgahın hazır olma zamanını Cⱼ*,ₖ* olarak güncelle.
+- **Adım 6 (Kural Değiştirme):** Eğer kural değiştirme zamanı (tₛ) tanımlanmışsa ve herhangi bir tezgahtaki tamamlanma zamanı tₛ'yi aşmışsa, ikinci kurala (örneğin SC-EDD) geçiş yap. Tüm işler bitene kadar Adım 2-5'i tekrarla.
 
 ---
 
@@ -42,7 +42,7 @@ Algoritma, tüm işler çizelgelenene kadar aşağıdaki adımları izler:
 Makalede sunulan ve 2 tezgah, 5 işten oluşan örnek veri seti aşağıdadır:
 
 ### Tablo 2: İşlem Süreleri ve Teslim Tarihleri
-| İş (j) | Tezgah 1 ($P_{j,1}$) | Tezgah 2 ($P_{j,2}$) | Teslim Tarihi ($D_j$) |
+| İş (j) | Tezgah 1 (Pⱼ,₁) | Tezgah 2 (Pⱼ,₂) | Teslim Tarihi (Dⱼ) |
 | :--- | :--- | :--- | :--- |
 | 1 | 15 | 18 | 40 |
 | 2 | 22 | 16 | 20 |
@@ -50,7 +50,7 @@ Makalede sunulan ve 2 tezgah, 5 işten oluşan örnek veri seti aşağıdadır:
 | 4 | 20 | 14 | 35 |
 | 5 | 12 | 15 | 45 |
 
-### Tablo 3 & 4: Hazırlık Süreleri ($S_{i,j,k}$)
+### Tablo 3 & 4: Hazırlık Süreleri (Sᵢ,ⱼ,ₖ)
 *(Örn: Tezgah 1'de 1. işten sonra 2. iş gelirse hazırlık süresi 5 saattir.)*
 
 | i \ j (M1) | 1 | 2 | 3 | 4 | 5 |
@@ -61,11 +61,11 @@ Makalede sunulan ve 2 tezgah, 5 işten oluşan örnek veri seti aşağıdadır:
 | ... | ... | ... | ... | ... | ... |
 
 ### Tablo 5: Sonuçların Karşılaştırılması
-| Kural | Yayılma Süresi ($C_{max}$) | Toplam Gecikme ($T$) | Geciken İş Sayısı ($L$) |
+| Kural | Yayılma Süresi (Cₘₐₓ) | Toplam Gecikme (T) | Geciken İş Sayısı (L) |
 | :--- | :--- | :--- | :--- |
 | SCT | 32 | 2 | 1 |
 | SC-EDD | 35 | 0 | 0 |
 | SC-LPT | 47 | 12 | 1 |
 | **DDR (SCT + SC-LPT)** | **28** | **2.5** | **1** |
 
-> **Ajan Notu (Yöneylemci):** DDR (kural değiştirme) yaklaşımı, Yayılma Süresi değerini 32'den 28'e düşürerek tekli kurallara göre daha iyi bir performans sergilemiştir. Bu durum, farklı zaman dilimlerinde farklı önceliklerin (önce verimlilik, sonra iş yükü dengeleme gibi) kullanılmasının avantajını kanıtlamaktadır.
+> **Uygulama Notu:** DDR (kural değiştirme) yaklaşımı, Yayılma Süresi değerini belirgin şekilde düşürerek tekli kurallara göre daha iyi bir performans sergilemiştir. Bu durum, farklı zaman dilimlerinde farklı önceliklerin kullanılmasının avantajını kanıtlamaktadır.

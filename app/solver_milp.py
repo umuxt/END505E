@@ -51,7 +51,7 @@ def solve_milp(data: ProblemData, cfg: SolverConfig) -> SolverResult:
     nodes = list(range(n)) + [n] # n is the dummy node (Makale'deki 0)
     
     for i in nodes:
-        for j in range(n):
+        for j in nodes: # Hem i hem j dummy (n) olabilir
             if i == j: continue
             for k in range(m):
                 X[i, j, k] = solver.BoolVar(f'X_{i}_{j}_{k}')
@@ -80,11 +80,6 @@ def solve_milp(data: ProblemData, cfg: SolverConfig) -> SolverResult:
     # (3) Her i işinin tam olarak bir ardılı vardır
     for i in range(n):
         solver.Add(solver.Sum(X[i, j, k] for j in nodes if j != i for k in range(m)) == 1)
-        # Not: j=n (dummy) ardıl olabilir, bu makinenin son işi demektir.
-        # X[i, n, k] değişkenini de eklememiz gerekiyor.
-        for k in range(m):
-            if (i, n, k) not in X:
-                X[i, n, k] = solver.BoolVar(f'X_{i}_{n}_{k}')
 
     # (4) Akış Dengesi (Flow Balance)
     for k in range(m):

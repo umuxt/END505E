@@ -7,8 +7,10 @@ This project implements the Unrelated Parallel Machine Scheduling Problem (UPMSP
 - **Exact Solver:** Uses Google OR-Tools CP-SAT to solve MILP models (M1, M2, M3).
 - **Multi-Objective Optimization:** Implements the **AUGMECON** (Augmented ε-constraint) method to find Pareto-optimal solutions.
 - **Heuristics:** Implements **Dynamic Dispatching Rules (DDR)** with 39 different configurations (SCT, SC-LPT, SC-EDD and their combinations).
-- **MCDM:** Includes **TOPSIS** analysis to select the best compromise solution based on decision-maker weights.
-- **Reporting:** Automatic GANTT chart visualization and PDF report generation.
+- **Karar Analizi:** TOPSIS yöntemi ile karar verici ağırlıklarına göre en uygun kuralın seçimi.
+- **Raporlama:** Otomatik GANTT şeması görselleştirme ve PDF rapor üretimi.
+  - **Zaman Dilimli Gantt:** Büyük ölçekli problemlerde okunabilirliği artırmak için 250 birimlik parçalara bölünmüş şemalar.
+  - **Detaylı Özet Tablosu:** Her makine ve iş için işlem süresi ($P_{j,k}$), hazırlık süresi ($S_{i,j,k}$), gecikme ($L_j$) ve tardiness ($T_j$) değerlerini içeren, makine bazlı gruplandırılmış (rowspan) profesyonel analiz tablosu.
 
 ## Project Structure
 - `app/`: Python source code.
@@ -30,12 +32,7 @@ Run the main terminal application:
 ```bash
 python app/main.py
 ```
-From the menu, you can:
-- **[0]** Run the full pipeline (Generate data -> DDR -> TOPSIS -> AUGMECON).
-- **[1]** Generate new problem instances.
-- **[2]** Solve using MILP (Small instances recommended).
-- **[3]** Run all 39 DDR configurations.
-- **[6]** Perform Pareto analysis using AUGMECON.
+Uygulama menüsü üzerinden akademik doğrulama (SCIP), makale birebir simülasyonu (250 iş, 10 makine) veya performans odaklı endüstriyel akışları (CP-SAT) seçebilirsiniz.
 
 ## Technical Notes
 We have identified and fixed several typographical errors found in the original article's mathematical formulation:

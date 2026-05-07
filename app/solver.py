@@ -85,7 +85,7 @@ class StepLogger(cp_model.CpSolverSolutionCallback):
         tard = sum(self.Value(t) for t in self._tards) / self._scale
         print(
             f"  [STEP {self._step:3d}]  t={time.time()-self._t0:6.2f}s  |"
-            f"  Cmax={cmax:8.2f}  |  Toplam Gecikme={tard:9.2f}"
+            f"  Cmax={cmax:8.2f}  |  T (Total Tardiness)={tard:9.2f}"
         )
 
 
@@ -220,10 +220,10 @@ def solve(data: ProblemData, cfg: SolverConfig) -> SolverResult:
     # ── Kısıt (18) ve (19): AUGMECON sınır kısıtları ─────────────────────────
     if cfg.T_bar is not None:
         model.Add(total_tard <= int(cfg.T_bar * sc))
-        print(f"[SOLVER] Kısıt (18): Toplam Gecikme ≤ {cfg.T_bar}")
+        print(f"[SOLVER] Kısıt (18): Total Tardiness (T) ≤ {cfg.T_bar}")
     if cfg.L_bar is not None:
         model.Add(num_tardy <= cfg.L_bar)
-        print(f"[SOLVER] Kısıt (19): Geciken İş Sayısı ≤ {cfg.L_bar}")
+        print(f"[SOLVER] Kısıt (19): Number of Tardy Jobs (L) ≤ {cfg.L_bar}")
 
     # ── Amaç ─────────────────────────────────────────────────────────────────
     if cfg.obj_type == 'Cmax':
@@ -231,10 +231,10 @@ def solve(data: ProblemData, cfg: SolverConfig) -> SolverResult:
         print("[SOLVER] Amaç (M1): Min Cmax")
     elif cfg.obj_type == 'T':
         model.Minimize(total_tard)
-        print("[SOLVER] Amaç (M2): Min T (Toplam Gecikme)")
+        print("[SOLVER] Amaç (M2): Min T (Total Tardiness)")
     elif cfg.obj_type == 'L':
         model.Minimize(num_tardy)
-        print("[SOLVER] Amaç (M3): Min L (Geciken İş Sayısı)")
+        print("[SOLVER] Amaç (M3): Min L (Number of Tardy Jobs)")
     else:  # 'weighted'
         W1 = int(cfg.W1 * 1000)
         W2 = int(cfg.W2 * 1000)
@@ -251,9 +251,9 @@ def solve(data: ProblemData, cfg: SolverConfig) -> SolverResult:
     cb = StepLogger(Cmax, tards, sc)
 
     print(f"\n[SOLVER] Çözüm aranıyor (max {cfg.time_limit}s, 8 worker)...")
-    print("─" * 65)
-    print(f"  {'ADIM':>5}  {'SÜRE':>8}  │  {'Cmax':>10}  │  {'Toplam Gecikme':>16}")
-    print("─" * 65)
+    print("─" * 75)
+    print(f"  {'ADIM':>5}  {'SÜRE':>8}  │  {'Cmax':>10}  │  {'T (Total Tardiness)':>20}")
+    print("─" * 75)
 
     t0          = time.time()
     status_code = solver.Solve(model, cb)

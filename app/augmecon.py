@@ -80,11 +80,11 @@ def run_augmecon(data: ProblemData, time_limit: int = 60,
         return []
 
     print("\n  ─── ÖDEME TABLOSU (Payoff Table) ────────────")
-    print("  Model │    Cmax    │     T      │  L  ")
-    print("  ──────┼────────────┼────────────┼─────")
-    print(f"  M1    │  {res1.Cmax:8.2f}* │ {res1.total_tardiness:8.2f}   │ {res1.num_tardy:3d} ")
-    print(f"  M2    │  {res2.Cmax:8.2f}   │ {res2.total_tardiness:8.2f}*  │ {res2.num_tardy:3d} ")
-    print(f"  M3    │  {res3.Cmax:8.2f}   │ {res3.total_tardiness:8.2f}   │ {res3.num_tardy:3d}*")
+    print("  Model │    Cmax    │  T (Total)   │ L (Count) ")
+    print("  ──────┼────────────┼──────────────┼───────────")
+    print(f"  M1    │  {res1.Cmax:8.2f}* │ {res1.total_tardiness:10.2f}   │ {res1.num_tardy:5d} ")
+    print(f"  M2    │  {res2.Cmax:8.2f}   │ {res2.total_tardiness:10.2f}*  │ {res2.num_tardy:5d} ")
+    print(f"  M3    │  {res3.Cmax:8.2f}   │ {res3.total_tardiness:10.2f}   │ {res3.num_tardy:5d}*")
     print("  ─────────────────────────────────────────────")
 
     # ── ADIM 2: Sınırların Belirlenmesi ───────────────────────────────────
@@ -176,14 +176,14 @@ def run_augmecon(data: ProblemData, time_limit: int = 60,
                 c_cand.id = len(pareto_set) + 1
                 pareto_set.append(c_cand)
 
-    print("\n" + "═" * 50)
+    print("\n" + "═" * 60)
     print(f"  PARETO KÜMESİ ({len(pareto_set)} Çözüm)")
-    print("═" * 50)
-    print("  Çözüm │    Cmax    │     T      │  L  ")
-    print("  ──────┼────────────┼────────────┼─────")
+    print("═" * 60)
+    print("  Çözüm │    Cmax    │  T (Total)   │ L (Count) ")
+    print("  ──────┼────────────┼──────────────┼───────────")
     for p in sorted(pareto_set, key=lambda x: x.Cmax):
-        print(f"   #{p.id:2d}  │  {p.Cmax:8.2f}  │ {p.T:8.2f}   │ {p.L:3d} ")
-    print("  ──────────────────────────────────────────\n")
+        print(f"   #{p.id:2d}  │  {p.Cmax:8.2f}  │ {p.T:10.2f}   │ {p.L:5d} ")
+    print("  ──────────────────────────────────────────────────────────\n")
 
     return pareto_set
 

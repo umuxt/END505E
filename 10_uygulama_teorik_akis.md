@@ -15,9 +15,9 @@ graph TD
     end
 
     subgraph "2. Veri İşleme & Parametreleştirme"
-        D[İşlem Süreleri: P_j,k]
-        E[Teslim Tarihleri: D_j]
-        F[Hazırlık Süreleri: S_i,j,k]
+        D[İşlem Süreleri: Pⱼ,ₖ]
+        E[Teslim Tarihleri: Dⱼ]
+        F[Hazırlık Süreleri: Sᵢ,ⱼ,ₖ]
     end
 
     subgraph "3. Çözüm Algoritmaları"
@@ -26,9 +26,14 @@ graph TD
         I[DDR Sezgisel Algoritma <br> Hızlı Çözüm]
     end
 
-    subgraph "4. Sonuçlar (Çıktılar)"
-        J[Karar Değişkenleri Çıktısı]
-        K[Performans Metrikleri: C_max, T, L]
+    subgraph "4. Karar Destek & Analiz"
+        L[TOPSIS <br> Kural Sıralama]
+        M[AUGMECON <br> Pareto Analizi]
+    end
+
+    subgraph "5. Sonuçlar (Çıktılar)"
+        J[Profesyonel PDF Raporu]
+        K[Zaman Dilimli Gantt <br> Cₘₐₓ, T, L Raporu]
     end
 
     A --> D
@@ -44,8 +49,11 @@ graph TD
     G -->|Küçük Veri Seti| H
     G -->|Büyük Veri Seti| I
 
-    H --> J
-    I --> J
+    H --> M
+    I --> L
+    
+    L --> J
+    M --> J
     J --> K
 ```
 
@@ -56,19 +64,19 @@ Uygulamanın çalışması için gerekli olan girdiler ile karar değişkenleri 
 ### Parametreler ve Sabitler (Girdiler)
 | Sembol | Tür | Açıklama | Kaynak / Elde Ediliş |
 |--------|-----|----------|----------------------|
-| $N$ | Sabit | Toplam iş (sipariş) sayısı | ERP/Üretim planlama modülü |
-| $M$ | Sabit | Toplam tezgah sayısı | Sahadaki kullanılabilir tezgahlar |
-| $P_{j,k}$ | Parametre | $j$ işinin $k$ tezgahındaki işlem süresi | İşin miktarı / Tezgah üretim hızı |
-| $S_{i,j,k}$ | Parametre | $k$ tezgahında $i$ işinden sonra $j$ işi için hazırlık süresi | Tezgah kalıp değiştirme/temizlik süreleri veri tabanı |
-| $D_j$ | Parametre | $j$ işinin teslim tarihi | Müşteri sipariş sözleşmesi |
+| N | Sabit | Toplam iş (sipariş) sayısı | ERP/Üretim planlama modülü |
+| M | Sabit | Toplam tezgah sayısı | Sahadaki kullanılabilir tezgahlar |
+| Pⱼ,ₖ | Parametre | j işinin k tezgahındaki işlem süresi | İşin miktarı / Tezgah üretim hızı |
+| Sᵢ,ⱼ,ₖ | Parametre | k tezgahında i işinden sonra j işi için hazırlık süresi | Tezgah kalıp değiştirme/temizlik süreleri veri tabanı |
+| Dⱼ | Parametre | j işinin teslim tarihi | Müşteri sipariş sözleşmesi |
 
 ### Karar Değişkenleri ve Ara Değerler
 | Sembol | Tür | Açıklama |
 |--------|-----|----------|
-| $X_{i,j,k}$| İkili (0/1) | $k$ tezgahında $i$ işinden hemen sonra $j$ işi yapılıyorsa 1, aksi halde 0 |
-| $C_j$ | Sürekli | $j$ işinin tamamlanma zamanı ($C_j \ge 0$) |
-| $U_j$ | İkili (0/1) | $j$ işi gecikiyorsa 1, aksi halde 0 |
-| $e_j^+$ | Sürekli | $j$ işinin gecikme miktarı ($max(0, C_j - D_j)$) |
+| Xᵢ,ⱼ,ₖ| İkili (0/1) | k tezgahında i işinden hemen sonra j işi yapılıyorsa 1, aksi halde 0 |
+| Cⱼ | Sürekli | j işinin tamamlanma zamanı (Cⱼ ≥ 0) |
+| Uⱼ | İkili (0/1) | j işi gecikiyorsa 1, aksi halde 0 |
+| eⱼ⁺ | Sürekli | j işinin gecikme miktarı (max(0, Cⱼ - Dⱼ)) |
 
 ## 3. Algoritma Akış Şeması (Karar Mekanizması)
 
@@ -76,7 +84,7 @@ Uygulamanın çalışması için gerekli olan girdiler ile karar değişkenleri 
 
 ```mermaid
 flowchart TD
-    Start([Başla]) --> Init[Parametreleri Yükle: P_j,k, D_j, S_i,j,k]
+    Start([Başla]) --> Init[Parametreleri Yükle: Pⱼ,ₖ, Dⱼ, Sᵢ,ⱼ,ₖ]
     Init --> SetParams[Başlangıç Zamanını Ayarla: t=0]
     SetParams --> Check{Çizelgelenmemiş <br> İş Kaldı mı?}
     
@@ -87,7 +95,7 @@ flowchart TD
     AssignJob --> UpdateTime[Zamanı t ve Hazırlık Durumunu Güncelle]
     UpdateTime --> Check
     
-    Check -- Hayır --> CalcMetrics[Performans Metriklerini C_max, T, L Hesapla]
+    Check -- Hayır --> CalcMetrics[Performans Metriklerini Cₘₐₓ, T, L Hesapla]
     CalcMetrics --> End([Bitir])
 ```
 
@@ -104,26 +112,26 @@ sequenceDiagram
 
     Veri->>Model: İşlem, Hazırlık Süreleri ve Teslim Tarihleri
     Note over Model: Kısıt: Her iş sadece 1 tezgaha <br>ve 1 pozisyona atanabilir.
-    Model->>Degisken: Atama Kararı (X_i,j,k = 1)
+    Model->>Degisken: Atama Kararı (Xᵢ,ⱼ,ₖ = 1)
     
-    Note over Degisken: Sürelerin Toplanması:<br>C_j = C_i + S_i,j,k + P_j,k
-    Degisken->>Degisken: Tamamlanma Zamanlarını Hesapla (C_j)
+    Note over Degisken: Sürelerin Toplanması:<br>Cⱼ = Cᵢ + Sᵢ,ⱼ,ₖ + Pⱼ,ₖ
+    Degisken->>Degisken: Tamamlanma Zamanlarını Hesapla (Cⱼ)
     
-    Degisken->>Metrik: C_j verisini gönder
-    Veri->>Metrik: Teslim Tarihi (D_j) verisini gönder
+    Degisken->>Metrik: Cⱼ verisini gönder
+    Veri->>Metrik: Teslim Tarihi (Dⱼ) verisini gönder
     
-    Note over Metrik: Eğer C_j > D_j ise U_j=1 <br>ve e_j^+ = C_j - D_j
-    Metrik->>Metrik: C_max, T ve L değerlerini hesapla
+    Note over Metrik: Eğer Cⱼ > Dⱼ ise Uⱼ=1 <br>ve eⱼ⁺ = Cⱼ - Dⱼ
+    Metrik->>Metrik: Cₘₐₓ, T ve L değerlerini hesapla
 ```
 
 ### Algoritmik İlişkilerin Formül Özeti:
 
-1. **Zaman Akışı:** $k$ tezgahında $i$ işinden sonra $j$ işi geliyorsa ($X_{i,j,k}=1$), $j$'nin bitiş zamanı şöyledir:
-   $$ C_j \ge C_i + S_{i,j,k} + P_{j,k} $$
-2. **Gecikme Tespiti:** İşin bitiş zamanı ($C_j$) teslim tarihinden ($D_j$) büyükse iş gecikmiştir:
-   $$ e_j^+ \ge C_j - D_j $$
-   $$ \text{Eğer } e_j^+ > 0 \implies U_j = 1 $$
-3. **Optimizasyon:** Amaç fonksiyonları olan maksimum tamamlanma süresi ($C_{max}$), toplam gecikme süresi ($T = \sum e_j^+$) ve geciken iş sayısı ($L = \sum U_j$) eş zamanlı minimize edilir (AUGMECON metodu ile).
+1. **Zaman Akışı:** k tezgahında i işinden sonra j işi geliyorsa (Xᵢ,ⱼ,ₖ=1), j'nin bitiş zamanı şöyledir:
+   Cⱼ ≥ Cᵢ + Sᵢ,ⱼ,ₖ + Pⱼ,ₖ
+2. **Gecikme Tespiti:** İşin bitiş zamanı (Cⱼ) teslim tarihinden (Dⱼ) büyükse iş gecikmiştir:
+   eⱼ⁺ ≥ Cⱼ - Dⱼ
+   Eğer eⱼ⁺ > 0 ⟹ Uⱼ = 1
+3. **Optimizasyon:** Amaç fonksiyonları olan maksimum tamamlanma süresi (Cₘₐₓ), toplam gecikme süresi (T = Σ eⱼ⁺) ve geciken iş sayısı (L = Σ Uⱼ) eş zamanlı minimize edilir (AUGMECON metodu ile).
 
 ---
 
@@ -135,20 +143,21 @@ Mermaid diyagramlarının desteklenmediği ortamlar veya düz metin okumaları i
 
 ```text
 +---------------------+     +-----------------------+     +--------------------+
-|  1. HAM VERİLER     |     |  2. PARAMETRELER      |     |  3. ÇÖZÜM          |
+|  1. HAM VERİLER     |     |  2. PARAMETRELER      |     |  3. ÇÖZÜM MOTORLARI|
 |---------------------|     |-----------------------|     |--------------------|
-| - Üretim Planı      |     | - İşlem Süreleri (P)  |     | - MILP Modeli      |
-| - Tezgah Bilgileri  | --> | - Teslim Tarihleri (D)| --> | - DDR Sezgiseli    |
-| - Geçmiş Kayıtlar   |     | - Hazırlık Süreleri(S)|     |                    |
+| - Üretim Planı      |     | - İşlem Süreleri (P)  |     | - MILP (SCIP/SAT)  |
+| - Tezgah Bilgileri  | --> | - Teslim Tarihleri (D)| --> | - DDR Sezgiselleri |
+| - Geçmiş Kayıtlar   |     | - Hazırlık Süreleri(S)|     | (39 Konfigürasyon) |
 +---------------------+     +-----------------------+     +---------+----------+
                                                                     |
                                                                     v
-                                                          +--------------------+
-                                                          |  4. ÇIKTILAR       |
-                                                          |--------------------|
-                                                          | - Kararlar (X, C)  |
-                                                          | - Metrik(Cmax, T,L)|
-                                                          +--------------------+
++---------------------+     +-----------------------+     +--------------------+
+|  5. RAPORLAMA       |     |  4. KARAR DESTEK      |     |  SONUÇLAR          |
+|---------------------|     |-----------------------|     |--------------------|
+| - Zaman Dilimli     | <---| - TOPSIS Ranking      | <---| - Cmax, T, L       |
+|   Gantt Şeması      |     | - Pareto Analizi      |     | - Çizelge (X, C)   |
+| - Profesyonel PDF   |     |   (AUGMECON)          |     |                    |
++---------------------+     +-----------------------+     +--------------------+
 ```
 
 ### 5.2. DDR Algoritma Akışı

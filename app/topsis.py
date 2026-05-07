@@ -129,24 +129,25 @@ from app.utils import Colors
 def print_topsis_results(results: list[TOPSISResult],
                          wC: float, wT: float, wL: float) -> None:
     """TOPSIS sonuç tablosunu terminale basar."""
-    print("\n" + Colors.CYAN + "═" * 90 + Colors.ENDC)
-    print(Colors.BOLD + "  TOPSIS ANALİZ SONUÇLARI" + Colors.ENDC)
+    print("\n" + Colors.CYAN + "═" * 100 + Colors.ENDC)
+    print(Colors.BOLD + "  TOPSIS ANALİZ SONUÇLARI (Paper Ranking Strategy)" + Colors.ENDC)
     print(f"  Ağırlıklar: wCmax={wC:.2f}  wT={wT:.2f}  wL={wL:.2f}")
-    print(Colors.CYAN + "═" * 90 + Colors.ENDC)
+    print(f"  {Colors.YELLOW}[Not] r1: Norm. Cmax | r2: Norm. Total Tardiness (T) | r3: Norm. No. Tardy (L){Colors.ENDC}")
+    print(Colors.CYAN + "═" * 100 + Colors.ENDC)
     print(
-        f"  {Colors.BOLD}{'Sıra':>4}  {'Kural':<35}  {'Cmax':>8}  {'T':>9}  {'L':>4}"
-        f"  {'r1':>6}  {'r2':>6}  {'r3':>6}  {'S+':>7}  {'S-':>7}  {'C*':>7}{Colors.ENDC}"
+        f"  {Colors.BOLD}{'Sıra':>4}  {'Kural':<35}  {'Cmax':>8}  {'T':>10}  {'L':>6}"
+        f"  {'r1':>7}  {'r2':>7}  {'r3':>7}  {'S+':>7}  {'S-':>7}  {'C*':>7}{Colors.ENDC}"
     )
-    print(Colors.BLUE + "─" * 90 + Colors.ENDC)
+    print(Colors.BLUE + "─" * 100 + Colors.ENDC)
     for r in results:
         medal = Colors.GREEN + " ← EN İYİ" + Colors.ENDC if r.rank == 1 else ""
         row_color = Colors.YELLOW if r.rank == 1 else ""
         print(
-            f"{row_color}  {r.rank:>4}  {r.rule_name:<35}  {r.Cmax:>8.2f}  {r.total_tard:>9.2f}"
-            f"  {r.num_tardy:>4}  {r.r[0]:>6.3f}  {r.r[1]:>6.3f}  {r.r[2]:>6.3f}"
+            f"{row_color}  {r.rank:>4}  {r.rule_name:<35}  {r.Cmax:>8.2f}  {r.total_tard:>10.2f}"
+            f"  {r.num_tardy:>6d}  {r.r[0]:>7.3f}  {r.r[1]:>7.3f}  {r.r[2]:>7.3f}"
             f"  {r.S_pos:>7.4f}  {r.S_neg:>7.4f}  {r.C_star:>7.4f}{Colors.ENDC}{medal}"
         )
-    print(Colors.CYAN + "═" * 90 + Colors.ENDC)
+    print(Colors.CYAN + "═" * 100 + Colors.ENDC)
     if results:
         best = results[0]
         print(f"\n  {Colors.GREEN}{Colors.BOLD}✓ En iyi kural: [{best.rule_name}]  C*={best.C_star:.4f}{Colors.ENDC}\n")

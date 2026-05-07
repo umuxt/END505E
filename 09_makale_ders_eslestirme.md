@@ -71,6 +71,10 @@
 - Makaledeki Xᵢ,ⱼ,ₖ değişkeni = bir işin bir tezgaha atanması (yükleme kararı)
 - **Fark:** Makale yükleme + sıralama kararını **aynı anda** veriyor (entegre model)
 
+**Uygulama İle Bağlantı (Gantt Diyagramı):**
+- Dersin 3. bölümünde işlenen **Gantt Diyagramı** ile iş yükleme takibi, projemizde geliştirilen **Zaman Dilimli Gantt Şeması** ile endüstriyel boyuta taşınmıştır.
+- Dersteki manuel çizim mantığı, büyük ölçekli (250 iş) veriler için otomatik ve parçalı (chunked) bir raporlama motoruna dönüştürülmüştür.
+
 ---
 
 ### 📂 Bölüm 04A — İş Sıralama Temel Bilgiler (48 sayfa)

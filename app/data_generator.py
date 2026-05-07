@@ -24,16 +24,22 @@ import os
 
 
 # ─── Makale Uyumlu Dağılım Aralıkları ──────────────────────────────────────
-P_MIN, P_MAX           = 5,  50    # İşlem süresi (saat)
-S_MIN_SAME, S_MAX_SAME = 1,  5     # Aynı ürün ailesinden hazırlık süresi (kısa)
-S_MIN_DIFF, S_MAX_DIFF = 5,  20    # Farklı ürün ailesinden hazırlık süresi (uzun)
-D_SLACK_MIN            = 0.1       # Teslim tarihi slack katsayısı (alt) - MAKALE ÖRNEĞİNE GÖRE SIKILAŞTIRILDI
-D_SLACK_MAX            = 0.6       # Teslim tarihi slack katsayısı (üst) - MAKALE ÖRNEĞİNE GÖRE SIKILAŞTIRILDI
+# Section 5.2: Large problem instances verilerinden alınmıştır.
+P_MIN, P_MAX           = 5,  40    # Ortalama işlem süresi
+S_MIN_SAME, S_MAX_SAME = 0.3, 0.6  # Aynı ürün ailesi/farklı kalınlık (20-40 dk)
+S_MIN_DIFF, S_MAX_DIFF = 3.0, 11.0 # Farklı çap veya farklı şekiller (3-11 saat)
+
+# Makaledeki Low/High Demand ayrımı için slack faktörleri:
+# Low Demand  → [0.6, 1.2] (Daha gevşek)
+# High Demand → [0.2, 0.6] (Daha sıkı)
+D_SLACK_LOW_MIN,  D_SLACK_LOW_MAX  = 0.6, 1.2
+D_SLACK_HIGH_MIN, D_SLACK_HIGH_MAX = 0.2, 0.6
 # ─────────────────────────────────────────────────────────────────────────────
 
 
 def generate_problem(n: int, m: int, seed: int = 42,
-                     n_families: int = 3, np_ratio: float = 0.0) -> dict:
+                     n_families: int = 3, np_ratio: float = 0.0, 
+                     scenario: str = "high") -> dict:
     """
     Rastgele bir UPMSP problemi üretir.
 
@@ -42,26 +48,33 @@ def generate_problem(n: int, m: int, seed: int = 42,
         m          : Makine sayısı
         seed       : Rastgele sayı tohumu
         n_families : Ürün ailesi sayısı (hazırlık süresini belirler)
-        np_ratio   : Makine kısıtı oranı (0.0 = kısıtsız, 0.2 = %20 kısıtlı)
+        np_ratio   : Makine kısıtı oranı (0.0 = kısıtsız)
+        scenario   : "low" veya "high" (teslim tarihi sıkılığını belirler)
 
     Returns:
-        dict: Problem verisi (P, S, D, NP, family, metadata)
+        dict: Problem verisi
     """
     rng = random.Random(seed)
 
-    print(f"\n[GEN] Rastgele problem üretiliyor...")
-    print(f"      n={n} iş  |  m={m} makine  |  seed={seed}")
-    print(f"      Ürün ailesi sayısı: {n_families}  |  Makine kısıtı oranı: {np_ratio:.0%}")
-    print(f"      İşlem süresi: U[{P_MIN},{P_MAX}]  |  "
-          f"Hazırlık (aynı aile): U[{S_MIN_SAME},{S_MAX_SAME}]  |  "
-          f"Hazırlık (farklı aile): U[{S_MIN_DIFF},{S_MAX_DIFF}]")
+    # Senaryoya göre slack seçimi
+    if scenario.lower() == "low":
+        s_min, s_max = D_SLACK_LOW_MIN, D_SLACK_LOW_MAX
+    else:
+        s_min, s_max = D_SLACK_HIGH_MIN, D_SLACK_HIGH_MAX
 
-    # ── Ürün Ailesi Ataması ─────────────────────────────────────────────────
+    print(f"\n[GEN] Generating random problem...")
+    print(f"      n={n} Jobs  |  m={m} Machines  |  seed={seed}")
+    print(f"      Number of families: {n_families}  |  Machine eligibility constraint: {np_ratio:.0%}")
+    print(f"      Processing time: U[{P_MIN},{P_MAX}]  |  "
+          f"Setup (same family): U[{S_MIN_SAME},{S_MAX_SAME}]  |  "
+          f"Setup (diff family): U[{S_MIN_DIFF},{S_MAX_DIFF}]")
+
+    # ── Product Family Assignment ───────────────────────────────────────────
     # Her işe rastgele bir aile atanır
     family = {j: rng.randint(0, n_families - 1) for j in range(n)}
-    print(f"[GEN]  ✓ Ürün ailesi atamaları yapıldı  ({n_families} aile)")
+    print(f"[GEN]  ✓ Product family assignments done  ({n_families} families)")
 
-    # ── Makine Uygunluk Matrisi: NP[j][k] ───────────────────────────────────
+    # ── Machine Eligibility Matrix: NP[j][k] ───────────────────────────────────
     # NP[j][k] = 1 → j işi k makinesinde yapılabilir
     # NP[j][k] = 0 → j işi k makinesinde yapılamaz (kısıtlı)
     # Önemli: Her iş en az 1 makinede yapılabilmeli!
@@ -78,10 +91,10 @@ def generate_problem(n: int, m: int, seed: int = 42,
                 NP[j][k] = 0 if rng.random() < np_ratio else 1
 
     np_count = sum(1 for j in range(n) for k in range(m) if NP[j][k] == 0)
-    print(f"[GEN]  ✓ Makine uygunluk matrisi NP[j][k] oluşturuldu  "
-          f"({np_count}/{n*m} kısıt var)")
+    print(f"[GEN]  ✓ Machine eligibility matrix NP[j][k] created  "
+          f"({np_count}/{n*m} constraints)")
 
-    # ── İşlem Süreleri: P[j][k] ─────────────────────────────────────────────
+    # ── Processing Times: P[j][k] ─────────────────────────────────────────────
     # j işinin k makinesindeki işlem süresi (Unrelated → her makine farklı)
     # NP[j][k]=0 olan makinelere çok büyük süre atıyoruz (pratik engelleyici)
     P = {}
@@ -94,9 +107,9 @@ def generate_problem(n: int, m: int, seed: int = 42,
             else:
                 P[j][k] = BIG_P  # kullanılmayacak ama veri tutarlılığı için
 
-    print(f"[GEN]  ✓ İşlem süreleri P[j][k] üretildi  ({n}×{m} = {n*m} değer)")
+    print(f"[GEN]  ✓ Processing times P[j][k] generated  ({n}×{m} = {n*m} values)")
 
-    # ── Hazırlık Süreleri: S[i][j][k] ───────────────────────────────────────
+    # ── Setup Times: S[i][j][k] ───────────────────────────────────────
     # Aile tabanlı: aynı aileden kısa, farklı aileden uzun
     # Kukla iş (-1) için hazırlık = 0
     S = {}
@@ -108,9 +121,9 @@ def generate_problem(n: int, m: int, seed: int = 42,
                 if i == j:
                     S[i][j][k] = 0
                 elif family[i] == family[j]:
-                    S[i][j][k] = rng.randint(S_MIN_SAME, S_MAX_SAME)
+                    S[i][j][k] = round(rng.uniform(S_MIN_SAME, S_MAX_SAME), 2)
                 else:
-                    S[i][j][k] = rng.randint(S_MIN_DIFF, S_MAX_DIFF)
+                    S[i][j][k] = round(rng.uniform(S_MIN_DIFF, S_MAX_DIFF), 2)
 
     # Kukla iş (indeks: -1) hazırlık = 0
     S[-1] = {}
@@ -119,26 +132,23 @@ def generate_problem(n: int, m: int, seed: int = 42,
         for k in range(m):
             S[-1][j][k] = 0
 
-    print(f"[GEN]  ✓ Hazırlık süreleri S[i][j][k] üretildi  "
-          f"(aile bazlı: aynı={S_MIN_SAME}-{S_MAX_SAME}, farklı={S_MIN_DIFF}-{S_MAX_DIFF})")
+    print(f"[GEN]  ✓ Setup times S[i][j][k] generated  "
+          f"(family-based: same={S_MIN_SAME}-{S_MAX_SAME}, diff={S_MIN_DIFF}-{S_MAX_DIFF})")
 
-    # ── Teslim Tarihleri: D[j] ───────────────────────────────────────────────
-    # Teslim tarihleri sistemin beklenen makespan'ine (ortalama yük) göre,
-    # başlangıçtan maksimum bir slack zamanına kadar düzgün (uniform) dağılmalıdır.
-    # Aksi takdirde tüm işlerin teslim tarihi 4000+ olur ve gecikme 0 çıkar.
+    # ── Due Dates: D[j] ───────────────────────────────────────────────
     eligible_p = [P[j][k] for j in range(n) for k in range(m) if NP[j][k] == 1]
     avg_p = sum(eligible_p) / len(eligible_p) if eligible_p else 20
     expected_cmax = (n / m) * avg_p
     D = {}
     for j in range(n):
-        slack = rng.uniform(D_SLACK_MIN, D_SLACK_MAX)
+        slack = rng.uniform(s_min, s_max)
         max_d = slack * expected_cmax
         # J işinin yapılabildiği makinelerdeki en kısa işlem süresi
         min_p = min([P[j][k] for k in range(m) if NP[j][k] == 1])
         # Teslim tarihi, [min_p, max_d] aralığında rastgele seçilir
         D[j] = round(rng.uniform(min_p, max_d), 2)
 
-    print(f"[GEN]  ✓ Teslim tarihleri D[j] üretildi  (ortalama yapılabilir P={avg_p:.1f})")
+    print(f"[GEN]  ✓ Due dates D[j] generated  (avg feasible P={avg_p:.1f})")
 
     problem = {
         "metadata": {
@@ -192,13 +202,13 @@ def print_problem_summary(problem: dict) -> None:
     NP   = problem.get("NP", {str(j): {str(k): 1 for k in range(m)} for j in range(n)})
     fam  = problem.get("family", {str(j): 0 for j in range(n)})
 
-    print("\n" + "─" * 68)
-    print("  PROBLEM ÖZETİ")
-    print("─" * 68)
+    print("\n" + "─" * 80)
+    print("  PROBLEM SUMMARY")
+    print("─" * 80)
 
     # İşlem Süreleri ve Uygunluk Tablosu
-    header = f"  {'İş':>4} Aile |" + "".join(f" M{k:2d}(NP) |" for k in range(m)) + " D_j"
-    print(f"\n  İşlem Süreleri P[j][k]  (NP=0: makine kısıtlı):")
+    header = f"  {'Job':>4} Family |" + "".join(f" M{k:2d}(NP) |" for k in range(m)) + " Due Date (Dj)"
+    print(f"\n  Processing Times P[j][k] (NP=0: Machine Restricted):")
     print("  " + "─" * (len(header) - 2))
     print(header)
     print("  " + "─" * (len(header) - 2))

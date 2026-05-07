@@ -7,24 +7,24 @@ Bu bölüm, Pareto çözümler kümesi veya farklı dağıtım kuralları arası
 Makalede kullanılan TOPSIS süreci 5 temel adımdan oluşur:
 
 ### Adım 1: Karar Matrisinin Oluşturulması
-Her bir alternatif (Pareto çözümü veya kural) için 3 performans kriteri ($C_{max}, T, L$) baz alınarak bir matris oluşturulur.
+Her bir alternatif (Pareto çözümü veya kural) için 3 performans kriteri (Cₘₐₓ, T, L) baz alınarak bir matris oluşturulur.
 
 ### Adım 2: Normalizasyon
 Kriter değerlerini 0 ile 1 arasına çekmek için kullanılır. Makalede tüm kriterler "maliyet" (ne kadar az o kadar iyi) odaklı olduğu için min-max normalizasyonu tercih edilmiştir:
-- **Formül:** $r_{ij} = \frac{\min(x_{ij})}{x_{ij}}$ (Bu formül makalede maliyet kriterlerini faydaya dönüştürmek için kullanılmıştır).
+- **Formül:** rᵢⱼ = min(xᵢⱼ) / xᵢⱼ (Bu formül makalede maliyet kriterlerini faydaya dönüştürmek için kullanılmıştır).
 
 ### Adım 3: Ağırlıklı Normalize Matris
-Karar vericinin atadığı ağırlıklar ($w_j$) her bir normalize değerle çarpılır:
-- $v_{ij} = w_j \times r_{ij}$
+Karar vericinin atadığı ağırlıklar (wⱼ) her bir normalize değerle çarpılır:
+- vᵢⱼ = wⱼ × rᵢⱼ
 
 ### Adım 4: İdeal ve Anti-İdeal Çözümlerin Belirlenmesi
-- **Pozitif İdeal Çözüm ($A^+$):** Her kriterdeki en yüksek normalize değerlerin kümesi.
-- **Negatif İdeal Çözüm ($A^-$):** Her kriterdeki en düşük normalize değerlerin kümesi.
+- **Pozitif İdeal Çözüm (A⁺):** Her kriterdeki en yüksek normalize değerlerin kümesi.
+- **Negatif İdeal Çözüm (A⁻):** Her kriterdeki en düşük normalize değerlerin kümesi.
 
-### Adım 5: Yakınlık Katsayısının ($CC_i$) Hesaplanması
+### Adım 5: Yakınlık Katsayısının (CCᵢ) Hesaplanması
 Her bir alternatifin ideal çözüme olan bağıl yakınlığı hesaplanır.
-- $CC_i = \frac{D_i^-}{D_i^+ + D_i^-}$
-- **Karar:** $CC_i$ değeri 1'e en yakın olan alternatif, "en iyi" uzlaşmacı çözüm olarak seçilir.
+- CCᵢ = dᵢ⁻ / (dᵢ⁺ + dᵢ⁻)
+- **Karar:** CCᵢ değeri 1'e en yakın olan alternatif, "en iyi" uzlaşmacı çözüm olarak seçilir.
 
 ---
 
@@ -32,8 +32,8 @@ Her bir alternatifin ideal çözüme olan bağıl yakınlığı hesaplanır.
 
 Makale, karar vericinin stratejik önceliklerine göre üç ana senaryo üzerinde durmaktadır:
 
-1.  **Üretim Odaklı (Production-oriented):** $C_{max}$ (Yayılma Süresi) ağırlığı yüksek tutulur. Amaç tezgah kullanım verimliliğidir.
-2.  **Müşteri Odaklı (Customer-oriented):** $T$ (Toplam gecikme) ve $L$ (Geciken iş sayısı) ağırlığı yüksek tutulur. Amaç teslimat taahhütlerine uymaktır.
+1.  **Üretim Odaklı (Production-oriented):** Cₘₐₓ (Yayılma Süresi) ağırlığı yüksek tutulur. Amaç tezgah kullanım verimliliğidir.
+2.  **Müşteri Odaklı (Customer-oriented):** T (Toplam gecikme) ve L (Geciken iş sayısı) ağırlığı yüksek tutulur. Amaç teslimat taahhütlerine uymaktır.
 3.  **Dengeli (Balanced):** Tüm kriterlere yakın ağırlıklar verilir.
 
-> **Ajan Notu (Karar Analisti):** TOPSIS analizi, Pareto kümesindeki "uç" çözümler yerine, tüm hedefler arasında matematiksel olarak en dengeli olanı seçmemize olanak tanır. Özellikle büyük ölçekli problemlerde DDR kurallarının performansını sıralamak için vazgeçilmez bir araçtır.
+> **Analitik Not:** TOPSIS analizi, Pareto kümesindeki "uç" çözümler yerine, tüm hedefler arasında matematiksel olarak en dengeli olanı seçmemize olanak tanır. Özellikle büyük ölçekli problemlerde DDR kurallarının performansını sıralamak için vazgeçilmez bir araçtır.

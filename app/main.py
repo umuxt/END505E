@@ -25,7 +25,7 @@ from app.ddr_heuristic import (
 )
 from app.topsis import run_topsis, print_topsis_results
 from app.augmecon import run_augmecon, ParetoSolution, select_best_pareto
-from app.utils import Colors, print_gantt_chart, get_gantt_str, get_html_gantt
+from app.utils import Colors, print_gantt_chart, get_gantt_str, get_html_gantt, get_html_summary_table, system_health_check
 
 DATA_PATH = os.path.join(ROOT, "data", "seed_input.json")
 
@@ -48,39 +48,48 @@ def menu():
     
     print(Colors.HEADER + "  [ BÜTÜNCÜL AKIŞLAR - DEMO ]" + Colors.ENDC)
     print("  [1]  " + Colors.YELLOW + Colors.BOLD + "Akademik Doğrulama Akışı (SCIP - Makale Denklemleri)" + Colors.ENDC)
+    print("  [1.1]" + Colors.CYAN + Colors.BOLD + " Makale Birebir Senaryosu (Büyük Ölçekli - Gerçekçi Veri)" + Colors.ENDC)
     print("  [2]  " + Colors.GREEN + Colors.BOLD + "Endüstriyel Performans Akışı (CP-SAT - Hızlı Çözüm)" + Colors.ENDC)
     
     print(Colors.HEADER + "\n  [ VERİ YÖNETİMİ ]" + Colors.ENDC)
-    print("  [3]  Yeni veri seti oluştur")
+    print("  [3]  Yeni veri seti oluştur (Generate Jobs & Machines)")
     
     print(Colors.HEADER + "\n  [ TEKİL ÇÖZÜCÜLER (EXACT) ]" + Colors.ENDC)
-    print("  [4]  Akademik MILP Çöz (SCIP - %100 Makale Notasyonu)")
-    print("  [5]  CP-SAT ile Hızlı Çöz (Constraint Programming)")
+    print("  [4]  Akademik MILP Çöz (SCIP - %100 Paper Notation)")
+    print("  [5]  CP-SAT ile Hızlı Çöz (Industrial Speed)")
     
     print(Colors.HEADER + "\n  [ SEZGİSEL (DDR) TESTLERİ ]" + Colors.ENDC)
-    print("  [6]  Tüm 39 Kural Konfigürasyonunu Çalıştır")
-    print("  [7]  Tek Kural Seç ve Çalıştır (Adım Adım Log)")
+    print("  [6]  Tüm 39 Kural Konfigürasyonunu Çalıştır (Run all DDR)")
+    print("  [7]  Tek Kural Seç ve Çalıştır (Single Rule Verbose Log)")
     
     print(Colors.HEADER + "\n  [ KARAR ANALİZİ & RAPORLAMA ]" + Colors.ENDC)
-    print("  [8]  TOPSIS & AUGMECON Analizi")
-    print("  [9]  Raporu PDF Olarak Çıktı Al")
+    print("  [8]  TOPSIS & AUGMECON Analizi (Pareto & Ranking)")
+    print("  [9]  Raporu PDF Olarak Çıktı Al (Generate PDF Report)")
     
-    print("\n  [0]  " + Colors.RED + "Çıkış" + Colors.ENDC)
+    print("\n  [ SİSTEM & YÖNETİM ]")
+    print("  [10] Sistem Sağlık Kontrolü (System Health Check)")
+    print("  [0]  " + Colors.RED + "Çıkış" + Colors.ENDC)
     print(Colors.BLUE + "─" * 65 + Colors.ENDC)
     return input(Colors.BOLD + "  Seçiminiz: " + Colors.ENDC).strip()
 
 
 def ask_int(prompt, default):
-    val = input(f"  {prompt} [{default}]: ").strip()
-    return int(val) if val.isdigit() else default
-
+    while True:
+        val = input(f"  {prompt} [{default}]: ").strip()
+        if not val: return default
+        try:
+            return int(val)
+        except ValueError:
+            print(Colors.RED + "  [!] Hata: Lütfen tam sayı giriniz." + Colors.ENDC)
 
 def ask_float(prompt, default):
-    val = input(f"  {prompt} [{default}]: ").strip()
-    try:
-        return float(val)
-    except ValueError:
-        return default
+    while True:
+        val = input(f"  {prompt} [{default}]: ").strip()
+        if not val: return default
+        try:
+            return float(val)
+        except ValueError:
+            print(Colors.RED + "  [!] Hata: Lütfen sayısal bir değer (örn: 0.5) giriniz." + Colors.ENDC)
 
 
 def load_and_parse() -> tuple:
@@ -112,8 +121,8 @@ def flow_pipeline(solver_mode="academic"):
     print(f"  MAKALE AKIŞI: {mode_name}")
     print("═" * 70 + Colors.ENDC)
     
-    n          = ask_int("İş sayısı (n)", 10)
-    m          = ask_int("Makine sayısı (m)", 3)
+    n          = ask_int("Number of Jobs (n) [İş sayısı]", 10)
+    m          = ask_int("Number of Machines (m) [Tezgâh sayısı]", 3)
     seed       = ask_int("Rastgele tohum (seed)", 42)
     n_families = ask_int("Ürün ailesi sayısı", 3)
     np_ratio   = ask_float("Makine kısıtı oranı (0.0=kısıtsız)", 0.0)
@@ -131,10 +140,11 @@ def flow_pipeline(solver_mode="academic"):
     print_ddr_summary(ddr_results)
     
     print("\n" + Colors.CYAN + "  [AŞAMA 3] TOPSIS Analizi (Kural Seçimi)" + Colors.ENDC)
-    wC = ask_float("wCmax (Yayılma Süresi Ağırlığı)", 0.34)
-    wT = ask_float("wT    (Toplam Gecikme Ağırlığı)", 0.33)
+    print(Colors.YELLOW + "  [NOT] Makalede Cmax, Total Tardiness (T), Number of Tardy Jobs (L) notasyonu kullanılır." + Colors.ENDC)
+    wC = ask_float("wCmax (Cmax Ağırlığı)", 0.34)
+    wT = ask_float("wT    (Total Tardiness Ağırlığı)", 0.33)
     wL = round(max(0.0, 1.0 - wC - wT), 4)
-    print(f"  wL    (Geciken İş Sayısı)  → {wL}")
+    print(f"  wL    (Number of Tardy Jobs) → {wL}")
 
     candidates = [
         {"name": r.rule_name, "Cmax": r.Cmax, "T": r.total_tardiness, "L": r.num_tardy}
@@ -158,7 +168,7 @@ def flow_pipeline(solver_mode="academic"):
             if best_sol:
                 print_gantt_chart(best_sol.schedule, best_sol.Cmax)
     else:
-        print("\n" + Colors.YELLOW + f"  [BİLGİ] İş sayısı büyük (n>15), Exact {mode_name} testi atlandı." + Colors.ENDC)
+        print("\n" + Colors.YELLOW + f"  [BİLGİ] Job count is large (n>15), Exact {mode_name} test skipped." + Colors.ENDC)
         print(Colors.CYAN + "  [AŞAMA 4] TOPSIS Kazananı İçin Gantt Şeması Çiziliyor..." + Colors.ENDC)
         if topsis_results:
             best_rule_name = topsis_results[0].rule_name
@@ -171,31 +181,20 @@ def flow_pipeline(solver_mode="academic"):
     best_ddr = next((r for r in ddr_results if r.rule_name == best_rule_name), None)
     
     extra_pdf_content = f"## Seçilen En İyi Kural: {best_rule_name}\n\n"
-    extra_pdf_content += "### 1. Özet Performans Değerleri:\n"
-    extra_pdf_content += f"- **Makespan ($C_{{max}}$):** {best_ddr.Cmax} saat\n"
-    extra_pdf_content += f"- **Toplam Teslim Gecikmesi ($T$):** {best_ddr.total_tardiness} saat\n"
-    extra_pdf_content += f"- **Geciken İş Sayısı ($L$):** {best_ddr.num_tardy}\n\n"
-    
-    extra_pdf_content += "### 2. İş Bazlı Teslim Tarihleri ve Sonuçlar:\n"
-    extra_pdf_content += "| İş (j) | Teslim Tarihi ($D_j$) | Tamamlanma Zamanı ($C_j$) | Gecikme ($e_j^+$) | Durum |\n"
-    extra_pdf_content += "| :--- | :--- | :--- | :--- | :--- |\n"
-    
-    job_results = []
-    for k_val, jobs_list in best_ddr.schedule.items():
-        for j_idx, s_time, e_time in jobs_list:
-            dj_val = D[j_idx]; lat_val = max(0.0, e_time - dj_val)
-            job_results.append((j_idx, dj_val, e_time, lat_val))
-    job_results.sort(key=lambda x: x[0])
-    
-    for jr in job_results:
-        st_label = "<span style='color:red;'>**GECİKTİ**</span>" if jr[3] > 0 else "Zamanında"
-        extra_pdf_content += f"| J{jr[0]:03d} | {jr[1]:8.2f} | {jr[2]:8.2f} | {jr[3]:8.2f} | {st_label} |\n"
-    
-    extra_pdf_content += "\n### 3. Yüksek Çözünürlüklü Gantt Şeması (Yatay Görünüm):\n\n"
+    extra_pdf_content += "### 1. Performans Metrikleri Özeti:\n"
+    extra_pdf_content += f"- **Yayılma Süresi (Cₘₐₓ):** {best_ddr.Cmax} saat\n"
+    extra_pdf_content += f"- **Toplam Gecikme (T):** {best_ddr.total_tardiness} saat\n"
+    extra_pdf_content += f"- **Geciken İş Sayısı (L):** {best_ddr.num_tardy}\n\n"
+
+    # Yeni özet tablo ekleme
+    extra_pdf_content += "### 2. Detaylı Tezgâh Bazlı Çizelge Tablosu:\n"
+    extra_pdf_content += get_html_summary_table(best_ddr.schedule, raw)
+
+    extra_pdf_content += "\n<div style='page-break-before: always;'></div>\n"
     extra_pdf_content += get_html_gantt(best_ddr.schedule, best_ddr.Cmax, raw.get("family", {}))
     extra_pdf_content += "\n\n*Açıklama: Mor (S) = Hazırlık Süresi, Yeşil (J) = İşlem Süresi.*\n"
 
-    print(Colors.GREEN + Colors.BOLD + f"\n  ✓ {mode_name} TAMAMLANDI." + Colors.ENDC)
+    print(Colors.GREEN + Colors.BOLD + f"\n  ✓ {mode_name} PIPELINE COMPLETED SUCCESSFULLY." + Colors.ENDC)
 
     # ─── Post-Run Menü ───────────────────────────────────────────────────────
     print("\n" + Colors.CYAN + "─" * 45 + Colors.ENDC)
@@ -214,11 +213,68 @@ def flow_pipeline(solver_mode="academic"):
         sys.exit(0)
 
 
+def flow_pipeline_article():
+    """
+    Makaledeki 'Section 5.2 Large Scale' senaryosunu birebir simüle eden akış.
+    Varsayılan: 10 makine, 250 iş, 26 aile.
+    """
+    print(Colors.HEADER + Colors.BOLD + "\n" + "═" * 70)
+    print("  MAKALE BİREBİR SİMÜLASYONU (SECTION 5.2)")
+    print("  Varsayılanlar: 10 Makine, ~250 İş, 26 Ürün Ailesi")
+    print("═" * 70 + Colors.ENDC)
+
+    # Makale varsayılanları
+    n          = ask_int("Number of Jobs (n) [Makale: 244-298]", 250)
+    m          = 10  # Sabit makale değeri
+    seed       = ask_int("Rastgele tohum (seed)", 42)
+    n_families = 26  # Sabit makale değeri
+    np_ratio   = 0.2 # Makaledeki ortalama kısıt oranı
+    
+    demand_scenario = input("  Talep Senaryosu (Low / High) [High]: ").strip().lower() or "high"
+
+    print("\n" + Colors.CYAN + f"  [AŞAMA 1] Makale Standartlarında Veri Üretiliyor ({demand_scenario.upper()} Demand)..." + Colors.ENDC)
+    problem = generate_problem(n, m, seed, n_families, np_ratio, scenario=demand_scenario)
+    save_problem(problem, DATA_PATH)
+    
+    raw, n, m, P, S, D, NP = load_and_parse()
+    data = ProblemData(n=n, m=m, P=P, S=S, D=D, NP=NP)
+    print_problem_summary(raw)
+
+    print("\n" + Colors.CYAN + "  [AŞAMA 2] DDR Sezgisel Algoritmaları Çalıştırılıyor (39 Kural)..." + Colors.ENDC)
+    ddr_results = run_all_rules(n, m, P, S, D, NP, verbose=False)
+    print_ddr_summary(ddr_results)
+    
+    print("\n" + Colors.CYAN + "  [AŞAMA 3] TOPSIS Analizi (Makale Ağırlık Senaryosu A: 0.5, 0.4, 0.1)" + Colors.ENDC)
+    candidates = [{"name": r.rule_name, "Cmax": r.Cmax, "T": r.total_tardiness, "L": r.num_tardy} for r in ddr_results]
+    topsis_results = run_topsis(candidates, 0.5, 0.4, 0.1, mode="performance")
+    print_topsis_results(topsis_results, 0.5, 0.4, 0.1)
+
+    # PDF içeriği hazırlama
+    best_rule_name = topsis_results[0].rule_name
+    best_ddr = next((r for r in ddr_results if r.rule_name == best_rule_name), None)
+    
+    pdf_txt = f"## Makaleye Özel Simülasyon: {demand_scenario.upper()} Talep\n"
+    pdf_txt += f"**Konfigürasyon:** {n} İş, {m} Tezgâh, {n_families} Aile\n\n"
+    pdf_txt += f"### 1. Seçilen En İyi Kural: {best_rule_name}\n"
+    pdf_txt += f"- Yayılma Süresi (Cₘₐₓ): {best_ddr.Cmax} | Toplam Gecikme (T): {best_ddr.total_tardiness} | Geciken İşler (L): {best_ddr.num_tardy}\n\n"
+
+    pdf_txt += "### 2. Detaylı Tezgâh Bazlı Çizelge Tablosu:\n"
+    pdf_txt += get_html_summary_table(best_ddr.schedule, raw)
+
+    pdf_txt += "\n<div style='page-break-before: always;'></div>\n"
+    pdf_txt += get_html_gantt(best_ddr.schedule, best_ddr.Cmax, raw.get("family", {}))
+
+    print(Colors.GREEN + Colors.BOLD + "\n  ✓ ARTICLE SIMULATION COMPLETED SUCCESSFULLY." + Colors.ENDC)
+    
+    choice = input("\n  [1] PDF Raporu Al [2] Menüye Dön: ").strip()
+    if choice == "1": flow_export_pdf(extra_content=pdf_txt)
+
+
 # ─── Diğer Akışlar ─────────────────────────────────────────────────────────
 
 def flow_generate():
     print("\n─── Yeni Veri Seti Oluştur ─────────────────────────────")
-    n = ask_int("İş sayısı (n)", 8); m = ask_int("Makine sayısı (m)", 3)
+    n = ask_int("Number of Jobs (n)", 8); m = ask_int("Number of Machines (m)", 3)
     problem = generate_problem(n, m, ask_int("Tohum", 42), ask_int("Aile", 3), ask_float("Kısıt", 0.0))
     save_problem(problem, DATA_PATH)
     print("\n  [OK] Veri oluşturuldu.")
@@ -270,10 +326,12 @@ def flow_export_pdf(extra_content: str = ""):
 # ─── Ana Döngü ──────────────────────────────────────────────────────────────
 
 def main():
+    system_health_check()
     banner()
     while True:
         choice = menu()
         if   choice == "1": flow_pipeline(solver_mode="academic")
+        elif choice == "1.1": flow_pipeline_article()
         elif choice == "2": flow_pipeline(solver_mode="performance")
         elif choice == "3": flow_generate()
         elif choice == "4": flow_solver_single(mode="academic")
@@ -282,6 +340,7 @@ def main():
         elif choice == "7": flow_ddr_single()
         elif choice == "8": flow_topsis_augmecon()
         elif choice == "9": flow_export_pdf()
+        elif choice == "10": system_health_check()
         elif choice == "0":
             print("\n  İyi çalışmalar!\n")
             break

@@ -7,7 +7,7 @@ Bu bölüm, MILP modellerinin (AUGMECON) ve DDR sezgisellerinin performans karş
 Küçük ölçekli problemlerde amaç, MILP modelinin kesin çözümlerini elde etmek ve sezgisellerin başarısını bu çözümlere göre ölçmektir.
 
 ### Tablo 6: Problem Örneklerinin Karakteristikleri
-| Problem | İş Sayısı ($n$) | Tezgah Sayısı ($m$) | Talep Seviyesi | Kısıt Durumu |
+| Problem | İş Sayısı (n) | Tezgah Sayısı (m) | Talep Seviyesi | Kısıt Durumu |
 | :--- | :--- | :--- | :--- | :--- |
 | P1 | 10 | 3 | Düşük | Bazı tezgahlar kısıtlı |
 | P2 | 10 | 3 | Düşük | Tüm tezgahlar uygun |
@@ -25,14 +25,14 @@ Küçük ölçekli problemlerde amaç, MILP modelinin kesin çözümlerini elde 
 Gerçek dünya verileriyle (200+ iş) yapılan testlerde sadece DDR sezgiselleri kullanılabilmiştir.
 
 ### Tablo 12: Dağıtım Kurallarının Performans Özeti
-| Kural | Ortalama $C_{max}$ | Ortalama $T$ | Ortalama $L$ | En İyi Olduğu Durum |
+| Kural | Ortalama Cₘₐₓ | Ortalama T | Ortalama L | En İyi Olduğu Durum |
 | :--- | :--- | :--- | :--- | :--- |
 | SCT | Düşük | Orta | Orta | Üretim Odaklı |
 | SC-EDD | Orta | Düşük | Düşük | Müşteri Odaklı |
 | SC-LPT | Yüksek | Çok Yüksek | Yüksek | Tavsiye Edilmez |
 | **DDR Hibrit** | **En Düşük** | **Düşük** | **Düşük** | Genel Optimizasyon |
 
-> **Ajan Notu (Endüstri Mühendisi):** Analizler göstermektedir ki, MILP modeli 10 iş ve 3 tezgah sınırının ötesinde pratikliğini yitirmektedir. Endüstriyel uygulamalarda **SCT & SC-EDD** hibrit kuralının kullanımı, hem tezgah verimliliği hem de müşteri terminlerine uyum açısından en sağlam (robust) sonuçları vermektedir.
+> **Analitik Not:** Analizler göstermektedir ki, MILP modeli 10 iş ve 3 tezgah sınırının ötesinde pratikliğini yitirmektedir. Endüstriyel uygulamalarda **SCT & SC-EDD** hibrit kuralının kullanımı, hem tezgah verimliliği hem de müşteri terminlerine uyum açısından en sağlam (robust) sonuçları vermektedir.
 
 ---
 
@@ -41,4 +41,4 @@ Gerçek dünya verileriyle (200+ iş) yapılan testlerde sadece DDR sezgiselleri
 Farklı ağırlık senaryolarında TOPSIS skorlarına göre kazanan kurallar:
 - **Senaryo A (Ağırlıklar: 0.5, 0.4, 0.1):** SCT kuralı öne çıkmaktadır.
 - **Senaryo B (Ağırlıklar: 0.1, 0.4, 0.5):** SC-EDD kuralı öne çıkmaktadır.
-- **Senaryo C (Karma):** Kural değiştirme zamanı ($t_s$) 450 olan DDR hibrit kuralları en yüksek $CC_i$ skorunu almıştır.
+- **Senaryo C (Karma):** Kural değiştirme zamanı (tₛ) 450 olan DDR hibrit kuralları en yüksek CCᵢ skorunu almıştır.

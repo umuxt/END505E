@@ -192,9 +192,9 @@ def run_ddr(n: int, m: int, P: dict, S: dict, D: dict, NP: dict,
     rule_name = rule1 if rule2 is None else f"[{rule1} & {rule2}: {int(ts)}]"
 
     if verbose:
-        print(f"\n  [DDR] {rule_name} başlatıldı")
-        print(f"  {'Adım':>4}  {'Kural':>20}  {'J*':>4}  {'K*':>4}  {'Bitiş':>8}  {'Mevcut max':>12}")
-        print("  " + "─" * 60)
+        print(f"\n  [DDR] {rule_name} started")
+        print(f"  {'Step':>4}  {'Current Rule':>20}  {'Job (j*)':>8}  {'Mach (k*)':>8}  {'Comp. (C)':>10}  {'Current Cmax':>14}")
+        print("  " + "─" * 75)
 
     step = 0
     while remaining:
@@ -206,7 +206,7 @@ def run_ddr(n: int, m: int, P: dict, S: dict, D: dict, NP: dict,
                 current_rule = rule2
                 switched     = True
                 if verbose:
-                    print(f"  *** Kural değişti: {rule1} → {rule2} (ts={ts}) ***")
+                    print(f"  *** Rule Switched: {rule1} → {rule2} (ts={ts}) ***")
 
         # (j*, k*) seç
         j_star, k_star = _apply_rule(
@@ -230,8 +230,8 @@ def run_ddr(n: int, m: int, P: dict, S: dict, D: dict, NP: dict,
         remaining.discard(j_star)
 
         if verbose:
-            print(f"  {step:4d}  {current_rule:>20}  J{j_star:2d}  M{k_star:2d}  "
-                  f"{end_time:8.2f}  {max(machine_end.values()):12.2f}")
+            print(f"  {step:4d}  {current_rule:>20}  J{j_star:7d}  M{k_star:7d}  "
+                  f"{end_time:10.2f}  {max(machine_end.values()):14.2f}")
 
     # ── Performans Metrikleri ─────────────────────────────────────────────────
     Cmax = max(machine_end.values()) if machine_end else 0.0
@@ -288,11 +288,11 @@ from app.utils import Colors
 
 def print_ddr_summary(results: list[DDRResult]) -> None:
     """Tüm kural sonuçlarını tablo olarak basar."""
-    print("\n" + Colors.CYAN + "═" * 72 + Colors.ENDC)
+    print("\n" + Colors.CYAN + "═" * 85 + Colors.ENDC)
     print(Colors.BOLD + "  DDR KURAL SONUÇLARI (39 Konfigürasyon)" + Colors.ENDC)
-    print(Colors.CYAN + "═" * 72 + Colors.ENDC)
-    print(f"  {Colors.BOLD}{'Kural':<35}  {'Cmax':>8}  {'Toplam T':>10}  {'L':>4}  {'Süre(s)':>8}{Colors.ENDC}")
-    print(Colors.BLUE + "─" * 72 + Colors.ENDC)
+    print(Colors.CYAN + "═" * 85 + Colors.ENDC)
+    print(f"  {Colors.BOLD}{'Kural':<35}  {'Cmax':>8}  {'T (Total)':>12}  {'L (Count)':>6}  {'Süre(s)':>8}{Colors.ENDC}")
+    print(Colors.BLUE + "─" * 85 + Colors.ENDC)
 
     best_cmax = min(r.Cmax            for r in results)
     best_tard = min(r.total_tardiness for r in results)
@@ -305,11 +305,11 @@ def print_ddr_summary(results: list[DDRResult]) -> None:
         print(
             f"  {r.rule_name:<35}"
             f"  {r.Cmax:>8.2f}{cmax_mark}"
-            f"  {r.total_tardiness:>10.2f}{tard_mark}"
-            f"  {r.num_tardy:>4}{l_mark}"
+            f"  {r.total_tardiness:>12.2f}{tard_mark}"
+            f"  {r.num_tardy:>6d}{l_mark}"
             f"  {r.solve_time:>8.4f}"
         )
 
-    print(Colors.CYAN + "═" * 72 + Colors.ENDC)
-    print(f"  {Colors.GREEN}★{Colors.ENDC} = bu ölçütte en iyi değer")
+    print(Colors.CYAN + "═" * 85 + Colors.ENDC)
+    print(f"  {Colors.GREEN}★{Colors.ENDC} = bu ölçütte en iyi değer (Paper Notation: T=Total Tardiness, L=No. Tardy)")
     print()
