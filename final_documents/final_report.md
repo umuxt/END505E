@@ -155,9 +155,9 @@ Burada $T$, belirlenen kabul edilebilir toplam teslim gecikmesi süresini; $L$, 
 - $N_i$: Çizelgelenmiş işler kümesi (a set of scheduled jobs)
 - $N_j$: Kalan işler kümesi, $N = N_i \cup N_j$ (a set of remaining jobs)
 - $M_j$: $j$ işini işleyebilen tezgahlar kümesi (a set of machines that can process job $j$)
-- $P_{j,k}^*$: Seçilen $j$ işinin $k$ tezgahındaki işlem süresi (saat)
-- $S_{i,j,k}^*$: $k$ tezgahı seçilen $j$ işini işlemek üzere hazırlandığında ve önceki iş $i$ olduğunda gereken hazırlık süresi (saat)
-- $D_j^*$: Seçilen $j$ işinin teslim tarihi (saat)
+- $P_{j^*,k}$: Seçilen $j$ işinin $k$ tezgahındaki işlem süresi (saat)
+- $S_{i,j^*,k}$: $k$ tezgahı seçilen $j$ işini işlemek üzere hazırlandığında ve önceki iş $i$ olduğunda gereken hazırlık süresi (saat)
+- $D_{j^*}$: Seçilen $j$ işinin teslim tarihi (saat)
 - $C_{j,k}$: $j$ işi $k$ tezgahında işlendiğinde tamamlanma zamanı (saat)
 
 **SCT (En Kısa İş Tamamlanma Zamanı - shortest job completion time):** Bu kural, işlenecek bir sonraki $j \in N_j$ işini ve bu işi işleyecek $k \in M_j$ tezgahını, $j$ işinin tamamlanma zamanı minimize edilecek şekilde eşzamanlı olarak seçer; yani,
