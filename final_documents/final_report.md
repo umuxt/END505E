@@ -57,3 +57,90 @@ Tablo 1'e göre, hiçbir araştırma, tezgah ve sıra-bağımlı hazırlık sür
 > *(Derse Not: Makalede bahsi geçen kritik iki çalışmanın modelleme yaklaşımlarının netleştirilmesi)*
 > 1. **Avalos-Rosales vd. (2015):** Bu çalışma (Makalenin M1 modelinin temeli), hazırlık sürelerinin hem tezgaha hem de sıraya bağlı olduğu ilişkisiz paralel tezgah problemini ele alır. Yayılma süresini (Makespan) minimize etmek için saf bir MILP (Karışık Tamsayılı Doğrusal Programlama) kurgulamıştır. Büyük ölçekli problemleri çözmek için Genetik Algoritma (GA) ve Memetik Algoritma (MA) gibi popülasyon temelli meta-sezgiseller geliştirmişlerdir. Bizim çalışmamız ise bu modeli çok amaçlı hale (Gecikme süresi ve Geciken İş Sayısı dâhil) getirmiştir.
 > 2. **Bektur ve Sarac (2019):** Makalenin sezgisel yaklaşımına (DDR) ilham veren bu çalışma, toplam ağırlıklı teslim gecikmesini (weighted tardiness) minimize etmeyi hedefler. Model olarak bir MILP sunmuş, büyük problemlerde Tabu Arama (TS) ve Benzetimli Tavlama (SA) kullanmıştır. En büyük farkı, çözüm aramaya başlarken oluşturdukları başlangıç çözümünü **ATCS (Apparent Tardiness Cost with Setups)** adı verilen ve hazırlık sürelerini dikkate alan spesifik bir sezgisel dağıtım kuralıyla başlatmış olmalarıdır. Bizim çalışmamız ise tek bir kural yerine SPT, EDD ve LPT'yi modifiye ederek dinamik kurallar tasarlamıştır.
+
+---
+
+## 3. Model Geliştirme (Model Development)
+
+### 3.1. Problem Tanımı (Problem Statement)
+Bu çalışma, tezgah ve sıra-bağımlı hazırlık sürelerine sahip ilişkisiz paralel tezgah çizelgeleme problemini ele almaktadır. Problemin tanımları aşağıdaki gibidir:
+- Her periyotta (örneğin bir ay) işlenecek $n$ adet iş (job) bulunmaktadır. Her iş, gerekli üretim miktarı ve teslim tarihinden (due date) oluşur.
+- Tüm işler her periyodun başında üretim için serbest bırakılır, yani tüm işlerin serbest bırakılma zamanı (release time) aynıdır. İşlerin önem derecelerine göre birbirlerine karşı herhangi bir önceliği yoktur.
+- Üretim sistemi $m$ adet ilişkisiz paralel tezgahtan oluşmaktadır.
+- Bir işin bir tezgahtaki işlem süresi, iş-tezgah çiftine bağlıdır.
+- Her tezgah, tüm işlerin sadece belirli bir alt kümesini işleyebilir. Bir tezgahın işleyemediği işler için işlem süreleri çok büyük bir değere atanır.
+- Hazırlık süresi tezgaha ve sıraya bağlıdır; yani bir işin hazırlık süresi, belirli bir tezgahta kendinden önceki iş ve kendisinden oluşan bir iş çifti tarafından belirlenir.
+
+### 3.2. Matematiksel Modeller (Mathematical Models)
+Problem, her biri yayılma süresi (makespan), toplam teslim gecikmesi süresi (total tardiness) ve geciken iş sayısı (number of tardy jobs) dâhil olmak üzere üç sistem performans ölçütünden birini minimize eden üç ayrı MILP modeli olarak formüle edilmiştir. MILP modelleri, farklı sistem ölçütlerine göre problemlerin karakteristiklerini incelemek için kullanılır. Bu, optimizasyon probleminin dört küçük problem örneği kullanılarak çözülmesiyle gerçekleştirilir. Buna ek olarak, üç ölçüt arasında uzlaşmacı (compromise) çözümler arayan dördüncü bir model formüle edilmiştir. Üç ölçüt arasındaki ödünleşim (trade-off) incelenerek Pareto çözümleri tanımlanmaktadır. Modelin indeksleri, parametreleri ve karar değişkenleri şunlardır:
+
+**İndeksler (Index):**
+- $i, j$: İş indeksleri, burada $N$ işler kümesini ifade eder ($N = \{1, 2, ..., n\}$) ve $N_0$ ise 0 numaralı kukla (dummy) işi de içeren işler kümesidir ($N_0 = \{0\} \cup N$).
+- $k$: Tezgah indeksi, burada $M$ tezgahlar kümesini ifade eder ($k \in M = \{1, 2, ..., m\}$). Ayrıca her tezgah farklı bir iş kümesini işleyebildiğinden, herhangi bir verilen $j$ işi sadece $M$'nin bir alt kümesi olan $M_j$ tarafından işlenebilir. Yani $M = M_1 \cup M_2 ... \cup M_n$'dir.
+
+**Parametreler (Parameter):**
+- $P_{j,k}$: $j$ işinin $k$ tezgahındaki işlem süresi (processing time)
+- $S_{i,j,k}$: $k$ tezgahı, önceki işi $i$ iken $j$ işini işlemek üzere hazırlandığında gereken hazırlık süresi (setup time)
+- $D_j$: $j$ işinin teslim tarihi (due date)
+- $V$: Çok büyük bir değer (Big-M katsayısı)
+- $NP_{j,k}$: $j$ işinin, eğer 1'e eşitse $k$ tezgahında işlenebileceğini, aksi takdirde işlenemeyeceğini gösteren kısıtlama koşulu.
+
+**Karar Değişkenleri (Decision Variable):**
+- $X_{i,j,k}$: Eğer $j$ işi $k$ tezgahında $i$ işinden sonra çizelgelenmişse 1, aksi halde 0 değerini alan ikili (binary) değişken.
+- $C_j$: $j$ işinin tamamlanma zamanı (saat) (completion time)
+- $C_{max}$: Yayılma süresi (Tüm $j \in N$ işleri içindeki maksimum tamamlanma zamanı) (saat) (makespan)
+- $e^+_j$: $j$ işinin teslim gecikmesi süresi (saat) (tardiness)
+- $e^-_j$: $j$ işinin erken bitme süresi (saat) (earliness)
+- $U_j$: Eğer $j$ işi gecikmişse 1, aksi halde 0 değerini alan ikili değişken.
+
+#### 3.2.1. Yayılma Süresini Minimize Etme (Minimize makespan)
+Bu MILP Avalos-Rosales vd. [1] ve Kongsri ve Buddhakulsomsiri [40] tarafından benimsenmiştir. M1 olarak adlandırılmaktadır.
+
+**[BURAYA DENKLEM 1 GÖRSELİ EKLENECEK - Amaç Fonksiyonu]**
+
+Kısıtlar (Subject to):
+**[BURAYA DENKLEM 2 VE 3 GÖRSELLERİ EKLENECEK]**
+**[BURAYA DENKLEM 4 VE 5 GÖRSELLERİ EKLENECEK]**
+**[BURAYA DENKLEM 6 VE 7 GÖRSELLERİ EKLENECEK]**
+**[BURAYA DENKLEM 8 VE 9 GÖRSELLERİ EKLENECEK]**
+**[BURAYA DENKLEM 10 VE 11 GÖRSELLERİ EKLENECEK]**
+
+Modelde amaç fonksiyonu (1) yayılma süresini en aza indirir. Kısıtlar (2) ve (3), her işin yalnızca tek bir önceki işi ve tam olarak tek bir ardıl işi olmasını sağlar. Kısıt (4), her bir tezgahtaki her işin akış dengesini temsil eder. Kısıt (5), her tezgahın bir kukla iş (dummy job) ile başlaması gerektiğini belirtir. Kısıt (6), her işin tamamlanma zamanını, önceki işin tamamlanma zamanı, hazırlık süresi ve işin işlem süresi üzerinden hesaplar. Kısıt (7), kukla işin tamamlanma zamanının 0 olduğunu gösterir. Kısıt (8), tüm işlerin tamamlanma zamanlarından yayılma süresini belirler. Kısıt (9), eğer bir kısıtlaması varsa $j$ işinin $m$ tezgahında işlenemeyeceğini belirler *(Derse Not: Orijinal metinde denklem 9'un açıklamasında dizgisel bir hata yapılarak '$k$ tezgahı' yerine yanlışlıkla '$m$ tezgahı' yazılmıştır, ayrıca $k$ indisinin denklemin solundaki toplam sembolüyle çakışması şeklinde yapısal bir hata mevcuttur)*. Son olarak, Kısıt (10)–(11) karar değişkenlerinin türlerini belirler.
+
+#### 3.2.2. Toplam Teslim Gecikmesi Süresini Minimize Etme (Minimize the total tardiness)
+Minimum toplam teslim gecikmesi süresine sahip bir iş çizelgesi oluşturmak için M1, ek karar değişkenleri ve kısıtlar getirilerek M2 olarak adlandırılan başka bir modele dönüştürülmüştür. Spesifik olarak, $j$ işinin sırasıyla teslim gecikmesi süresini ve erken bitme süresini temsil eden $e^+_j$ ve $e^-_j$ olmak üzere iki değişken M2'ye dâhil edilmiştir. Toplam teslim gecikmesi süresini en aza indirmeye yönelik amaç fonksiyonu Denklem (12) ile ifade edilmektedir. Ayrıca, $e^+_j$ ve $e^-_j$'nin değerleri ve türleri sırasıyla (13) ve (14) kısıtlarıyla belirlenmiştir.
+
+**[BURAYA DENKLEM 12 GÖRSELİ EKLENECEK - Amaç Fonksiyonu]**
+
+Kısıtlar (Subject to):
+(2)–(10)
+**[BURAYA DENKLEM 13 VE 14 GÖRSELLERİ EKLENECEK]**
+
+#### 3.2.3. Geciken İş Sayısını Minimize Etme (Minimize the number of tardy jobs)
+M2'ye benzer şekilde, bu bölümdeki M3 olarak adlandırılan model, $j$ işinin gecikip gecikmediğini göstermek için bir $U_j$ ikili karar değişkeni eklenerek M1'den türetilmiştir. M3 aşağıdaki gibi formüle edilmiştir:
+
+**[BURAYA DENKLEM 15 GÖRSELİ EKLENECEK - Amaç Fonksiyonu]**
+
+Kısıtlar (Subject to):
+**[BURAYA DENKLEM 16 VE 17 GÖRSELLERİ EKLENECEK]**
+
+Amaç fonksiyonu (15) geciken iş sayısını en aza indirir. Ek kısıtlar (16) ve (17) sırasıyla her bir işin gecikme durumunu ve ek karar değişkeninin türünü belirtir *(Derse Not: Denklem 16'da eşitlik kullanılması teorik olarak kusurludur; bir Big-M (V) kısıtı gereği $e^+_j \leq V \times U_j$ şeklinde eşitsizlik olması gerekir, çeviride makalenin orijinali korunmuştur)*.
+
+#### 3.2.4. Üç Performans Ölçütü Arasındaki Uzlaşmacı Çözümleri Belirleme (Determine compromise solutions among the three performance measures)
+Uzlaşmacı (compromise) çözümler bulmak için, çok amaçlı model (M4) aşağıdaki gibi formüle edilmiştir:
+
+**[BURAYA M4 AMAÇ FONKSİYONLARI GÖRSELİ EKLENECEK ($f_1, f_2, f_3$)]**
+
+Kısıtlar (Subject to):
+Kısıtlar (2)–(11), (13)–(14), ve (16)–(17)
+
+Çok amaçlı model, birkaç amaç fonksiyonunun aynı anda optimize edilmesini içerdiğinden, birbiriyle çatışan tüm hedefler için optimal olan tek bir çözüm elde etmek genellikle imkansızdır. Sonuç olarak, bu problemlerle başa çıkmak için yaygın olarak benimsenen yaklaşım $\epsilon$-kısıt yöntemidir. Bu teknik, amaçlar arasında dengeli bir uzlaşma sağlanabilmesi için hedefler arasındaki etkileşimlerin araştırılmasını kolaylaştırır [41]. Bu çalışmada, üretim çizelgeleme problemi için önerilen çok amaçlı modeli ele almak üzere $\epsilon$-kısıt yönteminin artırılmış (augmented) bir versiyonunu (AUGMECON) [42] kullanıyoruz. AUGMECON yöntemi, çok amaçlı problemlerde verimli Pareto-optimal, baskılanmayan (non-dominated) çözümler üretmek üzere tasarlanmıştır ve pareto optimal sonuçlar üretmedeki etkinliği kanıtlanmıştır [43]. Bu yöntemin detaylı açıklaması için okuyucular Mavrotas'a [42] yönlendirilmektedir.
+
+AUGMECON yöntemi aşağıdaki adımlar kullanılarak M4'e uygulanır:
+**Adım 1:** $f_2$ ve $f_3$ amaç fonksiyonlarını Kısıt (18) ve (19) olarak ayarlayın.
+**[BURAYA DENKLEM 18 VE 19 GÖRSELLERİ EKLENECEK]**
+Burada $T$, belirlenen kabul edilebilir toplam teslim gecikmesi süresini; $L$, belirlenen kabul edilebilir geciken iş sayısını gösterir ve bunlar M4'ün ek parametreleridir.
+**Adım 2:** $C_{max}, T$ ve $L$'nin mümkün olan en iyi ve en kötü değerlerini elde etmek için M1, M2 ve M3'ü çözerek ödeme tablosunu (payoff table) oluşturun.
+**Adım 3:** $f_2$ ve $f_3$ için aralığı (range) hesaplayın. Her aralık birkaç kılavuz (grid) noktası içerir.
+**Adım 4:** M4, $T$ ve $L$ aralıklarındaki her kılavuz noktası kombinasyonu için çözülür.
+**Adım 5:** Üç amaç fonksiyonuna göre baskılanmayan (non-dominant) çözümler olan Pareto çözümlerini belirleyin.
