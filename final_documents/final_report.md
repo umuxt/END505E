@@ -337,3 +337,77 @@ Araştırma bulgularının üretim çizelgelemesindeki pratik uygulamalara, öze
 İkinci olarak, çok kriterli karar verme analizinin uygulanması, karar vericilerin çizelgeleme çözümlerini değerlendirirken çoklu performans ölçütlerini dikkate alma gerekliliğinin altını çizmektedir. Endüstriyel kullanıcılar genellikle, gecikmeyi azaltırken yayılma süresini en aza indirmek gibi rekabet halindeki sistem ölçütleriyle karşılaşırlar. Bu araştırma, çizelgelemeye bütüncül (holistic) bir yaklaşım sağlayarak belirli operasyonel hedeflere dayalı çeşitli performans ölçütlerinin dengelenmesine izin vermektedir. Bu esneklik, zamanında teslimatlar sayesinde artan müşteri memnuniyetine ve gelişmiş genel operasyonel performansa yol açabilir.
 Üçüncü olarak bulgular, çizelgeleme sistemlerinde uyarlanabilirliğin önemini vurgulamaktadır. Endüstriler talep dalgalanmaları ve üretim gereksinimlerindeki değişikliklerle giderek daha fazla karşılaştıkça, zamanlama stratejilerini ayarlama yeteneği hayati hale gelmektedir. Önerilen sezgisel yöntemler ve dağıtım kuralları, farklı üretim talebi senaryolarına uyum sağlayacak şekilde kolayca değiştirilebilir ve böylece üreticilerin pazar değişikliklerine hızla yanıt vermesini sağlayabilir. Bu uyarlanabilirlik yalnızca operasyonel dayanıklılığı (operational resilience) artırmakla kalmaz, aynı zamanda şirketleri yeni ortaya çıkan fırsatlardan yararlanacak şekilde konumlandırır.
 Son olarak araştırma, çeşitli sezgisel ve optimizasyon tekniklerinin güçlü yönlerini birleştiren hibrit çizelgeleme yaklaşımlarının daha fazla araştırılması için bir temel sağlamaktadır. Endüstriyel kullanıcılar, gelişmiş çizelgeleme algoritmalarını mevcut sistemlerine entegre etmekten, böylece daha sofistike karar verme süreçlerine ve gelişmiş üretim planlamasına sahip olmaktan fayda sağlayabilirler.
+
+---
+
+## 6. Sonuç (Conclusion)
+Bu çalışma, sıra ve tezgaha bağlı hazırlık sürelerine sahip ilişkisiz paralel tezgah çizelgeleme problemini içermektedir. Yayılma süresi (makespan), toplam teslim gecikmesi süresi (total tardiness) ve geciken iş sayısı (number of tardy jobs) dahil olmak üzere üç sistem performans ölçütü dikkate alınmıştır. Küçük problem örnekleri için, AUGMECON yönteminin uygulanmasıyla Pareto çözümlerinin yanı sıra optimal çözümleri bulmak için MILP modelleri formüle edilmiştir. Büyük problem örnekleri için, sıra ve tezgaha bağlı hazırlık sürelerini dikkate alan dağıtım kuralı tabanlı sezgisel yöntemler geliştirilmiştir. Bunlar SCT, SC-LPT, SC-EDD ve bu kuralların altı kombinasyonunu içerir. Kombine kurallar için, uygun kural değiştirme süresi (rule-switching time) hesaplamalı deneyler aracılığıyla belirlenir.
+
+Sezgisel yöntemler endüstriden alınan aylık talebe ait 18 veri seti kullanılarak test edilmiştir. Sonuçlar yüksek talep senaryosunda, yayılma süresi, toplam teslim gecikmesi süresi ve geciken iş sayısı için en iyi dağıtım kuralının sırasıyla SCT, SC-EDD ve [SCT & SC-EDD: 450] olduğunu göstermektedir. Düşük talep senaryosu için, yayılma süresi açısından en iyi kural [SCT & SC-EDD: 450] iken, [SC-EDD & SCT: 200] hem toplam teslim gecikmesi süresi hem de geciken iş sayısı için en etkilidir. Uygulamada, karar vericiler performans ölçütlerine göreceli olarak birden fazla önem ağırlığı atayabilir, bu da hangi kuralın kullanılması gerektiğini belirler. Karar vericinin (DM) bir kuralı diğerlerine tercih ettiği bir dizi koşulu belirlemek için ağırlıkların tam bir sayımını gerçekleştiriyoruz.
+
+Bu araştırmadaki sonuç, gelecekteki çeşitli araştırma yönleri için bir basamak niteliğindedir. Bunlardan biri, yeni dağıtım kuralları geliştirmek veya problemi, her bir operasyonda ilişkisiz paralel tezgahların bulunduğu sıralı (in sequence) çoklu operasyonlara genişletmektir. Ayrıca performansı daha da artırmak için dağıtım kuralları, büyük problem örnekleri için Pareto cephesinde çözümler üreten bir meta-sezgisel algoritmanın parçası olarak da uygulanabilir.
+
+---
+
+### Finansman (Funding)
+Bu çalışma Thammasat Üniversitesi Araştırma Fonu tarafından desteklenmektedir [Sözleşme Numarası: TUFT 85/2566].
+
+### Çıkar Çatışması Beyanı (Declaration of competing interest)
+Yazarlar, bu makalede bildirilen çalışmayı etkilemiş gibi görünebilecek bilinen hiçbir rekabetçi finansal çıkarları veya kişisel ilişkileri olmadığını beyan ederler.
+
+### Ek A. Tamamlayıcı veriler (Appendix A. Supplementary data)
+Bu makaleyle ilgili tamamlayıcı materyaller https://doi.org/10.1016/j.dajour.2024.100525 adresinde çevrimiçi olarak bulunabilir.
+
+### Veri Bulunabilirliği (Data availability)
+Veriler talep üzerine sağlanacaktır.
+
+---
+
+### Referanslar (References)
+*(Derse Not: Tüm atıflar için makalenin mevcut formatındaki numaralandırılmış sistem korunmuştur)*
+
+[1] O. Avalos-Rosales, F. Angel-Bello, A. Alvarez, Efficient metaheuristic algorithm and re-formulations for the unrelated parallel machine scheduling problem with sequence and machine-dependent setup times, Int. J. Adv. Manuf. Technol. 76 (9) (2015) 1705–1718.
+[2] L. Ghalami, D. Grosu, Scheduling parallel identical machines to minimize makespan: A parallel approximation algorithm, J. Parallel Distrib. Comput. 133 (2019) 221–231.
+[3] M.Y. Kim, Y.H. Lee, MIP models and hybrid algorithm for minimizing the makespan of parallel machines scheduling problem with a single server, Comput. Oper. Res. 39 (11) (2012) 2457–2468.
+[4] M.K. Omar, S.C. Teo, Minimizing the sum of earliness/tardiness in identical parallel machines schedule with incompatible job families: An improved MIP approach, Appl. Math. Comput. 181 (2) (2006) 1008–1017.
+[5] B.E. Anderson, J.D. Blocher, K.M. Bretthauer, M.A. Venkataramanan, An efficient network-based formulation for sequence dependent setup scheduling on parallel identical machines, Math. Comput. Modelling 57 (3–4) (2013) 483–493.
+[6] A. Hamzadayi, G. Yildiz, Modeling and solving static m identical parallel machines scheduling problem with a common server and sequence dependent setup times, Comput. Ind. Eng. 106 (2017) 287–298.
+[7] E.A. Ozer, T. Sarac, MIP models and a matheuristic algorithm for an identical parallel machine scheduling problem under multiple copies of shared resources constraints, TOP 27 (1) (2019) 94–124.
+[8] L. Epstein, Parallel solutions for preemptive makespan scheduling on two identical machines, J. Sched. (2022) 1–16.
+[9] G.H. Wu, P. Pourhejazy, W.X. Li, T.H. Wu, A new dispatching mechanism for parallel-machine scheduling with different efficiencies and sequence-dependent setup times, Decis. Anal. J. 10 (2024) 100432.
+[10] K. Li, W. Xiao, S. Yang, Minimizing total tardiness on two uniform parallel machines considering a cost constraint, Expert Syst. Appl. 123 (2019) 143–153.
+[11] A. Zandi, R. Ramezanian, L. Monplaisir, Green parallel machines scheduling problem: A bi-objective model and a heuristic algorithm to obtain Pareto frontier, J. Oper. Res. Soc. 71 (6) (2020) 967–978.
+[12] R. Logendran, B. McDonell, B. Smucker, Scheduling unrelated parallel machines with sequence-dependent setups, Comput. Oper. Res. 34 (11) (2007) 3420–3438.
+[13] Y.K. Lin, J.W. Fowler, M.E. Pfund, Multiple-objective heuristics for scheduling unrelated parallel machines, European J. Oper. Res. 227 (2) (2013) 239–253.
+[14] M. Ghirardi, C.N. Potts, Makespan minimization for scheduling unrelated parallel machines: A recovering beam search approach, European J. Oper. Res. 165 (2) (2005) 457–467.
+[15] S.W. Lin, K.C. Ying, A multi-point simulated annealing heuristic for solving multiple objective unrelated parallel machine scheduling problems, Int. J. Prod. Res. 53 (4) (2015) 1065–1076.
+[16] C.Y. Cheng, L.W. Huang, Minimizing total earliness and tardiness through unrelated parallel machine scheduling using distributed release time control, J. Manuf. Syst. 42 (2017) 1–10.
+[17] X. Xiong, P. Zhou, Y. Yin, T.C.E. Cheng, D. Li, An exact branch-and-price algorithm for multitasking scheduling on unrelated parallel machines, Naval Res. Logist. 66 (6) (2019) 502–516.
+[18] L.H. Su, M.C. Hsiao, H. Zhou, F.D. Chou, Minimizing the number of tardy jobs on unrelated parallel machines with dirt consideration, J. Ind. Prod. Eng. 35 (6) (2018) 383–393.
+[19] M.A. Bajestani, R. Tavakkoli-Moghaddam, A new branch-and-bound algorithm for the unrelated parallel machine scheduling problem with sequence-dependent setup times, IFAC Proc. Vol. 42 (4) (2009) 792–797.
+[20] J.E.C. Arroyo, J.Y.T. Leung, R.G. Tavares, An iterated greedy algorithm for total flow time minimization in unrelated parallel batch machines with unequal job release times, Eng. Appl. Artif. Intell. 77 (2019) 239–254.
+[21] A.J. Soper, V.A. Strusevich, Preemptive and non-preemptive scheduling on two unrelated parallel machines, J. Sched. 25 (6) (2022) 659–674.
+[22] A. Allahverdi, The third comprehensive survey on scheduling problems with setup times/costs, European J. Oper. Res. 246 (2) (2015) 345–378.
+[23] Y.K. Lin, M.E. Pfund, J.W. Fowler, Heuristics for minimizing regular performance measures in unrelated parallel machine scheduling problems, Comput. Oper. Res. 38 (6) (2011) 901–916.
+[24] M. Moser, N. Musliu, A. Schaerf, F. Winter, Exact and metaheuristic approaches for unrelated parallel machine scheduling, J. Sched. 25 (5) (2022) 507–534.
+[25] C.C. Chyu, W.S. Chang, A Pareto evolutionary algorithm approach to bi-objective unrelated parallel machine scheduling problems, Int. J. Adv. Manuf. Technol. 49 (2010) 697–708.
+[26] S.A. Torabi, N. Sahebjamnia, S.A. Mansouri, M.A. Bajestani, A particle swarm optimization for a fuzzy multi-objective unrelated parallel machines scheduling problem, Appl. Soft Comput. 13 (12) (2013) 4750–4762.
+[27] M. Nikabadi, R. Naderi, A hybrid algorithm for unrelated parallel machines scheduling, Int. J. Ind. Eng. Comput. 7 (4) (2016) 681–702.
+[28] H. Wang, B. Alidaee, Unrelated parallel machine selection and job scheduling with the objective of minimizing total workload and machine fixed costs, IEEE Trans. Autom. Sci. Eng. 15 (4) (2018) 1955–1963.
+[29] G. Bektur, T. Saraç, A mathematical model and heuristic algorithms for an unrelated parallel machine scheduling problem with sequence-dependent setup times, machine eligibility restrictions and a common server, Comput. Oper. Res. 103 (2019) 46–63.
+[30] J.C. Yepes-Borrero, F. Perea, R. Ruiz, F. Villa, Bi-objective parallel machine scheduling with additional resources during setups, European J. Oper. Res. 292 (2) (2021) 443–455.
+[31] A.E. Ezugwu, Enhanced symbiotic organisms search algorithm for unrelated parallel machines manufacturing scheduling with setup times, Knowl.-Based Syst. 172 (2019) 15–32.
+[32] M. Mirmozaffari, S.M. Hejazi, N. Karamizadeh, A. Montazeri, A mixed-integer non-linear no-wait open-shop scheduling model for minimizing makespan and total tardiness in manufacturing, Decis. Anal. J. 10 (2024) 100403.
+[33] S. Nessari, R. Tavakkoli-Moghaddam, H. Bakhshi-Khaniki, A. Bozorgi-Amiri, A hybrid simheuristic algorithm for solving bi-objective stochastic flexible job shop scheduling problems, Decis. Anal. J. (2024) 100485.
+[34] E.V. Shchepin, N. Vakhania, An optimal rounding gives a better approximation for scheduling unrelated machines, Oper. Res. Lett. 33 (2) (2005) 127–133.
+[35] M. Lee, K. Lee, M. Pinedo, Tight approximation bounds for the LPT rule applied to identical parallel machines with small jobs, J. Sched. 25 (6) (2022) 721–740.
+[36] Y. Yin, Y. Chen, K. Qin, D. Wang, Two-agent scheduling on unrelated parallel machines with total completion time and weighted number of tardy jobs criteria, J. Sched. 22 (3) (2019) 315–333.
+[37] N. Farmand, H. Zarei, M. Rasti-Barzoki, Two meta-heuristic algorithms for optimizing a multi-objective supply chain scheduling problem in an identical parallel machines environment, Int. J. Ind. Eng. Comput. 12 (3) (2021) 249–272.
+[38] Z. Pei, M. Wan, Z. Wang, A new approximation algorithm for unrelated parallel machine scheduling with release dates, Ann. Oper. Res. 285 (1) (2020) 397–425.
+[39] H. Krim, N. Zufferey, J.Y. Potvin, R. Benmansour, D. Duvivier, Tabu search for a parallel-machine scheduling problem with periodic maintenance, job rejection and weighted sum of completion times, J. Sched. (2022) 1–17.
+[40] P. Kongsri, J. Buddhakulsomsiri, A mixed integer programming model for unrelated parallel machine scheduling problem with sequence dependent setup time to minimize makespan and total tardiness, in: 2020 IEEE 7th International Conference on Industrial Engineering and Applications, ICIEA, IEEE, 2020, pp. 605–609.
+[41] Y. Fallahpour, M. Rafiee, A. Elomri, V. Kayvanfar, A. El Omri, A multi-objective planning and scheduling model for elective and emergency cases in the operating room under uncertainty, Decis. Anal. J. 11 (2024) 100475.
+[42] G. Mavrotas, Effective implementation of the $\epsilon$-constraint method in multi-objective mathematical programming problems, Appl. Math. Comput. 213 (2) (2009) 455–465.
+[43] M. Momenitabar, Z.D. Ebrahimi, A. Abdollahi, W. Helmi, K. Bengtson, P. Ghasemi, An integrated machine learning and quantitative optimization method for designing sustainable bioethanol supply chain networks, Decis. Anal. J. 7 (2023) 100236.
+[44] P.J. Rousseeuw, Silhouettes: a graphical aid to the interpretation and validation of cluster analysis, J. Comput. Appl. Math. 20 (1987) 53–65.
+[45] H.S. Shih, H.J. Shyur, E.S. Lee, An extension of TOPSIS for group decision making, Math. Comput. Modelling 45 (7–8) (2007) 801–813.
