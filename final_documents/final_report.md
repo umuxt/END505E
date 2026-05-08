@@ -144,3 +144,55 @@ Burada $T$, belirlenen kabul edilebilir toplam teslim gecikmesi süresini; $L$, 
 **Adım 3:** $f_2$ ve $f_3$ için aralığı (range) hesaplayın. Her aralık birkaç kılavuz (grid) noktası içerir.
 **Adım 4:** M4, $T$ ve $L$ aralıklarındaki her kılavuz noktası kombinasyonu için çözülür.
 **Adım 5:** Üç amaç fonksiyonuna göre baskılanmayan (non-dominant) çözümler olan Pareto çözümlerini belirleyin.
+
+---
+
+## 4. Dinamik Dağıtım Kuralı Tabanlı Sezgisel Yöntemler (Dynamic dispatching rule based heuristics)
+
+Önceki bölümde sunulan MILP modelleri ile yalnızca küçük problem örnekleri çözülebildiği için, bu bölümde gerçek problemleri doğru bir şekilde temsil eden büyük ölçekli problem örneklerini çözmek üzere dinamik dağıtım kurallarını (dynamic dispatching rules) uygulayan sezgisel yöntemler (heuristics) geliştirilmiştir. Önerilen sezgisel yöntemlerimiz; en kısa işlem süresi (SPT), en uzun işlem süresi (LPT) ve en erken teslim tarihi (EDD) dahil olmak üzere yaygın olarak benimsenen dağıtım kurallarından yararlanmaktadır. Bu kurallar problemin karakteristiklerini, yani sıra- ve tezgah-bağımlı hazırlık sürelerini ve ilişkisiz paralel tezgahları dikkate alacak şekilde değiştirilmiştir. Değiştirilmiş kurallar sırasıyla SCT, SC-LPT ve SC-EDD olarak adlandırılmaktadır. Açıklamaları aşağıdaki gibidir:
+
+**Notasyon (Notation):**
+- $N_i$: Çizelgelenmiş işler kümesi (a set of scheduled jobs)
+- $N_j$: Kalan işler kümesi, $N = N_i \cup N_j$ (a set of remaining jobs)
+- $M_j$: $j$ işini işleyebilen tezgahlar kümesi (a set of machines that can process job $j$)
+- $P_{j,k}^*$: Seçilen $j$ işinin $k$ tezgahındaki işlem süresi (saat)
+- $S_{i,j,k}^*$: $k$ tezgahı seçilen $j$ işini işlemek üzere hazırlandığında ve önceki iş $i$ olduğunda gereken hazırlık süresi (saat)
+- $D_j^*$: Seçilen $j$ işinin teslim tarihi (saat)
+- $C_{j,k}$: $j$ işi $k$ tezgahında işlendiğinde tamamlanma zamanı (saat)
+
+**SCT (En Kısa İş Tamamlanma Zamanı - shortest job completion time):** Bu kural, işlenecek bir sonraki $j \in N_j$ işini ve bu işi işleyecek $k \in M_j$ tezgahını, $j$ işinin tamamlanma zamanı minimize edilecek şekilde eşzamanlı olarak seçer; yani,
+SCT: $\min_{j \in N_j, k \in M_j} (S_{i,j,k} + P_{j,k})$. Çoğu durumda, seçilen $k$ tezgahının $i$ işini ( $j$ işinin öncülünü) işlediğine dikkat edin. Bu durum, $j$ işinin $k$ tezgahındaki hazırlık süresi $S_{i,j,k}$'yi etkiler. Başka bir deyişle, seçilen $j$ işi en kısa işlem süresine sahip iş olmayabilir; bunun yerine, birleştirilmiş hazırlık ve işlem süreleri toplamı en kısa olan iş olabilir.
+
+**SC-LPT (En Uzun İşlem Süresine Dayalı En Kısa İş Tamamlanma Zamanı - shortest job completion time based on the longest processing time):** Bu kural, ilk olarak en uzun işlem süresine sahip olan bir sonraki $j \in N_j$ işini seçer, örneğin $j^*$ işi. Sonra, $S_{i,j^*,k}$ hazırlık süresini dikkate alarak $j^*$ işini işleyecek $k \in M_{j^*}$ tezgahını seçer ki bu iş ve tezgah seçimi $j$ işi için en kısa tamamlanma zamanını versin. Diğer bir deyişle kural şu şekilde ifade edilir:
+SC-LPT: $\min_{k \in M_{j^*}} (S_{i,j^*,k} + P_{j^*,k})$ şartıyla $[ P_{j^*,k} = \max_{j \in N_j, k \in M_j} P_{j,k} ]$.
+
+**SC-EDD (En Erken Teslim Tarihine Dayalı En Kısa İş Tamamlanma Zamanı - shortest job completion time based on the earliest due date):** Bu kural, ilk olarak en erken teslim tarihine sahip olan bir sonraki $j \in N_j$ işini seçer, örneğin $j^*$ işi. Daha sonra, seçilen $k$ tezgahının bir önceki $i$ işini işlediği göz önüne alındığında, $j^*$ işi için en kısa tamamlanma zamanını verecek bir $k \in M_j$ tezgahı seçilir. Yani,
+SC-EDD: $\min_{k \in M_{j^*}} (S_{i,j^*,k} + P_{j^*,k})$ şartıyla $[ D_{j^*} = \min_{j \in N_j, k \in M_j} D_j ]$.
+
+Yukarıda bahsedilen kurallara ek olarak, altı adet kombine kural geliştirilmiştir. Her biri, belirlenmiş bir kural değiştirme zamanı (rule-switching time) $t_s$ ile ardışık (sequentially) olarak uygulanan bir çift kuraldan oluşur. Örneğin, [SC-EDD & SC-LPT: 200] kombine kuralı, önce SC-EDD kuralını kullanarak işleri çizer. En son çizelgelenen işin tamamlanma zamanı $t_s = 200$ saati aştığında, kalan tüm işler çizelgelenene kadar SC-LPT kuralını kullanmaya geçiş yapar. Altı kombine kural şunları içerir: [SCT & SC-LPT: $t_s$], [SC-LPT & SCT: $t_s$], [SCT & SC-EDD: $t_s$], [SC-EDD & SCT: $t_s$], [SC-LPT & SC-EDD: $t_s$] ve [SC-EDD & SC-LPT: $t_s$]. Her bir kuralın adımları şu şekilde ifade edilmektedir:
+
+Şekil 1'deki çizime göre, algoritma ilk olarak $N_i = \{0\}, N_j = N$ ve parametreleri $P_{j,k}, S_{i,j,k}$ ve $D_j$ olarak ayarlar. Daha sonra, kukla işin tamamlanma zamanını $C_0 = 0$ olarak belirler ve tüm olası tezgahlardaki tüm işler için tamamlanma zamanını $C_{j,k} = P_{j,k}, \forall j \in N_j, \forall k \in M_j$ hesaplar. Sonrasında, algoritma Kural 1'i kullanmaya başlar. $j^*$ işi $k^*$ tezgahında planlandıktan sonra şunlar güncellenir: çizelgelenmiş işler listesi $N_i$ ve kalan işler listesi $N_j$. Ek olarak, $i = j^*$ olarak ayarlanır ve $k^*$ tezgahında işlenebilecek kalan tüm işlerin tamamlanma zamanları güncellenir; yani $C_{j,k^*} = S_{i,j,k^*} + P_{j,k^*}, \forall j \in N_j$, çünkü bu tezgahta işlenecek bir sonraki iş $i = j^*$ işini takip edecektir. Bundan sonra, tüm işlerin planlanıp planlanmadığı kontrol edilir, yani $N_j$ boş mu? Eğer durum buysa, algoritma durur. Aksi takdirde, planlanan işin maksimum tamamlanma zamanının ($C_{j,k}, \forall j \in N_i, \forall k \in M_j$) kural değiştirme zamanı $t_s$'yi aşıp aşmadığı kontrol edilir. Eğer aşmıyorsa, Kural 1 ile devam edilir. Aksi takdirde, Kural 2'ye geçilir ve kalan tüm işler planlanana kadar devam edilir. Yalnızca tek bir kural mevcut olduğunda, $t_s$'nin büyük bir değere ayarlandığına ve bunun da kural değişikliğine yol açmadığına dikkat edin. Algoritma Python programlama dili kullanılarak uygulanmıştır.
+
+**[BURAYA ŞEKİL 1 GÖRSELİ EKLENECEK - Flow chart of the dynamic dispatching rule algorithm]**
+
+**Sayısal Örnek (Numerical Example)**
+Önceki bölümde geliştirilen dağıtım kurallarını göstermek için sayısal bir örnek sağlanmıştır. Sıra-bağımlı hazırlık süresine sahip iki ilişkisiz paralel tezgah tarafından işlenecek üç iş olduğunu varsayalım. Her işin işlem süreleri, hazırlık süreleri ve teslim tarihleri Tablo 2'de listelenmiştir. 1. ve 2. işler aynı iş ailesinde olduğundan, biri diğerini takip ettiğinde hazırlık süreleri nispeten kısadır. Öte yandan 3. iş, 1. ve 2. işlerden farklı bir iş ailesindendir; bu nedenle 1. veya 2. iş, 3. işi takip ettiğinde veya ondan önce geldiğinde hazırlık süreleri daha uzundur.
+Tek bir dağıtım kuralının (SCT) adımları örnek olarak aşağıda açıklanırken, SC-LPT ve SC-EDD kullanımı adımları Ek A'da gösterilmiştir.
+
+**[BURAYA TABLO 2 GÖRSELİ EKLENECEK - Numerical example data]**
+
+**SCT:** Bu kural, iş tamamlanma zamanını temel kriter olarak dikkate alır. Kural, Tablo 3'te sunulduğu gibi ilerler.
+
+**[BURAYA TABLO 3 GÖRSELİ EKLENECEK - Steps of SCT]**
+
+Tablo 3'ten görüleceği üzere, Adım 1'de İş 1, 2. tezgah için en düşük tamamlanma zamanını sağlar. Bu nedenle, 6 saatlik bir tamamlanma zamanı ile seçilir. Adım 2'de, tezgah 2 üzerindeki 2. ve 3. işlerin hazırlık ve tamamlanma zamanları, daha önce tezgah 2'de planlanmış olan İş 1'i yansıtacak şekilde güncellenir. Bu, en iyi seçenek olarak 22 saatlik en düşük tamamlanma zamanı ile 2. işi 1. tezgahta planlama kararına yol açar. Adım 3'te İş 3'ün 1. tezgahtaki hazırlık zamanı ve tamamlanma zamanı güncellendikten sonra, İş 3, 31 saatlik bir tamamlanma zamanı veren 2. tezgahta işlenmek üzere seçilir. Bu çizelge 31 saatlik bir yayılma süresiyle (makespan), 2 saatlik bir toplam teslim gecikmesi süresiyle ve sadece 2. işin gecikmesiyle sonuçlanmıştır.
+
+Sıradaki örnek olarak, SCT kuralı ile başlayan ve 5 saat sonra SC-LPT kuralına geçen kombine kurallardan biri olan [SCT & SC-LPT: $t_s = 5$] açıklanmıştır. Kural, Tablo 4'te sunulduğu gibi ilerler.
+
+**[BURAYA TABLO 4 GÖRSELİ EKLENECEK - Steps of SCT & SC-LPT: $t_s= 5$]**
+
+İlk olarak, Adım 1'de SCT kuralı kullanılarak, 6 saatlik tamamlanma süresi ile 2. tezgahta işlenmek üzere İş 1 seçilir. Akabinde Adım 2'de sezgisel yöntem SC-LPT'ye geçer; bu da 28 saatlik bir tamamlanma süresi ile 1. tezgahta işlenmek üzere İş 3'ü seçer. Son olarak Adım 3'te İş 2, 2. tezgahta işlenir ve bu da 22.5 saatlik bir tamamlanma zamanı sağlar. Bu kombine kural kullanılarak yayılma süresi 28 saat, toplam teslim gecikmesi süresi 2.5 saattir ve yalnızca 2. iş gecikmiştir.
+
+Dört kuralın sayısal örnekteki performansı Tablo 5'te özetlenmiştir. Genel olarak, ilk üç dağıtım kuralı arasında SCT'nin bu örnekte en iyi performansı gösterdiği gözlemlenmiştir. Ayrıca, kombine kurallardan elde edilen çözümün toplam gecikmede 0.5 saatlik bir artış ödünleşimiyle yayılma süresini SCT kuralına kıyasla iyileştirebildiği görülmüştür. Bu, dağıtım kurallarını birleştirmenin potansiyel faydasını gösterir.
+
+**[BURAYA TABLO 5 GÖRSELİ EKLENECEK - Summary of results from four rules]**
