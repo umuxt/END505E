@@ -105,12 +105,12 @@ Bu MILP Avalos-Rosales vd. [1] ve Kongsri ve Buddhakulsomsiri [40] tarafından b
 
 **[BURAYA DENKLEM 1 GÖRSELİ EKLENECEK - Amaç Fonksiyonu]**
 
-Kısıtlar (Subject to):
-**[BURAYA DENKLEM 2 VE 3 GÖRSELLERİ EKLENECEK]**
-**[BURAYA DENKLEM 4 VE 5 GÖRSELLERİ EKLENECEK]**
-**[BURAYA DENKLEM 6 VE 7 GÖRSELLERİ EKLENECEK]**
-**[BURAYA DENKLEM 8 VE 9 GÖRSELLERİ EKLENECEK]**
-**[BURAYA DENKLEM 10 VE 11 GÖRSELLERİ EKLENECEK]**
+**Kısıtlar (Subject to):**
+* **[BURAYA DENKLEM 2 VE 3 GÖRSELLERİ EKLENECEK]**
+* **[BURAYA DENKLEM 4 VE 5 GÖRSELLERİ EKLENECEK]**
+* **[BURAYA DENKLEM 6 VE 7 GÖRSELLERİ EKLENECEK]**
+* **[BURAYA DENKLEM 8 VE 9 GÖRSELLERİ EKLENECEK]**
+* **[BURAYA DENKLEM 10 VE 11 GÖRSELLERİ EKLENECEK]**
 
 Modelde amaç fonksiyonu (1) yayılma süresini en aza indirir. Kısıtlar (2) ve (3), her işin yalnızca tek bir önceki işi ve tam olarak tek bir ardıl işi olmasını sağlar. Kısıt (4), her bir tezgahtaki her işin akış dengesini temsil eder. Kısıt (5), her tezgahın bir kukla iş (dummy job) ile başlaması gerektiğini belirtir. Kısıt (6), her işin tamamlanma zamanını, önceki işin tamamlanma zamanı, hazırlık süresi ve işin işlem süresi üzerinden hesaplar. Kısıt (7), kukla işin tamamlanma zamanının 0 olduğunu gösterir. Kısıt (8), tüm işlerin tamamlanma zamanlarından yayılma süresini belirler. Kısıt (9), eğer bir kısıtlaması varsa $j$ işinin $m$ tezgahında işlenemeyeceğini belirler *(Derse Not: Orijinal metinde denklem 9'un açıklamasında dizgisel bir hata yapılarak '$k$ tezgahı' yerine yanlışlıkla '$m$ tezgahı' yazılmıştır, ayrıca $k$ indisinin denklemin solundaki toplam sembolüyle çakışması şeklinde yapısal bir hata mevcuttur)*. Son olarak, Kısıt (10)–(11) karar değişkenlerinin türlerini belirler.
 
@@ -119,17 +119,18 @@ Minimum toplam teslim gecikmesi süresine sahip bir iş çizelgesi oluşturmak i
 
 **[BURAYA DENKLEM 12 GÖRSELİ EKLENECEK - Amaç Fonksiyonu]**
 
-Kısıtlar (Subject to):
-(2)–(10)
-**[BURAYA DENKLEM 13 VE 14 GÖRSELLERİ EKLENECEK]**
+**Kısıtlar (Subject to):**
+* Denklem (2) – (10) arası temel kısıtlar
+* **[BURAYA DENKLEM 13 VE 14 GÖRSELLERİ EKLENECEK]**
 
 #### 3.2.3. Geciken İş Sayısını Minimize Etme (Minimize the number of tardy jobs)
 M2'ye benzer şekilde, bu bölümdeki M3 olarak adlandırılan model, $j$ işinin gecikip gecikmediğini göstermek için bir $U_j$ ikili karar değişkeni eklenerek M1'den türetilmiştir. M3 aşağıdaki gibi formüle edilmiştir:
 
 **[BURAYA DENKLEM 15 GÖRSELİ EKLENECEK - Amaç Fonksiyonu]**
 
-Kısıtlar (Subject to):
-**[BURAYA DENKLEM 16 VE 17 GÖRSELLERİ EKLENECEK]**
+**Kısıtlar (Subject to):**
+* Denklem (2) – (14) arası temel kısıtlar
+* **[BURAYA DENKLEM 16 VE 17 GÖRSELLERİ EKLENECEK]**
 
 Amaç fonksiyonu (15) geciken iş sayısını en aza indirir. Ek kısıtlar (16) ve (17) sırasıyla her bir işin gecikme durumunu ve ek karar değişkeninin türünü belirtir *(Derse Not: Denklem 16'da eşitlik kullanılması teorik olarak kusurludur; bir Big-M (V) kısıtı gereği $e^+_j \leq V \times U_j$ şeklinde eşitsizlik olması gerekir, çeviride makalenin orijinali korunmuştur)*.
 
