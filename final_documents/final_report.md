@@ -47,6 +47,12 @@ Paralel tezgah çizelgeleme konusundaki ilgili literatüre genel bir bakış Tab
 
 **[BURAYA TABLO 1 GÖRSELİ EKLENECEK - A summary of relevant research work]**
 
+*(Tablo 1 Kısaltma Notları)*
+> **Tezgah Tipleri:** I: Özdeş tezgah, UF: Tekdüze tezgah, U: İlişkisiz tezgah.
+> **Hazırlık Süresi:** N: Dikkate alınmamış, J: İşe-bağımlı, S: Sıraya-bağımlı, MS: Tezgah ve sıraya-bağımlı.
+> **Performans Ölçütleri:** M: Yayılma süresi (Makespan), TC: Toplam tamamlanma zamanı, WC: Ağırlıklı tamamlanma zamanı, F: Ortalama akış süresi, T: Toplam teslim gecikmesi süresi, E: Toplam erken bitirme, WF: Ağırlıklı akış süresi, WT: Ağırlıklı gecikme, L: Geciken iş sayısı.
+> **Çözüm Yöntemleri:** PTAS: Polinomsal zamanlı yaklaşım şeması, SA: Benzetimli tavlama, GA: Genetik algoritmalar, TS: Tabu arama, RBS: Recovering beam search, MOGA: Çok amaçlı genetik algoritma, MOMSA: Çok amaçlı çok noktalı benzetimli tavlama, GARTC: Genetik algoritmalar zaman kontrolü, IG: Iterated greedy, ATCS: Hazırlık süreli görünür gecikme maliyeti, HSOSSA: Benzetimli tavlama ile hibrit simbiyotik organizmalar araması, MOPSO: Çok amaçlı parçacık sürüsü optimizasyonu, LS-MPGA: Liste çizelgeleme tabanlı çok amaçlı partenogenetik algoritma, DDR: Dinamik dağıtım kuralı tabanlı sezgisel yöntemler.
+
 Tablo 1'e göre, hiçbir araştırma, tezgah ve sıra-bağımlı hazırlık sürelerine sahip ilişkisiz paralel tezgah üretim sistemlerinde yayılma süresi, toplam teslim gecikmesi süresi ve geciken iş sayısı çoklu amaç fonksiyonlarına sahip bir çizelgeleme problemini incelememiştir. Bu araştırma boşluğundan motive olan bu çalışma, aşağıdaki hususları ele almayı amaçlamaktadır:
 * Yayılma süresi, toplam teslim gecikmesi süresi ve geciken iş sayısı arasındaki en iyi ödünleşimleri (trade-offs) temsil eden Pareto çözümlerini sağlayabilen çok amaçlı bir MILP modelinin formülasyonu.
 * Pratik bir problemden uyarlanan sayısal bir deney vasıtasıyla MILP modelinin kapasitesinin ve sınırlarının incelenmesi.
