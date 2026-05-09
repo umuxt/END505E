@@ -148,6 +148,8 @@ AUGMECON yöntemi aşağıdaki adımlar kullanılarak M4'e uygulanır:
 **Adım 1:** $f_2$ ve $f_3$ amaç fonksiyonlarını Kısıt (18) ve (19) olarak ayarlayın.
 **[BURAYA DENKLEM 18 VE 19 GÖRSELLERİ EKLENECEK]**
 Burada $T$, belirlenen kabul edilebilir toplam teslim gecikmesi süresini; $L$, belirlenen kabul edilebilir geciken iş sayısını gösterir ve bunlar M4'ün ek parametreleridir.
+
+> *(Derse Not: Standart çizelgeleme literatüründe $L$ sembolü genellikle "Lateness - Gecikme" ($C_j - d_j$) için kullanılsa da, makale yazarları "Geciken İş Sayısı" ($\sum U_j$) hedefini ifade etmek için sembolik bir kısaltma olarak $L$ harfini kullanmayı tercih etmiştir. Makalenin orijinal yapısını bozmamak adına raporda bu notasyon korunmuştur.)*
 **Adım 2:** $C_{max}, T$ ve $L$'nin mümkün olan en iyi ve en kötü değerlerini elde etmek için M1, M2 ve M3'ü çözerek kazanç tablosunu (payoff table) oluşturun.
 **Adım 3:** $f_2$ ve $f_3$ için aralığı (range) hesaplayın. Her aralık birkaç kılavuz (grid) noktası içerir.
 **Adım 4:** M4, $T$ ve $L$ aralıklarındaki her kılavuz noktası kombinasyonu için çözülür.
