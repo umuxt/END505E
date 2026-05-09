@@ -184,7 +184,22 @@ Yukarıda bahsedilen kurallara ek olarak, altı adet kombine kural geliştirilmi
 
 Şekil 1'deki çizime göre, algoritma ilk olarak $N_i = \{0\}, N_j = N$ ve parametreleri $P_{j,k}, S_{i,j,k}$ ve $D_j$ olarak ayarlar. Daha sonra, kukla işin tamamlanma zamanını $C_0 = 0$ olarak belirler ve tüm olası tezgahlardaki tüm işler için tamamlanma zamanını $C_{j,k} = P_{j,k}, \forall j \in N_j, \forall k \in M_j$ hesaplar. Sonrasında, algoritma Kural 1'i kullanmaya başlar. $j^*$ işi $k^*$ tezgahında planlandıktan sonra şunlar güncellenir: çizelgelenmiş işler listesi $N_i$ ve kalan işler listesi $N_j$. Ek olarak, $i = j^*$ olarak ayarlanır ve $k^*$ tezgahında işlenebilecek kalan tüm işlerin tamamlanma zamanları güncellenir; yani $C_{j,k^*} = S_{i,j,k^*} + P_{j,k^*}, \forall j \in N_j$, çünkü bu tezgahta işlenecek bir sonraki iş $i = j^*$ işini takip edecektir. Bundan sonra, tüm işlerin planlanıp planlanmadığı kontrol edilir, yani $N_j$ boş mu? Eğer durum buysa, algoritma durur. Aksi takdirde, planlanan işin maksimum tamamlanma zamanının ($C_{j,k}, \forall j \in N_i, \forall k \in M_j$) kural değiştirme zamanı $t_s$'yi aşıp aşmadığı kontrol edilir. Eğer aşmıyorsa, Kural 1 ile devam edilir. Aksi takdirde, Kural 2'ye geçilir ve kalan tüm işler planlanana kadar devam edilir. Yalnızca tek bir kural mevcut olduğunda, $t_s$'nin büyük bir değere ayarlandığına ve bunun da kural değişikliğine yol açmadığına dikkat edin. Algoritma Python programlama dili kullanılarak uygulanmıştır.
 
-**[BURAYA ŞEKİL 1 GÖRSELİ EKLENECEK - Dinamik dağıtım kuralı algoritmasının akış şeması]**
+**Algoritma 1: Dinamik Dağıtım Kuralı (Sözde Kod)**
+```text
+Başlangıç: $N_i = \{0\}$, $N_j = N$, ve parametreler $P_{j,k}, S_{i,j,k}$, ve $D_j$
+Ayarla: $i = 0$, ve $C_i = 0$ (Kukla iş / dummy job)
+Hesapla: $C_{j,k} = P_{j,k}, \forall j \in N_j, \forall k \in M_j$ (tüm işler için)
+
+while $N_j \neq \emptyset$ do
+    if $\max_{j \in N_i, k \in M_j} C_{j,k} \leq t_s$ ise, Kural 1 kullanılır ve (1) - (3) adımları uygulanır:
+        (1) $j^* \in N_j$ işini seç ve $j^*$ işini işlemesi için $k^* \in M_j$ tezgahını seç.
+        (2) $j^*$ işini $N_i$'ye ekle ve $N_j$'den çıkar.
+        (3) $i = j^*$ olarak ayarla ve $C_{j,k^*} = S_{i,j,k^*} + P_{j,k^*}, \forall j \in N_j$ güncelle.
+    else, Kural 2'ye geç ve iş/tezgah seçimi için (1) - (3) adımlarını uygula.
+end
+```
+
+**[BURAYA ŞEKİL 1 GÖRSELİ EKLENECEK - Dinamik dağıtım kuralı algoritmasının akış şeması (Sadece kutulu akış diyagramı eklenebilir)]**
 
 **Sayısal Örnek (Numerical Example)**
 Önceki bölümde geliştirilen dağıtım kurallarını göstermek için sayısal bir örnek sağlanmıştır. Sıra-bağımlı hazırlık süresine sahip iki ilişkisiz paralel tezgah tarafından işlenecek üç iş olduğunu varsayalım. Her işin işlem süreleri, hazırlık süreleri ve teslim tarihleri Tablo 2'de listelenmiştir. 1. ve 2. işler aynı iş ailesinde olduğundan, biri diğerini takip ettiğinde hazırlık süreleri nispeten kısadır. Öte yandan 3. iş, 1. ve 2. işlerden farklı bir iş ailesindendir; bu nedenle 1. veya 2. iş, 3. işi takip ettiğinde veya ondan önce geldiğinde hazırlık süreleri daha uzundur.
