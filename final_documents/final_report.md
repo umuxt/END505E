@@ -99,6 +99,9 @@ Problem, her biri yayılma süresi (makespan), toplam teslim gecikmesi süresi (
 - $e^+_j$: $j$ işinin teslim gecikmesi süresi (saat) (tardiness)
 - $e^-_j$: $j$ işinin erken bitme süresi (saat) (earliness)
 - $U_j$: Eğer $j$ işi gecikmişse 1, aksi halde 0 değerini alan ikili değişken.
+- $T$: Toplam teslim gecikmesi süresi (Sistem hedefi / M4 parametresi)
+- $L$: Toplam geciken iş sayısı (Sistem hedefi / M4 parametresi)
+  > *(Derse Not: Standart çizelgeleme literatüründe $L$ sembolü genellikle "Lateness - Gecikme" ($C_j - d_j$) için kullanılsa da, makale yazarları "Geciken İş Sayısı" ($\sum U_j$) hedefini ifade etmek için sembolik bir kısaltma olarak $L$ harfini kullanmayı tercih etmiştir. Makalenin orijinal yapısını bozmamak adına raporda bu notasyon korunmuştur.)*
 
 #### 3.2.1. Yayılma Süresini Minimize Etme (Minimize makespan)
 Bu MILP Avalos-Rosales vd. [1] ve Kongsri ve Buddhakulsomsiri [40] tarafından benimsenmiştir. M1 olarak adlandırılmaktadır.
@@ -148,8 +151,6 @@ AUGMECON yöntemi aşağıdaki adımlar kullanılarak M4'e uygulanır:
 **Adım 1:** $f_2$ ve $f_3$ amaç fonksiyonlarını Kısıt (18) ve (19) olarak ayarlayın.
 **[BURAYA DENKLEM 18 VE 19 GÖRSELLERİ EKLENECEK]**
 Burada $T$, belirlenen kabul edilebilir toplam teslim gecikmesi süresini; $L$, belirlenen kabul edilebilir geciken iş sayısını gösterir ve bunlar M4'ün ek parametreleridir.
-
-> *(Derse Not: Standart çizelgeleme literatüründe $L$ sembolü genellikle "Lateness - Gecikme" ($C_j - d_j$) için kullanılsa da, makale yazarları "Geciken İş Sayısı" ($\sum U_j$) hedefini ifade etmek için sembolik bir kısaltma olarak $L$ harfini kullanmayı tercih etmiştir. Makalenin orijinal yapısını bozmamak adına raporda bu notasyon korunmuştur.)*
 **Adım 2:** $C_{max}, T$ ve $L$'nin mümkün olan en iyi ve en kötü değerlerini elde etmek için M1, M2 ve M3'ü çözerek kazanç tablosunu (payoff table) oluşturun.
 **Adım 3:** $f_2$ ve $f_3$ için aralığı (range) hesaplayın. Her aralık birkaç kılavuz (grid) noktası içerir.
 **Adım 4:** M4, $T$ ve $L$ aralıklarındaki her kılavuz noktası kombinasyonu için çözülür.
