@@ -251,14 +251,14 @@ M4, toplam teslim gecikmesi süresinin ($T$) ve geciken iş sayısının ($L$) d
 
 Bu kazanç tablosu, M2'den elde edilen en düşük gecikmenin 11.23 saat ve M1'den elde edilen en yüksek gecikmenin 197.75 saat olduğunu göstermektedir. Geciken iş sayısının en yüksek değeri M1'den 6 ve en düşük değeri M3'ten 1'dir. Kazanç tablosundan, $L$'nin aralığı $[1, 2, 3, 4, 5, 6]$'dır. Daha sonra, gecikme aralığı $(197.75 - 11.23)/20 = 9.33$ adım boyutu ile 20 kılavuz noktasına ayarlanır. Dolayısıyla gecikme aralığı, $T = [11.23, 20.56, ..., 197.75]$ olur. M4, 126 kez çalıştırılarak çözüldükten sonra, üç performans ölçütünde de diğer çözümler tarafından baskılanmayan dokuz Pareto çözümü elde edilmiştir. Tablo 9, Şekil 3'te gösterilen dört problem için optimal Pareto çözümleri kümesini göstermektedir.
 
-**[BURAYA TABLO 9 GÖRSELİ EKLENECEK - Pareto solutions]**
-**[BURAYA ŞEKİL 3 GÖRSELİ EKLENECEK - Pareto solutions of small problem instances]**
+**[BURAYA TABLO 9 GÖRSELİ EKLENECEK - Pareto çözümleri]**
+**[BURAYA ŞEKİL 3 GÖRSELİ EKLENECEK - Küçük problem örneklerine ait Pareto çözümleri]**
 
 Şekil 3'ten görülebileceği üzere, belirli bir geciken iş sayısı verildiğinde, yayılma süresi arttıkça toplam teslim gecikmesi süresi azalmaktadır. Benzer şekilde, belirli bir toplam teslim gecikmesi süresi verildiğinde, geciken iş sayısı arttıkça yayılma süresi azalmıştır. Aynı gözlem, belirli bir yayılma süresi verildiğinde geciken iş sayısı ile toplam teslim gecikmesi süresi arasındaki ilişki için de yapılabilir.
 
 Pareto çözümlerinin kalitesini değerlendirmek için, Tablo 10'da gösterildiği gibi dört problem örneği için hiperhacim (hypervolume) yüzdeleri hesaplanmıştır. AUGMECON yönteminden elde edilen Pareto çözümleri %74 (P3) ile %91 (P1) arasında değişmektedir.
 
-**[BURAYA TABLO 10 GÖRSELİ EKLENECEK - Hypervolume of Pareto solutions]**
+**[BURAYA TABLO 10 GÖRSELİ EKLENECEK - Pareto çözümlerinin hiperhacmi]**
 
 Pareto çözümleri arasından bir karar verici, her bir performans ölçütü için önem ağırlığını belirleyerek ve aşağıdaki gibi min-maks normalizasyonunu uygulayarak bir çözüm seçebilir:
 $\tilde{x}_i = \frac{x_i - \min_i \{x_i\}}{\max_i \{x_i\} - \min_i \{x_i\}}$
@@ -266,8 +266,8 @@ $\tilde{x}_i = \frac{x_i - \min_i \{x_i\}}{\max_i \{x_i\} - \min_i \{x_i\}}$
 Karar vericinin üç performans ölçütüne şu ağırlıkları atadığını varsayalım: $W_{C_{max}} = 0.5, W_T = 0.4, W_L = 0.1$.
 P1 için minimum $C_{max}$ 71.93 ve maksimum $C_{max}$ 78.35, minimum $T$ 20.56, maksimum $T$ 57.86, minimum $L$ 1 ve maksimum $L$ 4'tür. Tüm Pareto çözüm performans ölçütleri, Tablo 11'de gösterildiği gibi toplam normalize edilmiş skoru elde etmek için normalize edilir ve ağırlıklandırılır. En düşük toplam normalize edilmiş skora sahip çözüm karar verici tarafından seçilir. P1 için, Tablo 9'da gösterildiği gibi $C_{max} = 72.14, T = 39.21$ ve $L = 3$ olan 6. Çözüm seçilir. P2, P3 ve P4'e aynı prosedürün uygulanmasıyla elde edilen seçilmiş çözümler Tablo 12'de sunulmaktadır.
 
-**[BURAYA TABLO 11 GÖRSELİ EKLENECEK - The total normalized score of P1's Pareto solutions]**
-**[BURAYA TABLO 12 GÖRSELİ EKLENECEK - The selected one solution of the set of Pareto solutions for the four problems]**
+**[BURAYA TABLO 11 GÖRSELİ EKLENECEK - P1'in Pareto çözümlerinin toplam normalize edilmiş skoru]**
+**[BURAYA TABLO 12 GÖRSELİ EKLENECEK - Dört problem için Pareto çözümleri kümesinden seçilen tek çözüm]**
 
 #### 5.1.3. Sezgisel yöntemlerin küçük problem örneklerindeki performansı (Performance of the heuristic methods on the small problem instances)
 Sezgisel yöntemlerin performansı, bilinen Pareto çözümlerine sahip küçük problem örnekleri kullanılarak değerlendirilir. Sezgisel yöntemlerden bulunan en iyi çözüm, bulunan en iyi sezgisel çözüme en yakın Pareto çözümlerinden biriyle karşılaştırılır. Tablo 13, P1 için sonuçların bir karşılaştırmasını sunar. Örneğin, [SC-EDD & SC-LPT: 60]'tan elde edilen ilk sezgisel çözüm $L = 2, C_{max} = 106.59$ ve $T = 29.19$'a sahipti. En yakın Pareto çözümünün aynı $L$'ye sahip çözümler arasından seçildiğine dikkat edin; bu da $C_{max} = 75.41$ ve $T = 29.88$ olan bir çözümle sonuçlanır. $C_{max}$ ve $T$ için % fark (%off Pareto) sırasıyla %41.35 ve %-2.31'dir. Bu, sezgisel çözümün $C_{max}$ açısından seçilen Pareto çözümünden daha kötü olduğunu, ancak $T$ açısından Pareto çözümünden daha iyi performans gösterdiğini belirtir ki bu da sezgisel çözümün Pareto çözümünden aşağı kalmadığını ima eder. [SC-EDD & SC-LPT: 30]'dan elde edilen $L = 3, C_{max} = 81$ ve $T = 18.02$ olan ikinci sezgisel çözüm için de benzer argümanlar uygulanır. Ancak, $L = 4, C_{max} = 77.88$ ve $T = 41.78$ ile en iyi bulunan sezgisel çözüm, en yakın Pareto çözümünden daha düşüktür. P2, P3 ve P4 için sezgisel yöntemlerin sonuçları Ek C'de bulunabilir.
