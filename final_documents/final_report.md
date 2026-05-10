@@ -245,11 +245,11 @@ P1 problem örneği için M1'den elde edilen optimal çözüm Tablo 7 ve Şekil 
 **[BURAYA ŞEKİL 2 GÖRSELİ EKLENECEK - Yayılma süresinin minimize edilmesinden elde edilen her bir tezgahtaki iş sırası]**
 
 #### 5.1.2. Pareto çözümü (Pareto solution)
-M4, toplam teslim gecikmesi süresinin ($T$) ve geciken iş sayısının ($L$) değerini sabitlerken yayılma süresini en aza indirerek uzlaşmacı (compromise) çözümleri bulmak için kullanılır. M1, M2 ve M3 için optimal çözümlerden bir ödeme tablosu (payoff table) oluşturmak gereklidir. P1 için ödeme tablosu Tablo 8'de sunulmuştur.
+M4, toplam teslim gecikmesi süresinin ($T$) ve geciken iş sayısının ($L$) değerini sabitlerken yayılma süresini en aza indirerek uzlaşmacı çözümleri bulmak için kullanılır. M1, M2 ve M3 için optimal çözümlerden bir kazanç tablosu oluşturmak gereklidir. P1 için kazanç tablosu Tablo 8'de sunulmuştur.
 
-**[BURAYA TABLO 8 GÖRSELİ EKLENECEK - Payoff table for P1]**
+**[BURAYA TABLO 8 GÖRSELİ EKLENECEK - P1 için kazanç tablosu]**
 
-Bu ödeme tablosu, M2'den elde edilen en düşük gecikmenin 11.23 saat ve M1'den elde edilen en yüksek gecikmenin 197.75 saat olduğunu göstermektedir. Geciken iş sayısının en yüksek değeri M1'den 6 ve en düşük değeri M3'ten 1'dir. Ödeme tablosundan, $L$'nin aralığı $[1, 2, 3, 4, 5, 6]$'dır. Daha sonra, gecikme aralığı $(197.75 - 11.23)/20 = 9.33$ adım boyutu ile 20 kılavuz noktasına ayarlanır. Dolayısıyla gecikme aralığı, $T = [11.23, 20.56, ..., 197.75]$ olur. M4, 126 kez çalıştırılarak çözüldükten sonra, üç performans ölçütünde de diğer çözümler tarafından baskılanmayan (non-dominated) dokuz Pareto çözümü elde edilmiştir. Tablo 9, Şekil 3'te gösterilen dört problem için optimal Pareto çözümleri kümesini göstermektedir.
+Bu kazanç tablosu, M2'den elde edilen en düşük gecikmenin 11.23 saat ve M1'den elde edilen en yüksek gecikmenin 197.75 saat olduğunu göstermektedir. Geciken iş sayısının en yüksek değeri M1'den 6 ve en düşük değeri M3'ten 1'dir. Kazanç tablosundan, $L$'nin aralığı $[1, 2, 3, 4, 5, 6]$'dır. Daha sonra, gecikme aralığı $(197.75 - 11.23)/20 = 9.33$ adım boyutu ile 20 kılavuz noktasına ayarlanır. Dolayısıyla gecikme aralığı, $T = [11.23, 20.56, ..., 197.75]$ olur. M4, 126 kez çalıştırılarak çözüldükten sonra, üç performans ölçütünde de diğer çözümler tarafından baskılanmayan dokuz Pareto çözümü elde edilmiştir. Tablo 9, Şekil 3'te gösterilen dört problem için optimal Pareto çözümleri kümesini göstermektedir.
 
 **[BURAYA TABLO 9 GÖRSELİ EKLENECEK - Pareto solutions]**
 **[BURAYA ŞEKİL 3 GÖRSELİ EKLENECEK - Pareto solutions of small problem instances]**
