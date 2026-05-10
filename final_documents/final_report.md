@@ -242,7 +242,7 @@ P1 problem örneği için M1'den elde edilen optimal çözüm Tablo 7 ve Şekil 
 
 Şekil 2, on iş üzerinde çalışan üç tezgahı göstermektedir. Her tezgah bir işi ardışık olarak işler. Tezgah 1 sırasıyla 3, 6, 2, 7 ve 8 numaralı işlerle başlayarak beş işi işler. Tezgah 2 sırasıyla 10, 9, 5 ve 4 numaralı işlerle başlayarak dört işe hizmet verir. Son tezgah olan Tezgah 3 yalnızca 1 numaralı işi yürütür. Şekil 2 ayrıca hazırlık için toplam sürenin 18.5 saat olduğunu göstermektedir. Optimal yayılma süresi 71.93 saattir. Ayrıca, bu iki tezgah 8, 7, 2, 6, 4 ve 5 numaralı işleri teslim tarihinden sonra bitirmektedir. Toplam teslim gecikmesi süresi 197.75 saattir.
 
-**[BURAYA ŞEKİL 2 GÖRSELİ EKLENECEK - Job sequence at each machine from minimizing the makespan]**
+**[BURAYA ŞEKİL 2 GÖRSELİ EKLENECEK - Yayılma süresinin minimize edilmesinden elde edilen her bir tezgahtaki iş sırası]**
 
 #### 5.1.2. Pareto çözümü (Pareto solution)
 M4, toplam teslim gecikmesi süresinin ($T$) ve geciken iş sayısının ($L$) değerini sabitlerken yayılma süresini en aza indirerek uzlaşmacı (compromise) çözümleri bulmak için kullanılır. M1, M2 ve M3 için optimal çözümlerden bir ödeme tablosu (payoff table) oluşturmak gereklidir. P1 için ödeme tablosu Tablo 8'de sunulmuştur.
