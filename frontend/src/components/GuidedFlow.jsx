@@ -345,74 +345,22 @@ const JobSequenceTable = React.memo(({ schedule, m, problemData }) => {
   );
 });
 
-const PerformanceMetricsCard = ({ schedule, problemData }) => {
+const CompactMetrics = ({ schedule, problemData }) => {
   if (!schedule || !problemData) return null;
-  
-  let totalC = 0;
-  let totalT = 0;
-  let totalE = 0;
-  let numL = 0;
-  let maxC = 0;
-  let totalP = 0;
-  let totalJobs = 0;
-
-  Object.values(schedule).forEach(machineJobs => {
-    machineJobs.forEach(([jIdx, start, end]) => {
-      const dj = problemData.D[jIdx];
-      const pj = problemData.P[jIdx]; // Bu aslında makineye göre değişir, basitleştirme için bitiş-başlangıç kullanılabilir
-      const completion = end;
-      
-      totalC += completion;
-      const tardiness = Math.max(0, completion - dj);
-      const earliness = Math.max(0, dj - completion);
-      
-      totalT += tardiness;
-      totalE += earliness;
-      if (tardiness > 0.01) numL++;
-      if (completion > maxC) maxC = completion;
-      
-      // Gerçek işlem süresi (setup hariç)
-      totalP += (end - start);
-      totalJobs++;
-    });
-  });
-
-  const avgF = totalC / totalJobs;
-  const utilization = (totalP / (Object.keys(schedule).length * maxC)) * 100;
-
-  const metricStyle = { flex: 1, minWidth: '150px', padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' };
-  const labelStyle = { fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '0.5rem', display: 'block' };
-  const valueStyle = { fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--warning)' };
-
+  let maxC = 0, totalT = 0, numL = 0, totalP = 0;
+  Object.values(schedule).forEach(m => m.forEach(([j, s, e]) => {
+    maxC = Math.max(maxC, e);
+    totalT += Math.max(0, e - problemData.D[j]);
+    if (e - problemData.D[j] > 0.01) numL++;
+    totalP += (e - s);
+  }));
+  const util = (totalP / (Object.keys(schedule).length * maxC)) * 100;
   return (
-    <div style={{ marginTop: '2rem', padding: '1.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-      <div className="output-header" style={{ marginBottom: '1rem' }}><TrendingUp size={16} /> Akademik Performans Göstergeleri (KPIs)</div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem' }}>
-        <div style={metricStyle}>
-          <span style={labelStyle}>Cmax (Yayılma Süresi)</span>
-          <div style={valueStyle}>{maxC.toFixed(2)}h</div>
-        </div>
-        <div style={metricStyle}>
-          <span style={labelStyle}>F-bar (Ort. Akış Süresi)</span>
-          <div style={{...valueStyle, color: '#58a6ff'}}>{avgF.toFixed(2)}h</div>
-        </div>
-        <div style={metricStyle}>
-          <span style={labelStyle}>ΣT (Toplam Gecikme)</span>
-          <div style={{...valueStyle, color: '#ff7b72'}}>{totalT.toFixed(2)}h</div>
-        </div>
-        <div style={metricStyle}>
-          <span style={labelStyle}>L (Geciken İş Sayısı)</span>
-          <div style={{...valueStyle, color: '#ff7b72'}}>{numL}</div>
-        </div>
-        <div style={metricStyle}>
-          <span style={labelStyle}>ΣE (Toplam Erken Bitirme)</span>
-          <div style={{...valueStyle, color: '#4ade80'}}>{totalE.toFixed(2)}h</div>
-        </div>
-        <div style={metricStyle}>
-          <span style={labelStyle}>U-bar (Kullanım Oranı)</span>
-          <div style={{...valueStyle, color: 'var(--accent)'}}>%{utilization.toFixed(1)}</div>
-        </div>
-      </div>
+    <div className="flex-row" style={{ gap: '1rem', marginTop: '1rem', padding: '0.75rem', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', fontSize: '0.8rem', justifyContent: 'space-around', border: '1px solid rgba(255,255,255,0.05)' }}>
+      <span><strong>Cmax:</strong> {maxC.toFixed(1)}h</span>
+      <span><strong>ΣT:</strong> {totalT.toFixed(1)}h</span>
+      <span><strong>L:</strong> {numL} iş</span>
+      <span><strong>Kullanım Oranı:</strong> %{util.toFixed(1)}</span>
     </div>
   );
 };
@@ -564,7 +512,6 @@ export default function GuidedFlow() {
 
   return (
     <div className="notebook-container">
-      {renderStepTracker()}
       <div className="notebook-header" style={{ padding: '2rem 1rem', position: 'relative', overflow: 'hidden', minHeight: '160px' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -573,7 +520,7 @@ export default function GuidedFlow() {
               <img src="/itu-logo.png" alt="ITU Logo" style={{ width: '90px', height: '90px', objectFit: 'contain' }} />
             </div>
           </div>
-          
+
           <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.6', maxWidth: '850px' }}>
             Bu sistem, <a href="https://doi.org/10.1016/j.dajour.2024.100525" target="_blank" rel="noreferrer" style={{ color: 'var(--warning)', fontWeight: 'bold', textDecoration: 'underline' }}>Decision Analytics Journal (2024)</a>'da yayınlanan <br />
             <strong>"A multi-objective production scheduling model and dynamic dispatching rules for unrelated parallel machines with sequence-dependent set-up times"</strong> <br />
@@ -597,7 +544,7 @@ export default function GuidedFlow() {
               { h: "Model Parametreleri (Bölüm 3.1)", t: "n = iş sayısı • m = tezgah sayısı • Pⱼₖ = j işinin k tezgahındaki işlem süresi (saat) • Sᵢⱼₖ = k tezgahında i'den sonra j işlenirken gereken hazırlık süresi • Dⱼ = j işinin teslim tarihi • NPⱼₖ = 1 ise j işi k tezgahında işlenebilir, 0 ise işlenemez" }
             ]} />
             <button className="btn btn-warning mt-4" onClick={() => scrollToNext(2)}>
-              <BookOpen size={16} style={{marginRight: '8px'}} /> Problem Parametrelerini Ayarla & Literatüre Geç
+              <BookOpen size={16} /> Problem Parametrelerini Ayarla & Literatüre Geç
             </button>
           </div>
         </div>
@@ -657,17 +604,15 @@ export default function GuidedFlow() {
                 <button className="btn btn-warning mt-4" onClick={generateData} disabled={loading}>
                   {loading ? <div className="loader"></div> : <><Play size={16} /> Sistemi Başlat ve Veri Üret</>}
                 </button>
-                  {problemData && (
-                    <div style={{ marginTop: '2.5rem', animation: 'fadeIn 0.5s ease' }}>
-                      <DataMatrixView data={problemData} title="Tablo 2: Problem Veri Matrisi (Pⱼₖ, Sᵢⱼₖ, Dⱼ)" />
-                      <div className="flex-row mt-4">
-                        <button className="btn btn-warning" onClick={() => scrollToNext(3)}>
-                          <Calculator size={16} style={{marginRight: '8px'}} /> 03. Matematiksel Modelleri (MILP) Analiz Et
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                {problemData && (
+                  <div style={{ marginTop: '2rem' }}>
+                    <DataMatrixView data={problemData} title="Tablo 2: Problem Veri Matrisi (Pⱼₖ, Sᵢⱼₖ, Dⱼ)" />
+                    <button className="btn btn-warning mt-4" onClick={() => scrollToNext(3)}>
+                      <Calculator size={16} /> 03. Matematiksel Modelleme (MILP) Aşamasına Geç
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -713,14 +658,13 @@ export default function GuidedFlow() {
                         <div className="output-header" style={{ color: 'var(--warning)' }}>M4 Modeli (Uzlaşmacı / Çok Amaçlı Dengeli Çözüm)</div>
                         <JobSequenceTable schedule={cpsatResults.M4.schedule} m={Number(inputMachines)} problemData={problemData} />
                         <GanttChart schedule={cpsatResults.M4.schedule} m={Number(inputMachines)} n={Number(inputJobs)} />
-                        <PerformanceMetricsCard schedule={cpsatResults.M4.schedule} problemData={problemData} />
                       </div>
                     </div>
                   )}
                 </div>
               )}
               <button className="btn btn-warning mt-4" onClick={() => scrollToNext(4)}>
-                <Zap size={16} style={{marginRight: '8px'}} /> 04. Sezgisel Çözüm (DDR) Algoritmalarına Geç
+                <Zap size={16} /> 04. Sezgisel Analiz (DDR) Aşamasına Geç
               </button>
             </div>
           </div>
@@ -818,7 +762,7 @@ export default function GuidedFlow() {
               {topsisResults.length > 0 && (
                 <div className="mt-4" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                   <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', borderLeft: '3px solid var(--warning)', paddingLeft: '0.75rem', lineHeight: '1.5' }}>
-                    <strong style={{ color: 'var(--warning)' }}>TOPSIS Analiz Matrisi (Tablo 21)</strong> — r₁/r₂/r₃ kuralın ham başarısıdır (değişmez). 
+                    <strong style={{ color: 'var(--warning)' }}>TOPSIS Analiz Matrisi (Tablo 21)</strong> — r₁/r₂/r₃ kuralın ham başarısıdır (değişmez).
                     Seçtiğiniz ağırlıklar sadece <strong style={{ color: '#58a6ff' }}>S+, S- ve CC*</strong> sütunlarını etkileyerek sıralamayı belirler.
                   </div>
                   <ScrollableTable maxHeight="300px">
@@ -840,13 +784,11 @@ export default function GuidedFlow() {
                     <div style={{ fontSize: '0.75rem', opacity: 0.7, marginBottom: '1rem' }}>TOPSIS'in seçtiği optimal kural ile oluşturulan operasyonel çizelge. Mor bloklar hazırlık (Sᵢⱼₖ), yeşil bloklar işlem (Pⱼₖ) sürelerini gösterir.</div>
                     <JobSequenceTable schedule={ddrResults.find(r => r.rule_name === topsisResults[0].rule_name)?.schedule} m={Number(inputMachines)} problemData={problemData} />
                     <GanttChart schedule={ddrResults.find(r => r.rule_name === topsisResults[0].rule_name)?.schedule} m={Number(inputMachines)} n={Number(inputJobs)} />
-                    <PerformanceMetricsCard schedule={ddrResults.find(r => r.rule_name === topsisResults[0].rule_name)?.schedule} problemData={problemData} />
+                    <CompactMetrics schedule={ddrResults.find(r => r.rule_name === topsisResults[0].rule_name)?.schedule} problemData={problemData} />
                   </div>
-                  <div className="mt-4">
-                    <button className="btn btn-warning" onClick={() => scrollToNext(6)}>
-                      <Activity size={16} style={{marginRight: '8px'}} /> 06. Sezgisel Performans (Gap Analizi) Değerlendirmesine Geç
-                    </button>
-                  </div>
+                  <button className="btn btn-warning mt-4" onClick={() => scrollToNext(6)}>
+                    <Activity size={16} /> 06. Sezgisel Performans (Gap Analizi) Değerlendirmesine Geç
+                  </button>
                 </div>
               )}
             </div>
@@ -885,18 +827,18 @@ export default function GuidedFlow() {
                   </div>
                   <p style={{ fontSize: '0.75rem', marginTop: '1rem', opacity: 0.6, fontStyle: 'italic' }}>* Kaynak: Tablo 13, Bölüm 6.2. Gap değeri %0'a ne kadar yakınsa sezgisel çözüm o kadar kalitelidir.</p>
                   <button className="btn btn-warning mt-4" onClick={() => scrollToNext(7)}>
-                    <CheckCircle size={16} style={{marginRight: '8px'}} /> 07. Akademik Değerlendirme ve Final Sonucuna Git
+                    <CheckCircle size={16} /> 07. Akademik Değerlendirme ve Sonuca Git
                   </button>
                 </div>
               ) : (
-                <div className="mt-4" style={{ padding: '2rem', background: 'rgba(210,153,34,0.05)', borderRadius: '12px', border: '1px dashed var(--border-color)', textAlign: 'center' }}>
-                  <div style={{ color: 'var(--warning)', marginBottom: '1rem' }}><Activity size={32} /></div>
+                <div className="mt-4" style={{ padding: '2rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px dashed var(--border-color)', textAlign: 'center' }}>
+                  <div style={{ color: 'var(--warning)', marginBottom: '1rem' }}><Activity size={24} /></div>
                   <h4 style={{ marginBottom: '0.5rem' }}>Büyük Ölçekli Problem (Kesin Çözüm Devre Dışı)</h4>
-                  <p style={{ fontSize: '0.9rem', opacity: 0.8, maxWidth: '600px', margin: '0 auto 1.5rem' }}>
-                    İş sayısı (n={problemData?.metadata.n}) global optimal çözüm sınırlarının üzerindedir. Akademik standartlar gereği bu ölçekte performans analizi doğrudan <strong>En İyi Sezgisel (DDR)</strong> sonuçları üzerinden raporlanır.
+                  <p style={{ fontSize: '0.85rem', opacity: 0.7, maxWidth: '600px', margin: '0 auto 1.5rem' }}>
+                    İş sayısı (n={problemData?.metadata.n}) global optimal çözüm sınırlarının üzerindedir. Akademik olarak bu ölçekte performans analizi doğrudan <strong>Sezgisel (DDR)</strong> sonuçları üzerinden gerçekleştirilir.
                   </p>
                   <button className="btn btn-warning" onClick={() => scrollToNext(7)}>
-                    <CheckCircle size={16} style={{marginRight: '8px'}} /> 07. Akademik Değerlendirme ve Sonuca İlerle
+                    <CheckCircle size={16} /> 07. Akademik Değerlendirme ve Sonuca Git
                   </button>
                 </div>
               )}
@@ -918,7 +860,7 @@ export default function GuidedFlow() {
               <div className="mt-4" style={{ padding: '2rem', background: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid var(--border-color)', position: 'relative' }}>
                 <h4 style={{ color: 'var(--warning)', marginBottom: '1rem' }}>Akademik Proje Özeti</h4>
                 <p style={{ lineHeight: '1.7', opacity: 0.9 }}>
-                  Bu çalışma, <strong>İTÜ END505E Üretim Planlama ve Çizelgeleme</strong> dersi kapsamında, UPMSP problemleri için geliştirilen hibrit çözüm yaklaşımlarını bir dijital ikiz üzerinden test etmiştir. 
+                  Bu çalışma, <strong>İTÜ END505E Üretim Planlama ve Çizelgeleme</strong> dersi kapsamında, UPMSP problemleri için geliştirilen hibrit çözüm yaklaşımlarını bir dijital ikiz üzerinden test etmiştir.
                 </p>
                 <div className="flex-row mt-4" style={{ gap: '2rem' }}>
                   <div className="highlight-box" style={{ flex: 1 }}>
@@ -928,7 +870,7 @@ export default function GuidedFlow() {
                     <strong>Öneri:</strong> {topsisResults[0]?.rule_name} kuralı ile optimizasyon.
                   </div>
                 </div>
-                
+
               </div>
             </div>
           </div>
