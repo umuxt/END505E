@@ -87,6 +87,54 @@ def api_solve_ddr(req: DDRRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+class DDRParamsRequest(BaseModel):
+    n: int
+    m: int
+    seed: int
+    n_families: int
+    np_ratio: float
+    scenario: str
+
+@app.post("/api/solve_ddr_by_params")
+def api_solve_ddr_by_params(req: DDRParamsRequest):
+    try:
+        # Problemi backend'de aynı seed ile tekrar üret (Payload tasarrufu)
+        problem = generate_problem(
+            n=req.n, 
+            m=req.m, 
+            seed=req.seed, 
+            n_families=req.n_families, 
+            np_ratio=req.np_ratio,
+            scenario=req.scenario
+        )
+        
+        # solve_ddr mantığını çalıştır
+        n, m = req.n, req.m
+        P  = {int(j): {int(k): problem["P"][str(j)][str(k)] for k in range(m)} for j in range(n)}
+        S  = {int(i): {int(j): {int(k): problem["S"][str(i)][str(j)][str(k)] for k in range(m)} for j in range(n)}
+              for i in list(range(n)) + [-1]}
+        D  = {int(j): float(problem["D"][str(j)]) for j in range(n)}
+        NP = {int(j): {int(k): problem["NP"][str(j)][str(k)] for k in range(m)} for j in range(n)}
+
+        results = run_all_rules(n, m, P, S, D, NP, verbose=False)
+        
+        output = []
+        for r in results:
+            output.append({
+                "rule_name": r.rule_name,
+                "Cmax": r.Cmax,
+                "T": r.total_tardiness,
+                "L": r.num_tardy,
+                "solve_time": r.solve_time,
+                "schedule": r.schedule
+            })
+            
+        return {"status": "success", "results": output}
+    except Exception as e:
+        import traceback
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=str(e))
+
 class TopsisRequest(BaseModel):
     candidates: list
     wC: float = 0.334

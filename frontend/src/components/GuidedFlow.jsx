@@ -440,11 +440,28 @@ export default function GuidedFlow() {
     if (!problemData) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/solve_ddr`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ problem: problemData }) });
+      const res = await fetch(`${API_BASE}/solve_ddr_by_params`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          n: problemData.metadata.n,
+          m: problemData.metadata.m,
+          seed: problemData.metadata.seed,
+          n_families: problemData.metadata.n_families,
+          np_ratio: problemData.metadata.np_ratio,
+          scenario: inputScenario
+        })
+      });
       const data = await res.json();
-      setDdrResults(data.results.sort((a, b) => a.Cmax - b.Cmax));
-      setActiveStage(5);
-    } catch (e) { }
+      if (data.status === 'success') {
+        setDdrResults(data.results.sort((a, b) => a.Cmax - b.Cmax));
+        setActiveStage(5);
+      } else {
+        throw new Error(data.detail || "Çözümleme başarısız.");
+      }
+    } catch (e) {
+      alert("Hata: " + e.message);
+    }
     setLoading(false);
   };
 
@@ -640,7 +657,14 @@ export default function GuidedFlow() {
               ]} />
 
               <button className="btn btn-warning mt-4" onClick={runDDR} disabled={loading}>
-                {loading ? <div className="loader"></div> : <><Zap size={16} /> 39 DDR Kuralını Çalıştır</>}
+                {loading ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div className="loader" style={{ width: '16px', height: '16px' }}></div>
+                    <span>Hesaplanıyor (39 DDR Kuralı Test Ediliyor)...</span>
+                  </div>
+                ) : (
+                  <><Zap size={16} /> 39 Farklı Dinamik Kuralı Analiz Et</>
+                )}
               </button>
               {ddrResults.length > 0 && (
                 <div className="mt-4" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
