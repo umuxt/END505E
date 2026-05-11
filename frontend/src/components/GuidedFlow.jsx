@@ -474,12 +474,8 @@ export default function GuidedFlow() {
   return (
     <div className="notebook-container">
       <div className="notebook-header" style={{ padding: '2rem 1rem', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', right: '30px', top: '30px', display: 'flex', alignItems: 'center', gap: '1rem', pointerEvents: 'none' }}>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '0.8rem', fontWeight: '900', color: '#fff', letterSpacing: '2px' }}>İSTANBUL TEKNİK</div>
-            <div style={{ fontSize: '0.8rem', fontWeight: '900', color: '#fff', letterSpacing: '2px' }}>ÜNİVERSİTESİ</div>
-          </div>
-          <img src="/itu-logo.png" alt="ITU Logo" style={{ width: '60px', height: '60px' }} />
+        <div style={{ position: 'absolute', right: '30px', top: '30px', pointerEvents: 'none' }}>
+          <img src="/itu-logo.png" alt="ITU Logo" style={{ width: '80px', height: '80px' }} />
         </div>
         <div>
           <h2 style={{ fontSize: 'clamp(1.4rem, 4vw, 2.2rem)', letterSpacing: '-1px', marginBottom: '0.5rem', lineHeight: 1.2 }}>UPMSP Akademik Karar Destek Sistemi</h2>
