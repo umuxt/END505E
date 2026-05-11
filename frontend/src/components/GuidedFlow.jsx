@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Play, Calculator, Zap, Target, Activity, FileText, BarChart3, Copy, CheckCircle, HelpCircle, X, BookOpen, TrendingUp } from 'lucide-react';
 import { ScatterChart, Scatter, XAxis, YAxis, ZAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from 'recharts';
 
-const API_BASE = 'http://127.0.0.1:8000/api';
+const API_BASE = '/api';
 
 // --- Multi-Agent Academic Components ---
 

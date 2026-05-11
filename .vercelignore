@@ -1,0 +1,13 @@
+node_modules
+frontend/node_modules
+.git
+venv
+__pycache__
+*.pyc
+backend_error.log
+ceviri_makale.pdf
+master_cli_prompt.md
+run_multi_agent.py
+agents_prompts/
+scratch/
+.gemini/
