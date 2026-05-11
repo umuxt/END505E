@@ -287,16 +287,16 @@ const GanttChart = React.memo(({ schedule, m, n }) => {
 const JobSequenceTable = React.memo(({ schedule, m, problemData }) => {
   if (!schedule || !problemData) return null;
   let rows = [];
-    Object.keys(schedule).forEach(k => {
-      const machineId = Number(k);
-      const numJobs = schedule[k].length;
-      schedule[k].forEach((jobTuple, i) => {
-        const [jId, start, end, setupTime] = jobTuple;
-        const pTime = problemData.P[jId][machineId];
-        const sTime = setupTime;
-        const dTime = problemData.D[jId];
-        const lateness = end - dTime;
-        const tardiness = Math.max(0, lateness);
+  Object.keys(schedule).forEach(k => {
+    const machineId = Number(k);
+    const numJobs = schedule[k].length;
+    schedule[k].forEach((jobTuple, i) => {
+      const [jId, start, end, setupTime] = jobTuple;
+      const pTime = problemData.P[jId][machineId];
+      const sTime = setupTime;
+      const dTime = problemData.D[jId];
+      const lateness = end - dTime;
+      const tardiness = Math.max(0, lateness);
 
       rows.push({
         k: machineId + 1,
@@ -313,7 +313,6 @@ const JobSequenceTable = React.memo(({ schedule, m, problemData }) => {
         e: Math.max(0, -lateness).toFixed(2),
         f: problemData.family?.[jId]
       });
-      prevJobId = jId;
     });
   });
 
