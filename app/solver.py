@@ -5,24 +5,12 @@ Google OR-Tools CP-SAT ile UPMSP Exact Çözücü.
 
 Makale kısıtları:
   (2)+(3) : Her iş tam olarak 1 makineye atanır
-  (4)+(5) : Akış dengesi — NoOverlap ile otomatik sağlanır
+  (4)+(5) : Akış dengesi — AddCircuit ile otomatik sağlanır
   (6)     : Cj ≥ Ci + Si,j,k + Pj,k  (sıra-bağımlı hazırlık)
   (9)     : NP[j][k]=0 → j işi k makinesine atanamaz
   (10)    : Cj ≥ 0
   (13)(14): ej+ = max(0, Cj − Dj)
   (16)(17): Uj ∈ {0,1}, ej+>0 ↔ Uj=1
-
-Kısıt (6) modelleme yaklaşımı:
-  Sıra-bağımlı hazırlık için "rank-based" yardımcı değişken:
-    pos[j][k]: j işinin k makinesindeki sırası (0 = bu makinede yok)
-  Eğer j ve i aynı k makinesinde ve pos[i][k] + 1 == pos[j][k] ise
-    start[j][k] ≥ end_[i][k] + S[i][j][k]
-  Bu, makalede açıklanan Big-M kısıtının CP-SAT uyarlamasıdır.
-
-  NOT: Büyük problemlerde AddCircuit daha güçlüdür, ancak assign_var
-  etkileşimi CP-SAT'ta nazik yapılandırma gerektirir. Bu implementasyonda
-  OptionalIntervalVar + NoOverlap + koşullu hazırlık kısıtlarını kullanıyoruz;
-  bu, tüm makale kısıtlarını eksiksiz karşılar.
 """
 from __future__ import annotations
 
@@ -39,7 +27,7 @@ class ProblemData:
     n:  int
     m:  int
     P:  dict   # P[j][k] → int
-    S:  dict   # S[i][j][k] → int  (i=-1: kukla)
+    S:  dict   # S[i][j][k] → float
     D:  dict   # D[j] → float
     NP: dict   # NP[j][k] → 0/1
 
@@ -97,10 +85,15 @@ def solve(data: ProblemData, cfg: SolverConfig) -> SolverResult:
 
     eligible_p = [data.P[j][k] for j in range(n) for k in range(m)
                   if data.NP[j][k] == 1]
-    BIG = (sum(eligible_p) + sum(
+    
+    # BIG-M hesaplaması (CP-SAT için integer olmalı)
+    total_p = sum(eligible_p)
+    total_s = sum(
         max(data.S[i][j][k] for k in range(m))
         for i in range(n) for j in range(n) if i != j
-    )) * sc * 2 + 1
+    )
+    # CP-SAT için tüm zaman kısıtları integer olmalıdır.
+    BIG = int((total_p + total_s) * sc * 2 + 1000)
 
     model = cp_model.CpModel()
 
@@ -116,7 +109,6 @@ def solve(data: ProblemData, cfg: SolverConfig) -> SolverResult:
     # Kısıt (2)+(3): Her iş tam 1 makineye
     for j in range(n):
         model.AddExactlyOne(assign[j])
-    print("[SOLVER] Kısıt (2)+(3)+(9): Atama + NP kısıtları eklendi")
 
     # ── Zaman Değişkenleri ───────────────────────────────────────────────────
     start = [[model.NewIntVar(0, BIG, f"s_{j}_{k}") for k in range(m)] for j in range(n)]
@@ -129,23 +121,18 @@ def solve(data: ProblemData, cfg: SolverConfig) -> SolverResult:
             model.Add(end_[j][k]   == 0).OnlyEnforceIf(assign[j][k].Not())
 
     # ── Kısıt (4, 5, 6): AddCircuit ile Akış Dengesi ve Sıra-Bağımlı Hazırlık ──
-    # Makaledeki X_{i,j,k} değişkenleri AddCircuit içindeki arc'lara eşittir.
     DUMMY = n  # Düğüm 0..n-1: İşler, Düğüm n: Kukla (Başlangıç/Bitiş)
     
-    arc_lit: list[dict] = [{} for _ in range(m)]
-
     for k in range(m):
         arcs = []
 
         # 1. DUMMY Self-Loop: Makine hiç iş almazsa
-        b = model.NewBoolVar(f"a_{k}_dd")
-        arc_lit[k][(DUMMY, DUMMY)] = b
-        arcs.append((DUMMY, DUMMY, b))
+        b_dd = model.NewBoolVar(f"a_{k}_dd")
+        arcs.append((DUMMY, DUMMY, b_dd))
 
         for j in range(n):
             # 2. İş Self-Loop: Eğer iş bu makineye atanmadıysa devreden çıkması için self-loop atmalı!
             b_self = model.NewBoolVar(f"a_{k}_{j}_{j}")
-            arc_lit[k][(j, j)] = b_self
             arcs.append((j, j, b_self))
             
             # İşin bu makinede self-loop atması <=> İşin bu makineye ATANMAMASI
@@ -154,43 +141,39 @@ def solve(data: ProblemData, cfg: SolverConfig) -> SolverResult:
 
             # 3. DUMMY -> j : j bu makinedeki İLK iş
             b_dj = model.NewBoolVar(f"a_{k}_d_{j}")
-            arc_lit[k][(DUMMY, j)] = b_dj
             arcs.append((DUMMY, j, b_dj))
             
             # Kısıt (5,6): Eğer j ilk iş ise, start >= S[-1][j][k]
-            s_dummy = data.S[-1][j][k] * sc
+            s_dummy = int(data.S[-1][j][k] * sc)
             model.Add(start[j][k] >= s_dummy).OnlyEnforceIf(b_dj)
 
             # 4. j -> DUMMY : j bu makinedeki SON iş
             b_jd = model.NewBoolVar(f"a_{k}_{j}_d")
-            arc_lit[k][(j, DUMMY)] = b_jd
             arcs.append((j, DUMMY, b_jd))
 
             # 5. i -> j : i işinden hemen sonra j işi (Sıra-bağımlı hazırlık)
             for i in range(n):
                 if i == j: continue
                 b_ij = model.NewBoolVar(f"a_{k}_{i}_{j}")
-                arc_lit[k][(i, j)] = b_ij
                 arcs.append((i, j, b_ij))
 
                 # Kısıt (6): Eğer i'den sonra j geliyorsa, start_j >= end_i + S[i][j]
-                sij = data.S[i][j][k] * sc
+                sij = int(data.S[i][j][k] * sc)
                 model.Add(start[j][k] >= end_[i][k] + sij).OnlyEnforceIf(b_ij)
 
         # CP-SAT devreyi kurar
         model.AddCircuit(arcs)
 
-    print("[SOLVER] Kısıt (4)+(5)+(6): AddCircuit ile Sıra-Bağımlı Hazırlık eklendi")
-
     # ── Performans Değişkenleri ───────────────────────────────────────────────
     C_j = [model.NewIntVar(0, BIG, f"C_{j}") for j in range(n)]
     for j in range(n):
-        # C_j = Σ_k C_{j,k} (Eksik olan C_{i,k} toplamaları)
+        # C_j = Σ_k C_{j,k}
         model.Add(C_j[j] == sum(end_[j][k] for k in range(m)))
 
         for k in range(m):
             # Eğer iş k makinesindeyse, bitiş = başlama + işlem süresi
-            model.Add(end_[j][k] == start[j][k] + data.P[j][k] * sc).OnlyEnforceIf(assign[j][k])
+            p_jk = int(data.P[j][k] * sc)
+            model.Add(end_[j][k] == start[j][k] + p_jk).OnlyEnforceIf(assign[j][k])
 
     Cmax = model.NewIntVar(0, BIG, "Cmax")
     model.AddMaxEquality(Cmax, C_j)
@@ -204,9 +187,8 @@ def solve(data: ProblemData, cfg: SolverConfig) -> SolverResult:
         tards.append(tard)
         
         uj = model.NewBoolVar(f"U_{j}")
-        # Kısıt (16): ej+ ≤ V × Uj (Gecikme varsa Uj=1 olmalı)
+        # Kısıt (16): ej+ ≤ V × Uj
         model.Add(tard <= BIG * uj)
-        # Mantıksal bağ: tard > 0 <-> uj=1
         model.Add(tard > 0).OnlyEnforceIf(uj)
         model.Add(tard == 0).OnlyEnforceIf(uj.Not())
         U_j.append(uj)
@@ -215,51 +197,35 @@ def solve(data: ProblemData, cfg: SolverConfig) -> SolverResult:
     model.Add(total_tard == sum(tards))
     num_tardy = model.NewIntVar(0, n, "NumTardy")
     model.Add(num_tardy == sum(U_j))
-    print("[SOLVER] Performans değişkenleri tanımlandı (Cmax, ej+, Uj)")
 
     # ── Kısıt (18) ve (19): AUGMECON sınır kısıtları ─────────────────────────
     if cfg.T_bar is not None:
         model.Add(total_tard <= int(cfg.T_bar * sc))
-        print(f"[SOLVER] Kısıt (18): Total Tardiness (T) ≤ {cfg.T_bar}")
     if cfg.L_bar is not None:
         model.Add(num_tardy <= cfg.L_bar)
-        print(f"[SOLVER] Kısıt (19): Number of Tardy Jobs (L) ≤ {cfg.L_bar}")
 
     # ── Amaç ─────────────────────────────────────────────────────────────────
     if cfg.obj_type == 'Cmax':
         model.Minimize(Cmax)
-        print("[SOLVER] Amaç (M1): Min Cmax")
     elif cfg.obj_type == 'T':
         model.Minimize(total_tard)
-        print("[SOLVER] Amaç (M2): Min T (Total Tardiness)")
     elif cfg.obj_type == 'L':
         model.Minimize(num_tardy)
-        print("[SOLVER] Amaç (M3): Min L (Number of Tardy Jobs)")
     else:  # 'weighted'
-        W1 = int(cfg.W1 * 1000)
-        W2 = int(cfg.W2 * 1000)
-        W3 = int(cfg.W3 * 1000)
+        W1, W2, W3 = int(cfg.W1 * 1000), int(cfg.W2 * 1000), int(cfg.W3 * 1000)
         model.Minimize(W1 * Cmax + W2 * total_tard + W3 * num_tardy * sc)
-        print(f"[SOLVER] Amaç: Min {cfg.W1}·Cmax + {cfg.W2}·T + {cfg.W3}·L")
 
     # ── Çöz ──────────────────────────────────────────────────────────────────
     solver = cp_model.CpSolver()
     solver.parameters.max_time_in_seconds = cfg.time_limit
-    solver.parameters.log_search_progress = False
     solver.parameters.num_search_workers  = 8
 
     cb = StepLogger(Cmax, tards, sc)
-
-    print(f"\n[SOLVER] Çözüm aranıyor (max {cfg.time_limit}s, 8 worker)...")
-    print("─" * 75)
-    print(f"  {'ADIM':>5}  {'SÜRE':>8}  │  {'Cmax':>10}  │  {'T (Total Tardiness)':>20}")
-    print("─" * 75)
-
-    t0          = time.time()
+    
+    t0 = time.time()
     status_code = solver.Solve(model, cb)
-    elapsed     = time.time() - t0
-    print("─" * 65)
-
+    elapsed = time.time() - t0
+    
     STATUS_MAP = {
         cp_model.OPTIMAL:    "OPTIMAL",
         cp_model.FEASIBLE:   "FEASIBLE",
@@ -269,7 +235,6 @@ def solve(data: ProblemData, cfg: SolverConfig) -> SolverResult:
     status = STATUS_MAP.get(status_code, "BİLİNMİYOR")
 
     if status_code not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
-        print(f"[SOLVER] ✗ {status}")
         return SolverResult(status=status, Cmax=0, total_tardiness=0,
                             num_tardy=0, schedule={}, solve_time=round(elapsed, 2),
                             objective_value=0)
@@ -289,7 +254,11 @@ def solve(data: ProblemData, cfg: SolverConfig) -> SolverResult:
     for k in range(m):
         schedule[k].sort(key=lambda x: x[1])
 
-    print(f"\n[SOLVER] ✓ {status}  Cmax={cmax_v:.2f}  T={tard_v:.2f}  L={ntardy_v}  ({elapsed:.2f}s)")
+    # Normalize objective value
+    obj_val = solver.ObjectiveValue()
+    if cfg.obj_type == 'weighted':
+        obj_val /= 1000.0
+    obj_val /= sc
 
     return SolverResult(
         status=status,
@@ -298,5 +267,5 @@ def solve(data: ProblemData, cfg: SolverConfig) -> SolverResult:
         num_tardy=ntardy_v,
         schedule=schedule,
         solve_time=round(elapsed, 2),
-        objective_value=round(solver.ObjectiveValue(), 2),
+        objective_value=round(obj_val, 2),
     )

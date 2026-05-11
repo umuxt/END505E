@@ -62,17 +62,12 @@ def generate_problem(n: int, m: int, seed: int = 42,
     else:
         s_min, s_max = D_SLACK_HIGH_MIN, D_SLACK_HIGH_MAX
 
-    print(f"\n[GEN] Generating random problem...")
-    print(f"      n={n} Jobs  |  m={m} Machines  |  seed={seed}")
-    print(f"      Number of families: {n_families}  |  Machine eligibility constraint: {np_ratio:.0%}")
-    print(f"      Processing time: U[{P_MIN},{P_MAX}]  |  "
-          f"Setup (same family): U[{S_MIN_SAME},{S_MAX_SAME}]  |  "
-          f"Setup (diff family): U[{S_MIN_DIFF},{S_MAX_DIFF}]")
+    # Loglar temizlendi (I/O hatası önleme)
 
     # ── Product Family Assignment ───────────────────────────────────────────
     # Her işe rastgele bir aile atanır
     family = {j: rng.randint(0, n_families - 1) for j in range(n)}
-    print(f"[GEN]  ✓ Product family assignments done  ({n_families} families)")
+    # family assignments done
 
     # ── Machine Eligibility Matrix: NP[j][k] ───────────────────────────────────
     # NP[j][k] = 1 → j işi k makinesinde yapılabilir
@@ -90,9 +85,7 @@ def generate_problem(n: int, m: int, seed: int = 42,
             else:
                 NP[j][k] = 0 if rng.random() < np_ratio else 1
 
-    np_count = sum(1 for j in range(n) for k in range(m) if NP[j][k] == 0)
-    print(f"[GEN]  ✓ Machine eligibility matrix NP[j][k] created  "
-          f"({np_count}/{n*m} constraints)")
+    # eligibility matrix created
 
     # ── Processing Times: P[j][k] ─────────────────────────────────────────────
     # j işinin k makinesindeki işlem süresi (Unrelated → her makine farklı)
@@ -107,7 +100,7 @@ def generate_problem(n: int, m: int, seed: int = 42,
             else:
                 P[j][k] = BIG_P  # kullanılmayacak ama veri tutarlılığı için
 
-    print(f"[GEN]  ✓ Processing times P[j][k] generated  ({n}×{m} = {n*m} values)")
+    # processing times generated
 
     # ── Setup Times: S[i][j][k] ───────────────────────────────────────
     # Aile tabanlı: aynı aileden kısa, farklı aileden uzun
@@ -132,8 +125,7 @@ def generate_problem(n: int, m: int, seed: int = 42,
         for k in range(m):
             S[-1][j][k] = 0
 
-    print(f"[GEN]  ✓ Setup times S[i][j][k] generated  "
-          f"(family-based: same={S_MIN_SAME}-{S_MAX_SAME}, diff={S_MIN_DIFF}-{S_MAX_DIFF})")
+    # setup times generated
 
     # ── Due Dates: D[j] ───────────────────────────────────────────────
     eligible_p = [P[j][k] for j in range(n) for k in range(m) if NP[j][k] == 1]
@@ -148,7 +140,7 @@ def generate_problem(n: int, m: int, seed: int = 42,
         # Teslim tarihi, [min_p, max_d] aralığında rastgele seçilir
         D[j] = round(rng.uniform(min_p, max_d), 2)
 
-    print(f"[GEN]  ✓ Due dates D[j] generated  (avg feasible P={avg_p:.1f})")
+    # due dates generated
 
     problem = {
         "metadata": {
