@@ -267,42 +267,51 @@ def api_topsis(req: TopsisRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 class CPSATRequest(BaseModel):
-    problem: dict
-    obj_type: str = 'Cmax' # 'Cmax', 'T', 'L'
+    n: int
+    m: int
+    seed: int
+    n_families: int = 3
+    np_ratio: float = 0.5
+    scenario: str = "high"
+    obj_type: str = 'Cmax'
     time_limit: int = 10
+
+@lru_cache(maxsize=32)
+def solve_cpsat_logic(n, m, seed, n_families, np_ratio, scenario, obj_type, time_limit):
+    problem = generate_problem(n, m, seed, n_families, np_ratio, scenario)
+    
+    # Python dictlerine parse
+    P  = {int(j): {int(k): problem["P"][str(j)][str(k)] for k in range(m)} for j in range(n)}
+    S  = {int(i): {int(j): {int(k): problem["S"][str(i)][str(j)][str(k)] for k in range(m)} for j in range(n)}
+          for i in list(range(n)) + [-1]}
+    D  = {int(j): float(problem["D"][str(j)]) for j in range(n)}
+    NP = {int(j): {int(k): problem["NP"][str(j)][str(k)] for k in range(m)} for j in range(n)}
+
+    from app.solver import solve, ProblemData, SolverConfig
+    p_data = ProblemData(n=n, m=m, P=P, S=S, D=D, NP=NP)
+    cfg = SolverConfig(obj_type=obj_type, time_limit=time_limit)
+    
+    result = solve(p_data, cfg)
+    
+    return {
+        "Cmax": result.Cmax,
+        "T": result.total_tardiness,
+        "L": result.num_tardy,
+        "solve_time": result.solve_time,
+        "schedule": {str(k): [list(step) for step in steps] for k, steps in result.schedule.items()}
+    }
 
 @app.post("/api/solve_cpsat")
 def api_solve_cpsat(req: CPSATRequest):
-    from app.solver import solve, ProblemData, SolverConfig
     try:
-        raw = req.problem
-        meta = raw["metadata"]
-        n, m = meta["n"], meta["m"]
-
-        # Python dictlerine parse
-        P  = {int(j): {int(k): raw["P"][str(j)][str(k)] for k in range(m)} for j in range(n)}
-        S  = {int(i): {int(j): {int(k): raw["S"][str(i)][str(j)][str(k)] for k in range(m)} for j in range(n)}
-              for i in list(range(n)) + [-1]}
-        D  = {int(j): float(raw["D"][str(j)]) for j in range(n)}
-        NP = {int(j): {int(k): raw.get("NP", {str(j): {str(k): 1 for k in range(m)}})[str(j)][str(k)]
-                   for k in range(m)} for j in range(n)}
-
-        p_data = ProblemData(n=n, m=m, P=P, S=S, D=D, NP=NP)
-        cfg = SolverConfig(obj_type=req.obj_type, time_limit=req.time_limit)
-        
-        result = solve(p_data, cfg)
-        
-        return {
-            "status": "success", 
-            "results": {
-                "Cmax": result.Cmax,
-                "T": result.total_tardiness,
-                "L": result.num_tardy,
-                "solve_time": result.solve_time,
-                "schedule": result.schedule
-            }
-        }
+        res = solve_cpsat_logic(
+            req.n, req.m, req.seed, req.n_families, req.np_ratio, req.scenario,
+            req.obj_type, req.time_limit
+        )
+        return {"status": "success", "results": res}
     except Exception as e:
+        import traceback
+        print(f"CPSAT ERROR: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=str(e))
 
 # Ana giriş noktası (test için)

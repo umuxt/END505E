@@ -447,9 +447,14 @@ export default function GuidedFlow() {
         const res = await fetch(`${API_BASE}/solve_cpsat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ problem: problemData, obj_type: obj, time_limit: 30 })
+          body: JSON.stringify({ 
+            ...problemData.metadata, 
+            obj_type: obj, 
+            time_limit: 10 
+          })
         });
         const d = await res.json();
+        if (!res.ok) throw new Error(d.detail || "MILP hatası");
         return d.results;
       };
 
@@ -727,7 +732,11 @@ export default function GuidedFlow() {
                       <div className="milp-result-card" style={{ border: '2px solid var(--warning)', borderRadius: '12px', padding: '10px' }}>
                         <div className="output-header" style={{ color: 'var(--warning)' }}>M4 Modeli (Uzlaşmacı / Çok Amaçlı Dengeli Çözüm)</div>
                         <JobSequenceTable schedule={cpsatResults.M4.schedule} m={Number(inputMachines)} problemData={problemData} />
-                        <GanttChart schedule={cpsatResults.M4.schedule} m={Number(inputMachines)} n={Number(inputJobs)} />
+                        <div style={{ overflowX: 'auto', marginTop: '1rem' }}>
+                          <div style={{ minWidth: '1000px' }}>
+                            <GanttChart schedule={cpsatResults.M4.schedule} m={Number(inputMachines)} n={Number(inputJobs)} />
+                          </div>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -906,8 +915,15 @@ export default function GuidedFlow() {
                   <div style={{ background: '#0d1117', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
                     <div className="output-header" style={{ marginBottom: '0.5rem' }}><CheckCircle size={16} /> Önerilen Çizelge: {topsisResults[0].rule_name}</div>
                     <div style={{ fontSize: '0.75rem', opacity: 0.7, marginBottom: '1rem' }}>TOPSIS'in seçtiği optimal kural ile oluşturulan operasyonel çizelge. Mor bloklar hazırlık (Sᵢⱼₖ), yeşil bloklar işlem (Pⱼₖ) sürelerini gösterir.</div>
+                    
                     <JobSequenceTable schedule={ddrResults.find(r => r.rule_name === topsisResults[0].rule_name)?.schedule} m={Number(inputMachines)} problemData={problemData} />
-                    <GanttChart schedule={ddrResults.find(r => r.rule_name === topsisResults[0].rule_name)?.schedule} m={Number(inputMachines)} n={Number(inputJobs)} />
+                    
+                    <div style={{ overflowX: 'auto', marginTop: '2rem' }}>
+                      <div style={{ minWidth: '1200px' }}>
+                        <GanttChart schedule={ddrResults.find(r => r.rule_name === topsisResults[0].rule_name)?.schedule} m={Number(inputMachines)} n={Number(inputJobs)} />
+                      </div>
+                    </div>
+                    
                     <CompactMetrics schedule={ddrResults.find(r => r.rule_name === topsisResults[0].rule_name)?.schedule} problemData={problemData} />
                   </div>
                   <button className="btn btn-warning mt-4" onClick={() => scrollToNext(6)}>
