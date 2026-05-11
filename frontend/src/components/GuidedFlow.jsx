@@ -473,16 +473,19 @@ export default function GuidedFlow() {
 
   return (
     <div className="notebook-container">
-      <div className="notebook-header" style={{ padding: '2rem 1rem', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', right: '30px', top: '30px', pointerEvents: 'none' }}>
-          <img src="/itu-logo.png" alt="ITU Logo" style={{ width: '80px', height: '80px' }} />
+      <div className="notebook-header" style={{ padding: '2rem 1rem', position: 'relative', overflow: 'hidden', minHeight: '160px' }}>
+        <div style={{ position: 'absolute', right: '30px', top: '25px', pointerEvents: 'none' }}>
+          <img src="/itu-logo.png" alt="ITU Logo" style={{ width: '100px', height: '100px', objectFit: 'contain' }} />
         </div>
         <div>
-          <h2 style={{ fontSize: 'clamp(1.4rem, 4vw, 2.2rem)', letterSpacing: '-1px', marginBottom: '0.5rem', lineHeight: 1.2 }}>UPMSP Akademik Karar Destek Sistemi</h2>
-          <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.5', marginBottom: '1rem', maxWidth: '650px' }}>
-            Bu interaktif sistem, <a href="https://doi.org/10.1016/j.dajour.2024.100525" target="_blank" rel="noreferrer" style={{ color: 'var(--warning)', fontWeight: 'bold', textDecoration: 'underline' }}>Decision Analytics Journal (2024)</a>'da yayınlanan{' '}
-            <em>"A multi-objective production scheduling model and dynamic dispatching rules..."</em> makalesi temel alınarak,{' '}
-            <strong>İTÜ END505E Proje Ödevi</strong> kapsamında geliştirilmiştir.
+          <h2 style={{ fontSize: 'clamp(1.4rem, 4vw, 2.2rem)', letterSpacing: '-1px', marginBottom: '0.75rem', lineHeight: 1.2, maxWidth: '85%' }}>UPMSP Akademik Karar Destek Sistemi</h2>
+          <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1rem', maxWidth: '750px' }}>
+            Bu sistem, <a href="https://doi.org/10.1016/j.dajour.2024.100525" target="_blank" rel="noreferrer" style={{ color: 'var(--warning)', fontWeight: 'bold', textDecoration: 'underline' }}>Decision Analytics Journal (2024)</a>'da yayınlanan <br />
+            <strong>"A multi-objective production scheduling model and dynamic dispatching rules for unrelated parallel machines with sequence-dependent set-up times"</strong> <br />
+            isimli çalışma temel alınarak geliştirilmiştir. <br />
+            <span style={{ opacity: 0.8, fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>
+              Yazarlar: <em>Pham Duc Tai, Papimol Kongsri, Prasal Soeurn, Jirachai Buddhakulsomsiri</em>
+            </span>
           </div>
         </div>
       </div>
