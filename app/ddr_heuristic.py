@@ -224,7 +224,7 @@ def run_ddr(n: int, m: int, P: dict, S: dict, D: dict, NP: dict,
         start_time    = machine_end[k_star] + setup_time
         end_time      = start_time + proc_time
 
-        schedule[k_star].append((j_star, round(start_time, 2), round(end_time, 2)))
+        schedule[k_star].append((j_star, round(start_time, 2), round(end_time, 2), round(setup_time, 2)))
         machine_end[k_star] = end_time
         last_job[k_star]    = j_star
         remaining.discard(j_star)

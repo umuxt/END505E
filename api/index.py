@@ -44,7 +44,15 @@ def api_generate(req: GenerateRequest):
             np_ratio=req.np_ratio,
             scenario=req.scenario
         )
-        return {"status": "success", "data": problem}
+        # S matrisini devasa boyutu nedeniyle göndermiyoruz.
+        light_data = {
+            "metadata": problem["metadata"],
+            "family": problem["family"],
+            "NP": problem["NP"],
+            "P": problem["P"],
+            "D": problem["D"]
+        }
+        return {"status": "success", "data": light_data}
     except Exception as e:
         import traceback
         with open("backend_error.log", "a") as f:
@@ -133,6 +141,39 @@ def api_solve_ddr_by_params(req: DDRParamsRequest):
     except Exception as e:
         import traceback
         print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=str(e))
+
+class SetupPageRequest(BaseModel):
+    n: int
+    m: int
+    seed: int
+    n_families: int
+    np_ratio: float
+    scenario: str
+    k: int
+    page: int
+    page_size: int = 50
+
+@app.post("/api/get_setup_page")
+def api_get_setup_page(req: SetupPageRequest):
+    """Sadece görüntüleme için S matrisinin bir sayfasını üretir ve döndürür."""
+    try:
+        problem = generate_problem(req.n, req.m, req.seed, req.n_families, req.np_ratio, req.scenario)
+        S = problem["S"]
+        
+        # Seçilen makine (k) için sayfalandırılmış veri
+        start = req.page * req.page_size
+        end = min(req.n, start + req.page_size)
+        
+        page_data = {}
+        for i in range(start, end):
+            page_data[str(i)] = {str(j): S[str(i)][str(j)][str(req.k)] for j in range(req.n)}
+        
+        # Kukla iş (-1) her zaman dahil
+        page_data["-1"] = {str(j): S["-1"][str(j)][str(req.k)] for j in range(req.n)}
+        
+        return {"status": "success", "page_data": page_data, "range": [start, end]}
+    except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 class TopsisRequest(BaseModel):

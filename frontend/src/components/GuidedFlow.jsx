@@ -55,39 +55,54 @@ const ScrollableTable = ({ children, maxHeight = '400px' }) => (
 // --- PERFORMANCE COMPONENTS ---
 
 const PaginatedSetupMatrix = React.memo(({ data, selectedK }) => {
-  const [pageI, setPageI] = useState(0);
-  const [pageJ, setPageJ] = useState(0);
+  const [page, setPage] = useState(0);
+  const [pageData, setPageData] = useState(null);
+  const [loading, setLoading] = useState(false);
   const pageSize = 15;
   const n = data.metadata.n;
   const totalPages = Math.ceil(n / pageSize);
 
-  const startI = pageI * pageSize;
-  const endI = Math.min(startI + pageSize, n);
-  const startJ = pageJ * pageSize;
-  const endJ = Math.min(startJ + pageSize, n);
+  useEffect(() => {
+    const fetchPage = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`${API_BASE}/get_setup_page`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            n: data.metadata.n, m: data.metadata.m, seed: data.metadata.seed,
+            n_families: data.metadata.n_families, np_ratio: data.metadata.np_ratio,
+            scenario: data.metadata.scenario || 'high',
+            k: selectedK, page: page, page_size: pageSize
+          })
+        });
+        const d = await res.json();
+        setPageData(d.page_data);
+      } catch (e) { console.error(e); }
+      setLoading(false);
+    };
+    fetchPage();
+  }, [page, selectedK, data]);
 
+  if (!pageData && loading) return <div className="loader"></div>;
+  if (!pageData) return null;
+
+  const startI = page * pageSize;
+  const endI = Math.min(startI + pageSize, n);
   const iIndices = Array.from({ length: endI - startI }, (_, idx) => startI + idx);
-  const jIndices = Array.from({ length: endJ - startJ }, (_, idx) => startJ + idx);
+  // Sütunlar için de basitlik adına aynı aralığı gösterelim (veya tüm J'leri)
+  const jIndices = Array.from({ length: Math.min(n, 12) }, (_, idx) => idx);
 
   return (
-    <div style={{ marginTop: '1rem', background: 'rgba(0,0,0,0.1)', padding: '1rem', borderRadius: '8px' }}>
-      <div className="flex-row" style={{ justifyContent: 'space-between', marginBottom: '15px', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+    <div style={{ marginTop: '1rem', background: 'rgba(0,0,0,0.1)', padding: '1rem', borderRadius: '8px', opacity: loading ? 0.5 : 1 }}>
+      <div className="flex-row" style={{ justifyContent: 'space-between', marginBottom: '15px', alignItems: 'center' }}>
         <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--warning)' }}>
-          🔍 Sᵢⱼₖ Matris Görünümü (İş {startI + 1}-{endI} x {startJ + 1}-{endJ})
+          🔍 Sᵢⱼₖ Matris Görünümü (İş {startI + 1}-{endI} / {n})
         </div>
-        <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-          <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.65rem' }}>Satır:</span>
-            <button className="btn btn-sm" disabled={pageI === 0} onClick={() => setPageI(p => p - 1)}>←</button>
-            <span style={{ fontSize: '0.7rem' }}>{pageI + 1}/{totalPages}</span>
-            <button className="btn btn-sm" disabled={pageI >= totalPages - 1} onClick={() => setPageI(p => p + 1)}>→</button>
-          </div>
-          <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.65rem' }}>Sütun:</span>
-            <button className="btn btn-sm" disabled={pageJ === 0} onClick={() => setPageJ(p => p - 1)}>←</button>
-            <span style={{ fontSize: '0.7rem' }}>{pageJ + 1}/{totalPages}</span>
-            <button className="btn btn-sm" disabled={pageJ >= totalPages - 1} onClick={() => setPageJ(p => p + 1)}>→</button>
-          </div>
+        <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
+          <button className="btn btn-sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}>← Önceki</button>
+          <span style={{ fontSize: '0.7rem' }}>Sayfa {page + 1}/{totalPages}</span>
+          <button className="btn btn-sm" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}>Sonraki →</button>
         </div>
       </div>
       <ScrollableTable maxHeight="350px">
@@ -95,17 +110,18 @@ const PaginatedSetupMatrix = React.memo(({ data, selectedK }) => {
           <thead>
             <tr>
               <th style={{ textAlign: 'center', background: '#161b22', width: '80px' }}>i \ j</th>
-              <th style={{ background: 'rgba(210,153,34,0.1)', width: '60px' }}>J0</th>
+              <th style={{ background: 'rgba(210,153,34,0.1)', width: '60px' }}>J0 (Kukla)</th>
               {jIndices.map(j => <th key={j} style={{ minWidth: '60px' }}>J{j + 1}</th>)}
+              <th style={{ opacity: 0.5 }}>...</th>
             </tr>
           </thead>
           <tbody>
             {iIndices.map(i => (
               <tr key={i}>
                 <td style={{ fontWeight: 'bold', background: '#161b22', position: 'sticky', left: 0 }}>J{i + 1}</td>
-                <td style={{ color: '#4ade80', textAlign: 'center' }}>0.00</td>
+                <td style={{ color: '#4ade80', textAlign: 'center' }}>{pageData["-1"]?.[i]?.toFixed(2) || '0.00'}</td>
                 {jIndices.map(j => {
-                  const val = data.S[i]?.[j]?.[selectedK];
+                  const val = pageData[i]?.[j];
                   const same = data.family?.[i] === data.family?.[j];
                   return (
                     <td key={j} style={{ textAlign: 'center', background: same ? 'rgba(74, 222, 128, 0.05)' : 'transparent', color: same ? '#4ade80' : '#ff7b72', fontSize: '0.7rem' }}>
@@ -113,6 +129,7 @@ const PaginatedSetupMatrix = React.memo(({ data, selectedK }) => {
                     </td>
                   );
                 })}
+                <td style={{ opacity: 0.3 }}>...</td>
               </tr>
             ))}
           </tbody>
@@ -194,22 +211,15 @@ const GanttChart = React.memo(({ schedule, m, n }) => {
   let minDuration = Infinity;
 
   Object.keys(schedule).forEach(k => {
-    let currentT = 0;
     schedule[k].forEach(jobTuple => {
-      const [jId, start, end] = jobTuple;
-      const setupTime = start - currentT;
-      const jobTime = end - start;
-
+      const [jId, start, end, setup] = jobTuple;
       if (end > maxEnd) maxEnd = end;
-      if (setupTime > 0.01 && setupTime < minDuration) minDuration = setupTime;
-      if (jobTime > 0.01 && jobTime < minDuration) minDuration = jobTime;
-
-      currentT = end;
+      const duration = end - start;
+      if (duration < minDuration) minDuration = duration;
     });
   });
 
   if (minDuration === Infinity || minDuration <= 0) minDuration = 1;
-
   const idealZoom = Math.min(300, Math.ceil(25 / minDuration));
   const currentZoom = zoomLevel !== null ? zoomLevel : idealZoom;
   const chartWidth = Math.max(800, maxEnd * currentZoom);
@@ -235,37 +245,33 @@ const GanttChart = React.memo(({ schedule, m, n }) => {
       <div style={{ overflowX: 'auto', paddingBottom: '1rem' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: `${chartWidth}px`, position: 'relative' }}>
           {Array.from({ length: m }).map((_, k) => {
-            let currentT = 0;
             return (
               <div key={k} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <div style={{ width: '30px', fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--warning)' }}>M{k + 1}</div>
                 <div style={{ flex: 1, height: '28px', background: 'rgba(255,255,255,0.02)', position: 'relative', border: '1px solid #30363d' }}>
                   {schedule[k]?.map((job, idx) => {
-                    const [jId, start, end] = job;
-                    const setupTime = start - currentT;
-                    const jobTime = end - start;
-                    const elements = [];
+                    const [jId, start, end, setup] = job;
+                    const setupWidth = (setup / maxEnd) * 100;
+                    const jobWidth = ((end - start) / maxEnd) * 100;
+                    const leftPos = (start / maxEnd) * 100;
+                    const setupLeft = leftPos - setupWidth;
 
-                    if (setupTime > 0.01) {
-                      elements.push(
-                        <div key={`s-${idx}`} style={{
-                          position: 'absolute', left: `${(currentT / maxEnd) * 100}%`, width: `${(setupTime / maxEnd) * 100}%`, height: '100%',
-                          background: '#9b59b6', opacity: 0.6
-                        }} />
-                      );
-                    }
-
-                    elements.push(
-                      <div key={`j-${idx}`} title={`J${jId + 1}`} style={{
-                        position: 'absolute', left: `${(start / maxEnd) * 100}%`, width: `${(jobTime / maxEnd) * 100}%`, height: '100%',
-                        background: '#27ae60', borderLeft: '1px solid #1e8449', borderRight: '1px solid #1e8449', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', color: '#fff', fontWeight: 'bold', overflow: 'hidden'
-                      }}>
-                        {(jobTime / maxEnd * chartWidth) > 20 ? `J${jId + 1}` : ''}
-                      </div>
+                    return (
+                      <React.Fragment key={idx}>
+                        {setup > 0.01 && (
+                          <div style={{
+                            position: 'absolute', left: `${setupLeft}%`, width: `${setupWidth}%`, height: '100%',
+                            background: '#9b59b6', opacity: 0.6
+                          }} />
+                        )}
+                        <div title={`J${jId + 1} (Setup: ${setup})`} style={{
+                          position: 'absolute', left: `${leftPos}%`, width: `${jobWidth}%`, height: '100%',
+                          background: '#27ae60', borderLeft: '1px solid #1e8449', borderRight: '1px solid #1e8449', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', color: '#fff', fontWeight: 'bold', overflow: 'hidden'
+                        }}>
+                          {(jobWidth / 100 * chartWidth) > 20 ? `J${jId + 1}` : ''}
+                        </div>
+                      </React.Fragment>
                     );
-
-                    currentT = end;
-                    return elements;
                   })}
                 </div>
               </div>
@@ -281,17 +287,16 @@ const GanttChart = React.memo(({ schedule, m, n }) => {
 const JobSequenceTable = React.memo(({ schedule, m, problemData }) => {
   if (!schedule || !problemData) return null;
   let rows = [];
-  Object.keys(schedule).forEach(k => {
-    const machineId = Number(k);
-    let prevJobId = -1;
-    const numJobs = schedule[k].length;
-    schedule[k].forEach((jobTuple, i) => {
-      const [jId, start, end] = jobTuple;
-      const pTime = problemData.P[jId][machineId];
-      const sTime = problemData.S[prevJobId][jId][machineId];
-      const dTime = problemData.D[jId];
-      const lateness = end - dTime;
-      const tardiness = Math.max(0, lateness);
+    Object.keys(schedule).forEach(k => {
+      const machineId = Number(k);
+      const numJobs = schedule[k].length;
+      schedule[k].forEach((jobTuple, i) => {
+        const [jId, start, end, setupTime] = jobTuple;
+        const pTime = problemData.P[jId][machineId];
+        const sTime = setupTime;
+        const dTime = problemData.D[jId];
+        const lateness = end - dTime;
+        const tardiness = Math.max(0, lateness);
 
       rows.push({
         k: machineId + 1,
