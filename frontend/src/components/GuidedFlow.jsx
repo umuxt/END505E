@@ -802,27 +802,6 @@ export default function GuidedFlow() {
                   </div>
                 </div>
                 
-                <div className="mt-5">
-                  <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--accent)', letterSpacing: '1px', marginBottom: '1rem', textAlign: 'center' }}>🤖 ÇOKLU AJAN KONSENSÜS PANELİ (AGENT AUDIT)</div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
-                    <div style={{ background: 'rgba(88, 166, 255, 0.05)', padding: '1rem', borderRadius: '8px', borderLeft: '3px solid var(--accent)' }}>
-                      <div style={{ fontWeight: 'bold', fontSize: '0.8rem', color: 'var(--accent)' }}>Paper Agent (Titizlik)</div>
-                      <p style={{ fontSize: '0.75rem', marginTop: '0.5rem', fontStyle: 'italic' }}>"Tüm veri setleri makale standartlarına uygun işlendi. Tablo 12 ve 21'deki matematiksel tutarlılık onaylandı."</p>
-                    </div>
-                    <div style={{ background: 'rgba(74, 222, 128, 0.05)', padding: '1rem', borderRadius: '8px', borderLeft: '3px solid #4ade80' }}>
-                      <div style={{ fontWeight: 'bold', fontSize: '0.8rem', color: '#4ade80' }}>Backend Agent (Performans)</div>
-                      <p style={{ fontSize: '0.75rem', marginTop: '0.5rem', fontStyle: 'italic' }}>"39 DDR kuralı milisaniyeler içinde çözüldü. SDST matrisi {problemData?.metadata.n} iş için kayıpsız optimize edildi."</p>
-                    </div>
-                    <div style={{ background: 'rgba(210, 153, 34, 0.05)', padding: '1rem', borderRadius: '8px', borderLeft: '3px solid var(--warning)' }}>
-                      <div style={{ fontWeight: 'bold', fontSize: '0.8rem', color: 'var(--warning)' }}>MCDM Agent (Karar Dengesi)</div>
-                      <p style={{ fontSize: '0.75rem', marginTop: '0.5rem', fontStyle: 'italic' }}>"TOPSIS ideal çözüme en yakın kuralı ({topsisResults[0]?.rule_name}) belirledi. Çatışan hedefler başarıyla dengelendi."</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-5" style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.5rem', textAlign: 'center', fontSize: '0.8rem', opacity: 0.5 }}>
-                  İSTANBUL TEKNİK ÜNİVERSİTESİ | ENDÜSTRİ MÜHENDİSLİĞİ | 2024
-                </div>
               </div>
             </div>
           </div>
