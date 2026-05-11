@@ -508,29 +508,7 @@ export default function GuidedFlow() {
             ]} />
 
             <AgentInsight agent="paper" message="Tayland'daki büyük bir çelik boru üreticisinin karşılaştığı gerçek dünya probleminden motive edilen bu çalışma, ilişkisiz paralel tezgahları ve sıra-bağımlı hazırlık sürelerini (Sijk) ele alır." />
-            <p className="text-secondary mt-2">Makale Bölüm 3.1'de tanımlanan üretim kısıtları ve sistem parametreleri aşağıda belirlenmektedir.</p>
-            <div className="interactive-box mt-4">
-              <div className="flex-row" style={{ gap: '1.5rem', flexWrap: 'wrap' }}>
-                <div className="form-group" style={{ flex: 1, minWidth: '150px' }}>
-                  <label>İş Sayısı (n)</label>
-                  <input type="number" className="input-field" value={inputJobs} onChange={e => setInputJobs(e.target.value)} placeholder="Örn: 10" />
-                </div>
-                <div className="form-group" style={{ flex: 1, minWidth: '150px' }}>
-                  <label>Tezgah Sayısı (m)</label>
-                  <input type="number" className="input-field" value={inputMachines} onChange={e => setInputMachines(e.target.value)} placeholder="Örn: 3" />
-                </div>
-                <div className="form-group" style={{ flex: 1, minWidth: '150px' }}>
-                  <label>Ürün Ailesi (F)</label>
-                  <input type="number" className="input-field" value={inputFamilies} onChange={e => setInputFamilies(e.target.value)} placeholder="Örn: 3" />
-                </div>
-                <div className="form-group" style={{ flex: 1, minWidth: '150px' }}>
-                  <label>NP Oranı (%)</label>
-                  <input type="number" className="input-field" value={inputNP} onChange={e => setInputNP(e.target.value)} placeholder="Örn: 20" />
-                </div>
-              </div>
-              <button className="btn btn-warning mt-4" onClick={() => { generateData(); scrollToNext(2); }} disabled={loading}><Play size={16} /> Sistemi Başlat ve Veri Üret</button>
-            </div>
-            {problemData && <DataMatrixView data={problemData} title="Tablo 2: Problem Veri Matrisi" />}
+            <button className="btn btn-warning mt-4" onClick={() => scrollToNext(2)}><BookOpen size={16} /> Literatür Taramasına Geç</button>
           </div>
         </div>
 
@@ -563,7 +541,29 @@ export default function GuidedFlow() {
                   </tbody>
                 </table>
               </div>
-              <button className="btn btn-warning mt-4" onClick={() => scrollToNext(3)}><Calculator size={16} /> Matematiksel Modelleme Adımına Geç</button>
+              <div className="mt-4" style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1.5rem' }}>
+                <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--warning)', marginBottom: '0.75rem' }}>🧪 Problemi Kur: Veri Seti Oluştur</div>
+                <div className="flex-row" style={{ gap: '1.5rem', flexWrap: 'wrap' }}>
+                  <div className="form-group" style={{ flex: 1, minWidth: '130px' }}>
+                    <label>İş Sayısı (n)</label>
+                    <input type="number" className="input-field" value={inputJobs} onChange={e => setInputJobs(e.target.value)} placeholder="Örn: 10" />
+                  </div>
+                  <div className="form-group" style={{ flex: 1, minWidth: '130px' }}>
+                    <label>Tezgah Sayısı (m)</label>
+                    <input type="number" className="input-field" value={inputMachines} onChange={e => setInputMachines(e.target.value)} placeholder="Örn: 3" />
+                  </div>
+                  <div className="form-group" style={{ flex: 1, minWidth: '130px' }}>
+                    <label>Ürün Ailesi (F)</label>
+                    <input type="number" className="input-field" value={inputFamilies} onChange={e => setInputFamilies(e.target.value)} placeholder="Örn: 3" />
+                  </div>
+                  <div className="form-group" style={{ flex: 1, minWidth: '130px' }}>
+                    <label>NP Oranı (%)</label>
+                    <input type="number" className="input-field" value={inputNP} onChange={e => setInputNP(e.target.value)} placeholder="Örn: 20" />
+                  </div>
+                </div>
+                <button className="btn btn-warning mt-4" onClick={() => { generateData(); scrollToNext(3); }} disabled={loading}><Play size={16} /> Sistemi Başlat ve Veri Üret</button>
+                {problemData && <DataMatrixView data={problemData} title="Tablo 2: Problem Veri Matrisi (Pⱼₖ, Sᵢⱼₖ, Dⱼ)" />}
+              </div>
             </div>
           </div>
         )}
