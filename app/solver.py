@@ -269,3 +269,107 @@ def solve(data: ProblemData, cfg: SolverConfig) -> SolverResult:
         solve_time=round(elapsed, 2),
         objective_value=round(obj_val, 2),
     )
+
+
+# ─── AUGMECON: Artırılmış ε-Kısıt Yöntemi ──────────────────────────────────
+
+def solve_augmecon(data: ProblemData, time_limit: int = 8, grid_T: int = 5, grid_L: int | None = None) -> dict:
+    """
+    Rapor Bölüm 3.2.4 & 5.1.2: AUGMECON Yöntemi
+    ─────────────────────────────────────────────
+    Adım 1: Payoff tablosunu hesapla (M1, M2, M3)
+    Adım 2: T ve L aralıklarını hesapla, grid noktaları belirle
+    Adım 3: Her ε noktasında T ≤ T̄ ve L ≤ L̄ kısıtları altında Cmax minimize et
+    Adım 4: Non-dominated (Pareto) çözümleri filtrele
+    Adım 5: Pareto cephesini ve grid bilgisini döndür
+    """
+    # --- Adım 1: Payoff Table ---
+    cfg_m1 = SolverConfig(obj_type='Cmax', time_limit=time_limit)
+    cfg_m2 = SolverConfig(obj_type='T',    time_limit=time_limit)
+    cfg_m3 = SolverConfig(obj_type='L',    time_limit=time_limit)
+
+    r_m1 = solve(data, cfg_m1)
+    r_m2 = solve(data, cfg_m2)
+    r_m3 = solve(data, cfg_m3)
+
+    payoff = {
+        'M1': {'Cmax': r_m1.Cmax, 'T': r_m1.total_tardiness, 'L': r_m1.num_tardy},
+        'M2': {'Cmax': r_m2.Cmax, 'T': r_m2.total_tardiness, 'L': r_m2.num_tardy},
+        'M3': {'Cmax': r_m3.Cmax, 'T': r_m3.total_tardiness, 'L': r_m3.num_tardy},
+    }
+
+    # --- Adım 2: Grid aralıkları (Rapor: 20 adım T için, L için tam sayı aralığı) ---
+    T_min = min(payoff['M1']['T'], payoff['M2']['T'], payoff['M3']['T'])
+    T_max = max(payoff['M1']['T'], payoff['M2']['T'], payoff['M3']['T'])
+    L_min = min(payoff['M1']['L'], payoff['M2']['L'], payoff['M3']['L'])
+    L_max = max(payoff['M1']['L'], payoff['M2']['L'], payoff['M3']['L'])
+
+    # T grid: grid_T adım
+    if T_max > T_min:
+        T_step = (T_max - T_min) / max(grid_T - 1, 1)
+        T_grid = [round(T_min + i * T_step, 2) for i in range(grid_T)]
+    else:
+        T_grid = [T_max]
+
+    # L grid: her tam sayı değeri (L aralığı genellikle küçüktür)
+    L_vals = list(range(int(L_min), int(L_max) + 1)) if grid_L is None else list(range(int(L_min), int(L_min) + grid_L))
+
+    total_iters = len(T_grid) * len(L_vals)
+
+    # --- Adım 3 & 4: Her grid noktasında çöz, Pareto filtrele ---
+    all_solutions = []
+    for L_bar in L_vals:
+        for T_bar in T_grid:
+            cfg = SolverConfig(
+                obj_type='Cmax',
+                time_limit=time_limit,
+                T_bar=T_bar,
+                L_bar=L_bar
+            )
+            r = solve(data, cfg)
+            if r.status in ('OPTIMAL', 'FEASIBLE'):
+                all_solutions.append({
+                    'Cmax': r.Cmax,
+                    'T':    r.total_tardiness,
+                    'L':    r.num_tardy,
+                    'eps_T': T_bar,
+                    'eps_L': L_bar,
+                })
+
+    # --- Non-dominated filtresi (Pareto) ---
+    def is_dominated(sol, others):
+        for other in others:
+            if other is sol:
+                continue
+            if (other['Cmax'] <= sol['Cmax'] and
+                other['T']    <= sol['T'] and
+                other['L']    <= sol['L'] and
+                (other['Cmax'] < sol['Cmax'] or other['T'] < sol['T'] or other['L'] < sol['L'])):
+                return True
+        return False
+
+    pareto = [s for s in all_solutions if not is_dominated(s, all_solutions)]
+
+    # Tekrarlananları kaldır (aynı Cmax/T/L tripleti)
+    seen = set()
+    unique_pareto = []
+    for s in pareto:
+        key = (s['Cmax'], s['T'], s['L'])
+        if key not in seen:
+            seen.add(key)
+            unique_pareto.append(s)
+
+    # Cmax'a göre sırala
+    unique_pareto.sort(key=lambda x: x['Cmax'])
+
+    return {
+        'payoff': payoff,
+        'grid_info': {
+            'T_min': T_min, 'T_max': T_max,
+            'L_min': L_min, 'L_max': L_max,
+            'T_steps': len(T_grid), 'L_steps': len(L_vals),
+            'total_iterations': total_iters,
+        },
+        'pareto_solutions': unique_pareto,
+        'all_solutions_count': len(all_solutions),
+    }

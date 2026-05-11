@@ -1,38 +1,185 @@
 import React, { useState, useEffect } from 'react';
 import { Play, Calculator, Zap, Target, Activity, FileText, BarChart3, Copy, CheckCircle, BookOpen, TrendingUp } from 'lucide-react';
-import { ScatterChart, Scatter, XAxis, YAxis, ZAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from 'recharts';
+import { 
+  ScatterChart, Scatter, XAxis, YAxis, ZAxis, CartesianGrid, Tooltip as RechartsTooltip, 
+  ResponsiveContainer, Cell, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
+  Legend
+} from 'recharts';
 
 const API_BASE = '/api';
 
 // --- Multi-Agent Academic Components ---
 
 const MathBox = ({ title, formula, description }) => (
-  <div className="math-box" style={{ borderLeft: '4px solid var(--warning)', background: 'rgba(210, 153, 34, 0.05)', padding: '1rem', margin: '1rem 0' }}>
-    <div style={{ fontWeight: 'bold', color: 'var(--warning)', marginBottom: '0.5rem', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1px' }}>{title}</div>
-    <code style={{ fontSize: '1.1rem', color: '#e6edf3', display: 'block', padding: '0.5rem 0' }}>{formula}</code>
-    {description && <p style={{ fontSize: '0.85rem', marginTop: '0.5rem', opacity: 0.7, fontStyle: 'italic' }}>{description}</p>}
+  <div className="formula-card slide-in">
+    <div className="formula-label">
+      <FileText size={14} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+      {title}
+    </div>
+    <div className="formula-math">{formula}</div>
+    {description && (
+      <div className="formula-info">
+        {description}
+      </div>
+    )}
   </div>
 );
 
-const AgentInsight = ({ agent, message }) => {
-  const colors = {
-    paper: "#d29922",
-    backend: "#4ade80",
-    frontend: "#58a6ff"
-  };
+const PayoffTable = ({ results }) => {
+  if (!results.M1 || !results.M2 || !results.M3) return null;
+  
+  const models = [
+    { id: 'M1', label: 'M1 (Min Cmax)', data: results.M1 },
+    { id: 'M2', label: 'M2 (Min Tardiness)', data: results.M2 },
+    { id: 'M3', label: 'M3 (Min Num Tardy)', data: results.M3 }
+  ];
+
   return (
-    <div className="agent-insight slide-in" style={{
-      background: 'rgba(255,255,255,0.02)',
-      borderLeft: `4px solid ${colors[agent] || '#30363d'}`,
-      borderRadius: '4px',
-      padding: '1rem',
-      margin: '1.5rem 0',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '0.5rem'
-    }}>
-      <div style={{ fontSize: '0.9rem', color: '#e6edf3', lineHeight: '1.5', fontWeight: 500 }}>
-        {message}
+    <div className="glass-panel mt-4 slide-in" style={{ padding: '1.5rem', borderLeft: '4px solid var(--accent)' }}>
+      <div className="formula-label" style={{ color: 'var(--accent)', marginBottom: '1rem' }}>
+        <TrendingUp size={14} style={{ marginRight: '8px' }} />
+        Tablo 8: Kazanç Tablosu (Payoff Table)
+      </div>
+      <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+        Her model kendi temel amacını (highlighted) minimize ederken diğer amaçlar üzerindeki ödünleşimi gösterir.
+      </p>
+      <table className="data-table">
+        <thead>
+          <tr>
+            <th style={{ background: 'transparent' }}>Model</th>
+            <th style={{ textAlign: 'center' }}>Cmax (f₁)</th>
+            <th style={{ textAlign: 'center' }}>Total Tardiness (f₂)</th>
+            <th style={{ textAlign: 'center' }}>Num Tardy (f₃)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {models.map(m => (
+            <tr key={m.id}>
+              <td style={{ fontWeight: '800', color: 'var(--accent)' }}>{m.label}</td>
+              <td style={{ textAlign: 'center', background: m.id === 'M1' ? 'rgba(88, 166, 255, 0.1)' : 'transparent', fontWeight: m.id === 'M1' ? '800' : 'normal' }}>
+                {m.data.Cmax.toFixed(2)}
+              </td>
+              <td style={{ textAlign: 'center', background: m.id === 'M2' ? 'rgba(88, 166, 255, 0.1)' : 'transparent', fontWeight: m.id === 'M2' ? '800' : 'normal' }}>
+                {m.data.T.toFixed(2)}
+              </td>
+              <td style={{ textAlign: 'center', background: m.id === 'M3' ? 'rgba(88, 166, 255, 0.1)' : 'transparent', fontWeight: m.id === 'M3' ? '800' : 'normal' }}>
+                {m.data.L}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+const MILPParetoChart = ({ results, augmeconResults }) => {
+  if (!results.M1 || !results.M2 || !results.M3 || !results.M4) return null;
+
+  const seriesConfig = [
+    { key: 'M1', name: 'M1 — Min Cmax', color: '#f85149', data: results.M1 },
+    { key: 'M2', name: 'M2 — Min Tardiness', color: '#3fb950', data: results.M2 },
+    { key: 'M3', name: 'M3 — Min Num Tardy', color: '#58a6ff', data: results.M3 },
+    { key: 'M4', name: 'M4 — Compromise', color: '#d29922', data: results.M4 },
+  ];
+
+  const paretoData = augmeconResults?.pareto_solutions?.map(s => ({
+    Cmax: s.Cmax, T: s.T, L: s.L
+  })) || [];
+
+  return (
+    <div className="glass-panel mt-4 slide-in" style={{ padding: '1.5rem' }}>
+      <div className="formula-label" style={{ color: 'var(--warning)', marginBottom: '1rem' }}>
+        <BarChart3 size={14} style={{ marginRight: '8px' }} />
+        Şekil 3: MILP Pareto Ödünleşim Uzayı — Cmax vs Toplam Gecikme (ZAxis = Geciken İş Sayısı)
+      </div>
+      <div style={{ height: '340px' }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <ScatterChart margin={{ top: 10, right: 30, bottom: 50, left: 20 }}>
+            <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+            <XAxis
+              type="number" dataKey="Cmax" name="Cmax" stroke="#8b949e"
+              domain={['auto', 'auto']}
+              label={{ value: 'Cmax — Makespan (saat)', position: 'insideBottom', offset: -30, fill: '#8b949e', fontSize: 11 }}
+            />
+            <YAxis
+              type="number" dataKey="T" name="Toplam Gecikme" stroke="#8b949e"
+              domain={['auto', 'auto']}
+              label={{ value: 'Toplam Gecikme (T)', angle: -90, position: 'insideLeft', fill: '#8b949e', fontSize: 11 }}
+            />
+            <ZAxis type="number" dataKey="L" name="Geciken İş" range={[80, 400]} />
+            <RechartsTooltip
+              cursor={{ strokeDasharray: '3 3' }}
+              contentStyle={{ background: '#0d1117', border: '1px solid var(--glass-border)', borderRadius: '12px', fontSize: '0.8rem' }}
+            />
+            <Legend
+              wrapperStyle={{ paddingTop: '1rem', fontSize: '0.78rem' }}
+              formatter={(value) => <span style={{ color: '#c9d1d9' }}>{value}</span>}
+            />
+            {seriesConfig.map(s => (
+              <Scatter
+                key={s.key}
+                name={s.name}
+                data={[{ Cmax: s.data.Cmax, T: s.data.T, L: s.data.L }]}
+                fill={s.color}
+                stroke={s.key === 'M4' ? '#fff' : s.color}
+                strokeWidth={s.key === 'M4' ? 2 : 0}
+              />
+            ))}
+            {paretoData.length > 0 && (
+              <Scatter
+                name="Pareto Cephesi (AUGMECON)"
+                data={paretoData}
+                fill="#a371f7"
+                stroke="#a371f7"
+                strokeWidth={1}
+                opacity={0.6}
+                shape="diamond"
+              />
+            )}
+          </ScatterChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+};
+
+const HeuristicRadarChart = ({ optimal, winner, standard }) => {
+  if (!optimal || !winner) return null;
+
+  const maxVals = {
+    Cmax: Math.max(optimal.Cmax, winner.r1, ...(standard?.map(s => s.Cmax) || [])),
+    T: Math.max(optimal.T, winner.r2, ...(standard?.map(s => s.T) || [])),
+    L: Math.max(optimal.L, winner.r3, ...(standard?.map(s => s.L) || []))
+  };
+
+  const normalize = (val, key) => {
+    const score = (1 - (val / (maxVals[key] * 1.1))) * 100;
+    return Math.max(0, Math.min(100, score));
+  };
+
+  const data = [
+    { subject: 'Cmax (Speed)', A: normalize(optimal.Cmax, 'Cmax'), B: normalize(winner.r1, 'Cmax'), fullMark: 100 },
+    { subject: 'T (Due Date)', A: normalize(optimal.T, 'T'), B: normalize(winner.r2, 'T'), fullMark: 100 },
+    { subject: 'L (Lateness)', A: normalize(optimal.L, 'L'), B: normalize(winner.r3, 'L'), fullMark: 100 },
+  ];
+
+  return (
+    <div className="glass-panel slide-in" style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.3)' }}>
+      <div className="formula-label" style={{ color: 'var(--accent)', marginBottom: '1rem' }}>
+        <Activity size={14} style={{ marginRight: '8px' }} />
+        Heuristic Performans Analizi — Optimal M4 vs Seçilen DDR (Radar)
+      </div>
+      <div style={{ height: '300px' }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <RadarChart cx="50%" cy="50%" outerRadius="75%" data={data}>
+            <PolarGrid stroke="rgba(255,255,255,0.1)" />
+            <PolarAngleAxis dataKey="subject" tick={{ fill: '#8b949e', fontSize: 12 }} />
+            <Radar name="Optimal (M4 MILP)" dataKey="A" stroke="var(--warning)" fill="var(--warning)" fillOpacity={0.2} />
+            <Radar name="Seçilen DDR Kuralı" dataKey="B" stroke="var(--accent)" fill="var(--accent)" fillOpacity={0.4} />
+            <Legend wrapperStyle={{ paddingTop: '0.5rem', fontSize: '0.78rem' }} formatter={(value) => <span style={{ color: '#c9d1d9' }}>{value}</span>} />
+          </RadarChart>
+        </ResponsiveContainer>
       </div>
     </div>
   );
@@ -51,8 +198,6 @@ const ScrollableTable = ({ children, maxHeight = '400px' }) => (
     {children}
   </div>
 );
-
-// --- PERFORMANCE COMPONENTS ---
 
 const PaginatedSetupMatrix = React.memo(({ data, selectedK }) => {
   const [page, setPage] = useState(0);
@@ -90,7 +235,6 @@ const PaginatedSetupMatrix = React.memo(({ data, selectedK }) => {
   const startI = page * pageSize;
   const endI = Math.min(startI + pageSize, n);
   const iIndices = Array.from({ length: endI - startI }, (_, idx) => startI + idx);
-  // Sütunlar için de basitlik adına aynı aralığı gösterelim (veya tüm J'leri)
   const jIndices = Array.from({ length: Math.min(n, 12) }, (_, idx) => idx);
 
   return (
@@ -112,7 +256,6 @@ const PaginatedSetupMatrix = React.memo(({ data, selectedK }) => {
               <th style={{ textAlign: 'center', background: '#161b22', width: '80px' }}>i \ j</th>
               <th style={{ background: 'rgba(210,153,34,0.1)', width: '60px' }}>J0 (Kukla)</th>
               {jIndices.map(j => <th key={j} style={{ minWidth: '60px' }}>J{j + 1}</th>)}
-              <th style={{ opacity: 0.5 }}>...</th>
             </tr>
           </thead>
           <tbody>
@@ -129,7 +272,6 @@ const PaginatedSetupMatrix = React.memo(({ data, selectedK }) => {
                     </td>
                   );
                 })}
-                <td style={{ opacity: 0.3 }}>...</td>
               </tr>
             ))}
           </tbody>
@@ -143,51 +285,48 @@ const DataMatrixView = React.memo(({ data, title }) => {
   if (!data) return null;
   const { n, m } = data.metadata;
   const [selectedK, setSelectedK] = useState(0);
+  const [page, setPage] = useState(0);
+  const pageSize = 20;
+  const totalPages = Math.ceil(n / pageSize);
+  const rows = Array.from({ length: Math.min(pageSize, n - page * pageSize) }, (_, i) => page * pageSize + i);
 
-  const [pPage, setPPage] = useState(0);
-  const pPageSize = 20;
-  const pTotalPages = Math.ceil(n / pPageSize);
-  const pRows = Array.from({ length: Math.min(pPageSize, n - pPage * pPageSize) }, (_, i) => pPage * pPageSize + i);
-
-  const copyToClipboard = (obj) => {
-    navigator.clipboard.writeText(JSON.stringify(obj, null, 2));
-    alert('Veri matrisi panoya kopyalandı!');
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+    alert('RAW JSON panoya kopyalandı!');
   };
 
   return (
     <div className="matrix-section slide-in mt-4">
       <div className="flex-row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
         <div className="output-header" style={{ color: 'var(--warning)', border: 'none' }}><BarChart3 size={14} /> {title} (n={n}, m={m})</div>
-        <button className="btn btn-sm" onClick={() => copyToClipboard(data)} style={{ background: 'rgba(210,153,34,0.1)', color: 'var(--warning)', fontSize: '0.6rem' }}><Copy size={12} /> RAW JSON</button>
-      </div>
-
-      <div style={{ marginBottom: '1rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginBottom: '5px' }}>
-          <button className="btn btn-sm" disabled={pPage === 0} onClick={() => setPPage(p => p - 1)}>Önceki</button>
-          <span style={{ fontSize: '0.75rem', alignSelf: 'center' }}>İşler {pPage * pPageSize + 1}-{Math.min(n, (pPage + 1) * pPageSize)} / {n}</span>
-          <button className="btn btn-sm" disabled={pPage >= pTotalPages - 1} onClick={() => setPPage(p => p + 1)}>Sonraki</button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button className="btn btn-sm" onClick={copyToClipboard}><Copy size={12} /> JSON</button>
+          <div style={{ display: 'flex', gap: '5px' }}>
+            <button className="btn btn-sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}>←</button>
+            <span style={{ fontSize: '0.7rem', alignSelf: 'center' }}>{page + 1}/{totalPages}</span>
+            <button className="btn btn-sm" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}>→</button>
+          </div>
         </div>
-        <ScrollableTable maxHeight="400px">
-          <table className="data-table sticky-column" style={{ minWidth: m > 5 ? `${800 + m * 100}px` : '100%' }}>
-            <thead>
-              <tr>
-                <th>İş (j)</th><th>Aile</th><th style={{ background: 'rgba(210,153,34,0.1)' }}>Teslim (Dⱼ)</th>
-                {Array.from({ length: m }).map((_, k) => <th key={k}>M{k + 1} Pⱼₖ</th>)}
-              </tr>
-            </thead>
-            <tbody>
-              {pRows.map(j => (
-                <tr key={j}>
-                  <td style={{ fontWeight: 'bold' }}>J{j + 1}</td><td>F{data.family?.[j]}</td>
-                  <td style={{ color: 'var(--warning)', fontWeight: 600 }}>{data.D[j]?.toFixed(2)}</td>
-                  {Array.from({ length: m }).map((_, k) => <td key={k} style={{ opacity: data.P[j][k] === 9999 ? 0.2 : 1 }}>{data.P[j][k] === 9999 ? '∞' : data.P[j][k]}</td>)}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </ScrollableTable>
       </div>
-
+      <ScrollableTable maxHeight="400px">
+        <table className="data-table sticky-column">
+          <thead>
+            <tr>
+              <th>İş (j)</th><th>Aile</th><th style={{ background: 'rgba(210,153,34,0.1)' }}>Teslim (Dⱼ)</th>
+              {Array.from({ length: m }).map((_, k) => <th key={k}>M{k + 1} Pⱼₖ</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(j => (
+              <tr key={j}>
+                <td style={{ fontWeight: 'bold' }}>J{j + 1}</td><td>F{data.family?.[j]}</td>
+                <td style={{ color: 'var(--warning)', fontWeight: 600 }}>{data.D[j]?.toFixed(2)}</td>
+                {Array.from({ length: m }).map((_, k) => <td key={k} style={{ opacity: data.P[j][k] === 9999 ? 0.2 : 1 }}>{data.P[j][k] === 9999 ? '∞' : data.P[j][k].toFixed(2)}</td>)}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </ScrollableTable>
       <div className="mt-4" style={{ background: 'rgba(255,255,255,0.01)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
         <div className="flex-row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ fontSize: '0.8rem', fontWeight: 600 }}><Activity size={14} /> Sᵢⱼₖ (Sıra-Bağımlı Hazırlık Süresi Matrisi)</div>
@@ -201,42 +340,64 @@ const DataMatrixView = React.memo(({ data, title }) => {
   );
 });
 
-// --- Gantt Chart Component (Upgraded for PDF Parity & Dynamic Zoom) ---
+const TopsisNormalizationTable = ({ topsisResults }) => {
+  if (!topsisResults || topsisResults.length === 0) return null;
+  return (
+    <div className="mt-4">
+      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', borderLeft: '3px solid var(--warning)', paddingLeft: '0.75rem', marginBottom: '1rem' }}>
+        <strong>Tablo 21: TOPSIS Karar Matrisi</strong> — Ağırlıklı skorlara göre sıralama.
+      </div>
+      <ScrollableTable maxHeight="320px">
+        <table className="data-table small-table">
+          <thead>
+            <tr>
+              <th>Sıra</th><th>Kural</th><th>r₁ (Cmax)</th><th>r₂ (T)</th><th>r₃ (L)</th>
+              <th style={{ background: 'rgba(248,81,73,0.05)' }}>S⁺</th>
+              <th style={{ background: 'rgba(74,222,128,0.05)' }}>S⁻</th>
+              <th style={{ background: 'rgba(210,153,34,0.1)', color: 'var(--warning)' }}>CC* ↑</th>
+            </tr>
+          </thead>
+          <tbody>
+            {topsisResults.map((r, i) => (
+              <tr key={i} style={{ background: i === 0 ? 'rgba(210,153,34,0.08)' : 'transparent' }}>
+                <td>{i + 1}</td>
+                <td style={{ fontWeight: i === 0 ? 'bold' : 'normal' }}>{r.rule_name}{i === 0 ? ' ★' : ''}</td>
+                <td>{r.r1.toFixed(3)}</td><td>{r.r2.toFixed(3)}</td><td>{r.r3.toFixed(3)}</td>
+                <td style={{ color: '#f85149' }}>{r.s_plus}</td>
+                <td style={{ color: '#4ade80' }}>{r.s_minus}</td>
+                <td style={{ color: '#4ade80', fontWeight: 'bold' }}>{r.cc}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </ScrollableTable>
+    </div>
+  );
+};
+
 const GanttChart = React.memo(({ schedule, m, n }) => {
-  const [zoomLevel, setZoomLevel] = useState(null);
-
+  const [zoomLevel, setZoomLevel] = useState(100);
   if (!schedule) return null;
-
+  
   let maxEnd = 0;
-  let minDuration = Infinity;
-
-  Object.keys(schedule).forEach(k => {
-    schedule[k].forEach(jobTuple => {
-      const [jId, start, end, setup] = jobTuple;
-      if (end > maxEnd) maxEnd = end;
-      const duration = end - start;
-      if (duration < minDuration) minDuration = duration;
-    });
-  });
-
-  if (minDuration === Infinity || minDuration <= 0) minDuration = 1;
-  const idealZoom = Math.min(300, Math.ceil(25 / minDuration));
-  const currentZoom = zoomLevel !== null ? zoomLevel : idealZoom;
-  const chartWidth = Math.max(800, maxEnd * currentZoom);
+  Object.values(schedule).forEach(m => m.forEach(j => { if (j[2] > maxEnd) maxEnd = j[2]; }));
+  
+  const chartWidth = Math.max(800, (maxEnd * 15 * (zoomLevel / 100)));
+  const idealZoom = maxEnd > 0 ? (800 / (maxEnd * 15)) * 100 : 100;
 
   return (
-    <div className="gantt-container mt-4" style={{ background: '#0d1117', padding: '1rem', borderRadius: '8px', border: '1px solid #30363d' }}>
-      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <span style={{ fontWeight: 'bold' }}>Gantt Şeması (Otomatik Ölçekli)</span>
-          <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem', fontSize: '0.65rem' }}>
+    <div className="gantt-container mt-4" style={{ background: '#0d1117', padding: '1.5rem', borderRadius: '12px', border: '1px solid #30363d', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
+      <div className="flex-row" style={{ justifyContent: 'space-between', marginBottom: '1.5rem', borderBottom: '1px solid #30363d', paddingBottom: '1rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <div style={{ fontSize: '0.85rem', fontWeight: 'bold', letterSpacing: '0.5px' }}>Zaman Çizelgesi (Gantt)</div>
+          <div style={{ display: 'flex', gap: '15px', fontSize: '0.65rem', opacity: 0.7 }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><div style={{ width: '10px', height: '10px', background: '#9b59b6' }}></div> Hazırlık (S)</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><div style={{ width: '10px', height: '10px', background: '#27ae60' }}></div> İşlem (P)</span>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span style={{ fontSize: '0.7rem' }}>Zoom:</span>
-          <input type="range" min="1" max="300" value={currentZoom} onChange={e => setZoomLevel(Number(e.target.value))} style={{ width: '100px', cursor: 'pointer' }} />
+          <input type="range" min="1" max="300" value={zoomLevel} onChange={e => setZoomLevel(Number(e.target.value))} style={{ width: '100px', cursor: 'pointer' }} />
           <button className="btn btn-sm" onClick={() => setZoomLevel(idealZoom)}>Oto</button>
           <span style={{ fontWeight: 'bold', color: 'var(--warning)', marginLeft: '10px' }}>Cₘₐₓ: {maxEnd.toFixed(2)}h</span>
         </div>
@@ -244,46 +405,36 @@ const GanttChart = React.memo(({ schedule, m, n }) => {
 
       <div style={{ overflowX: 'auto', paddingBottom: '1rem' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: `${chartWidth}px`, position: 'relative' }}>
-          {Array.from({ length: m }).map((_, k) => {
-            return (
-              <div key={k} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{ width: '30px', fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--warning)' }}>M{k + 1}</div>
-                <div style={{ flex: 1, height: '28px', background: 'rgba(255,255,255,0.02)', position: 'relative', border: '1px solid #30363d' }}>
-                  {schedule[k]?.map((job, idx) => {
-                    const [jId, start, end, setup] = job;
-                    const setupWidth = (setup / maxEnd) * 100;
-                    const jobWidth = ((end - start) / maxEnd) * 100;
-                    const leftPos = (start / maxEnd) * 100;
-                    const setupLeft = leftPos - setupWidth;
-
-                    return (
-                      <React.Fragment key={idx}>
-                        {setup > 0.01 && (
-                          <div style={{
-                            position: 'absolute', left: `${setupLeft}%`, width: `${setupWidth}%`, height: '100%',
-                            background: '#9b59b6', opacity: 0.6
-                          }} />
-                        )}
-                        <div title={`J${jId + 1} (Setup: ${setup})`} style={{
-                          position: 'absolute', left: `${leftPos}%`, width: `${jobWidth}%`, height: '100%',
-                          background: '#27ae60', borderLeft: '1px solid #1e8449', borderRight: '1px solid #1e8449', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', color: '#fff', fontWeight: 'bold', overflow: 'hidden'
-                        }}>
-                          {(jobWidth / 100 * chartWidth) > 20 ? `J${jId + 1}` : ''}
-                        </div>
-                      </React.Fragment>
-                    );
-                  })}
-                </div>
+          {Array.from({ length: m }).map((_, k) => (
+            <div key={k} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ width: '30px', fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--warning)' }}>M{k + 1}</div>
+              <div style={{ flex: 1, height: '28px', background: 'rgba(255,255,255,0.02)', position: 'relative', border: '1px solid #30363d' }}>
+                {schedule[k]?.map((job, idx) => {
+                  const [jId, start, end, setup] = job;
+                  const setupWidth = (setup / maxEnd) * 100;
+                  const jobWidth = ((end - start) / maxEnd) * 100;
+                  const leftPos = (start / maxEnd) * 100;
+                  const setupLeft = leftPos - setupWidth;
+                  return (
+                    <React.Fragment key={idx}>
+                      {setup > 0.01 && (
+                        <div style={{ position: 'absolute', left: `${setupLeft}%`, width: `${setupWidth}%`, height: '100%', background: '#9b59b6', opacity: 0.6 }} />
+                      )}
+                      <div title={`J${jId + 1} (Setup: ${setup})`} style={{ position: 'absolute', left: `${leftPos}%`, width: `${jobWidth}%`, height: '100%', background: '#27ae60', borderLeft: '1px solid #1e8449', borderRight: '1px solid #1e8449', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', color: '#fff', fontWeight: 'bold', overflow: 'hidden' }}>
+                        {(jobWidth / 100 * chartWidth) > 20 ? `J${jId + 1}` : ''}
+                      </div>
+                    </React.Fragment>
+                  );
+                })}
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       </div>
     </div>
   );
 });
 
-// --- Sequence Table Component (Terminal Style) ---
 const JobSequenceTable = React.memo(({ schedule, m, problemData }) => {
   if (!schedule || !problemData) return null;
   let rows = [];
@@ -297,36 +448,20 @@ const JobSequenceTable = React.memo(({ schedule, m, problemData }) => {
       const dTime = problemData.D[jId];
       const lateness = end - dTime;
       const tardiness = Math.max(0, lateness);
-
       rows.push({
-        k: machineId + 1,
-        j: jId + 1,
-        isFirst: i === 0,
-        rowSpan: numJobs,
-        p: pTime.toFixed(2),
-        s: sTime.toFixed(2),
-        ps: (pTime + sTime).toFixed(2),
-        end: end.toFixed(2),
-        d: dTime.toFixed(2),
-        l: lateness.toFixed(2),
-        t: tardiness.toFixed(2),
-        e: Math.max(0, -lateness).toFixed(2),
-        f: problemData.family?.[jId]
+        k: machineId + 1, j: jId + 1, isFirst: i === 0, rowSpan: numJobs,
+        p: pTime.toFixed(2), s: sTime.toFixed(2), end: end.toFixed(2), d: dTime.toFixed(2),
+        t: tardiness.toFixed(2), e: Math.max(0, -lateness).toFixed(2), f: problemData.family?.[jId]
       });
     });
   });
 
   return (
     <div className="terminal-box" style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-      <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '1rem' }}>
-        Detaylı Operasyonel Çizelge Planı
-      </div>
-      <ScrollableTable maxHeight="350px">
+      <ScrollableTable maxHeight="1000px">
         <table className="data-table small-table">
           <thead>
-            <tr>
-              <th>Tezgâh</th><th>İş</th><th>Fⱼ</th><th>Pⱼₖ</th><th>Sᵢⱼₖ</th><th>Cⱼ</th><th>Dⱼ</th><th>eⱼ⁺</th><th>eⱼ⁻</th>
-            </tr>
+            <tr><th>Tezgâh</th><th>İş</th><th>Fⱼ</th><th>Pⱼₖ</th><th>Sᵢⱼₖ</th><th>Cⱼ</th><th>Dⱼ</th><th>eⱼ⁺</th><th>eⱼ⁻</th></tr>
           </thead>
           <tbody>
             {rows.map((row, idx) => (
@@ -369,115 +504,89 @@ const CompactMetrics = ({ schedule, problemData }) => {
   );
 };
 
-// --- Academic Content Block (Inline Report Narrative) ---
 const AcademicBlock = ({ items }) => (
   <div style={{ margin: '1.5rem 0', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
     {items.map((item, i) => (
-      <div key={i} style={{
-        background: 'rgba(255,255,255,0.02)',
-        borderLeft: '3px solid var(--warning)',
-        padding: '0.9rem 1.2rem',
-        borderRadius: '0 8px 8px 0'
-      }}>
-        {item.h && <div style={{ fontWeight: 'bold', color: 'var(--warning)', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.4rem' }}>{item.h}</div>}
+      <div key={i} style={{ background: 'rgba(255,255,255,0.02)', borderLeft: '3px solid var(--warning)', padding: '0.9rem 1.2rem', borderRadius: '0 8px 8px 0' }}>
+        {item.h && <div style={{ fontWeight: 'bold', color: 'var(--warning)', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '0.4rem' }}>{item.h}</div>}
         <div style={{ fontSize: '0.9rem', lineHeight: '1.6', opacity: 0.9 }}>{item.t}</div>
       </div>
     ))}
   </div>
 );
 
-// --- MAIN FLOW COMPONENT ---
 export default function GuidedFlow() {
   const [loading, setLoading] = useState(false);
   const [activeStage, setActiveStage] = useState(1);
-  const [inputJobs, setInputJobs] = useState('');
-  const [inputMachines, setInputMachines] = useState('');
-  const [inputFamilies, setInputFamilies] = useState('');
-  const [inputNP, setInputNP] = useState('');
+  const [inputJobs, setInputJobs] = useState('8');
+  const [inputMachines, setInputMachines] = useState('3');
+  const [inputFamilies, setInputFamilies] = useState('3');
+  const [inputNP, setInputNP] = useState('0');
   const [inputScenario, setInputScenario] = useState('high');
   const [problemData, setProblemData] = useState(null);
-  const [cpsatResults, setCpsatResults] = useState({ M1: null, M2: null });
+  const [cpsatResults, setCpsatResults] = useState({ M1: null, M2: null, M3: null, M4: null });
+  const [augmeconResults, setAugmeconResults] = useState(null);
   const [ddrResults, setDdrResults] = useState([]);
   const [topsisResults, setTopsisResults] = useState([]);
   const [weights, setWeights] = useState({ wC: 0.34, wT: 0.33, wL: 0.33 });
-  const [weightsDirty, setWeightsDirty] = useState(true); // Başlangıçta dirty
+
+  const scrollToNext = (stage) => { setActiveStage(stage); setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100); };
 
   const generateData = async () => {
-    if (!inputJobs || !inputMachines) return alert("Lütfen iş ve tezgah sayılarını giriniz.");
     setLoading(true);
-    // Yeni veri üretilirken ESKİ sonuçları tamamen temizle (Mantıksal Güvenlik)
-    setDdrResults([]);
-    setTopsisResults([]);
-    setCpsatResults({ M1: null, M2: null, M3: null, M4: null });
-    
     try {
       const res = await fetch(`${API_BASE}/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          n: Number(inputJobs),
-          m: Number(inputMachines),
-          seed: 42,
-          n_families: Number(inputFamilies) || 3,
-          np_ratio: (Number(inputNP) / 100) || 0.0,
-          scenario: inputScenario
-        })
+        body: JSON.stringify({ n: Number(inputJobs), m: Number(inputMachines), seed: 42, n_families: Number(inputFamilies) || 3, np_ratio: (Number(inputNP) / 100) || 0.0, scenario: inputScenario })
       });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.detail || "Veri üretilemedi.");
-      }
       const data = await res.json();
       setProblemData(data.data);
-      setCpsatResults({ M1: null, M2: null, M3: null, M4: null });
-      setDdrResults([]);
-      setTopsisResults([]);
       setActiveStage(2);
-    } catch (e) {
-      alert("Hata: " + e.message);
-    }
+    } catch (e) { alert(e.message); }
     setLoading(false);
   };
 
   const runCPSAT = async () => {
     if (!problemData) return;
+    if (problemData.metadata.n > 15) {
+      alert("Bu ölçekteki problemler (n > 15) kesin çözümleyiciler için çok büyüktür. Lütfen Sezgisel (DDR) yöntemleri kullanın.");
+      return;
+    }
     setLoading(true);
     try {
       const solve = async (obj) => {
-        const res = await fetch(`${API_BASE}/solve_cpsat`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            ...problemData.metadata, 
-            obj_type: obj, 
-            time_limit: 10 
-          })
-        });
+        const res = await fetch(`${API_BASE}/solve_cpsat`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...problemData.metadata, obj_type: obj, time_limit: 10 }) });
         const d = await res.json();
-        if (!res.ok) throw new Error(d.detail || "MILP hatası");
+        if (!res.ok) throw new Error(d.detail || "Solver error");
         return d.results;
       };
-
-      const rM1 = await solve('Cmax');
-      const rM2 = await solve('T');
-      const rM3 = await solve('L');
-      const rM4 = await solve('weighted'); // Makale M4: Dengeli uzlaşma
-
+      const rM1 = await solve('Cmax'); 
+      const rM2 = await solve('T'); 
+      const rM3 = await solve('L'); 
+      const rM4 = await solve('weighted');
       setCpsatResults({ M1: rM1, M2: rM2, M3: rM3, M4: rM4 });
-      setActiveStage(4);
-    } catch (e) {
-      alert("MILP çözümü sırasında bir hata oluştu. Veri seti çok karmaşık olabilir.");
+      scrollToNext(3);
+    } catch (e) { 
+      alert(e.message); 
     }
+    setLoading(false);
+  };
+
+  const runAugmecon = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/solve_augmecon`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...problemData.metadata, time_limit: 6, grid_T: 5 }) });
+      const d = await res.json(); setAugmeconResults(d.result);
+    } catch (e) { alert(e.message); }
     setLoading(false);
   };
 
   const runDDR = async () => {
     if (!problemData) return;
     setLoading(true);
-    setDdrResults([]); // Sıfırla
+    setDdrResults([]); 
     
-    // 39 Kural Listesi (Sistematik oluştur)
-    // 39 Kural Listesi (Akademik Set: 3 Standart + 6 Hibrit x 6 TS = 39)
     const stdRules = ["SCT", "SC-EDD", "SC-LPT"];
     const hybridPairs = [
       ["SCT", "SC-LPT"], ["SCT", "SC-EDD"],
@@ -493,258 +602,152 @@ export default function GuidedFlow() {
       });
     });
 
-    // Teker teker çöz ve listeye ekle
-    for (let i = 0; i < configs.length; i++) {
+    let currentResults = [];
+    for (let rule of configs) {
       try {
-        const res = await fetch(`${API_BASE}/solve_single_ddr`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            n: Number(problemData.metadata.n),
-            m: Number(problemData.metadata.m),
-            seed: Number(problemData.metadata.seed || 42),
-            n_families: Number(problemData.metadata.n_families || 3),
-            np_ratio: parseFloat(problemData.metadata.np_ratio || 0.5),
-            scenario: problemData.metadata.scenario || 'high',
-            rule_name: configs[i]
-          })
+        const res = await fetch(`${API_BASE}/solve_single_ddr`, { 
+          method: 'POST', 
+          headers: { 'Content-Type': 'application/json' }, 
+          body: JSON.stringify({ ...problemData.metadata, rule_name: rule }) 
         });
-        const d = await res.json();
-        if (!res.ok) {
-          throw new Error(d.detail || "Sunucu hatası");
+        const d = await res.json(); 
+        if (d.result) {
+          currentResults = [...currentResults, d.result];
+          setDdrResults(currentResults);
         }
-        if (d.status === 'success') {
-          // Listeye yeni sonucu ekle ve anında sırala
-          setDdrResults(prev => [...prev, d.result].sort((a, b) => a.Cmax - b.Cmax));
-        }
-      } catch (e) {
-        console.error(`Kural hatası: ${configs[i]}`, e);
-        // Her hatada uyarı ver (Detaylı)
-        alert(`HATA: ${configs[i]} çözülürken bir sorun oluştu.\nMesaj: ${e.message}`);
-      }
+      } catch (e) { console.error(e); }
     }
-    
+    scrollToNext(4);
     setLoading(false);
-    setActiveStage(5);
   };
-
-  // DDR sonuçları değiştiğinde TOPSIS'i sıfırla (Kullanıcı yeni veri setiyle tekrar butona basmalı)
-  useEffect(() => {
-    setTopsisResults([]);
-  }, [ddrResults]);
 
   const runTopsis = () => {
     if (ddrResults.length === 0) return;
+    const minVal = (key) => Math.min(...ddrResults.map(r => r[key]));
+    const maxVal = (key) => Math.max(...ddrResults.map(r => r[key]));
+    const minC = minVal('Cmax'), maxC = maxVal('Cmax'), minT = minVal('T'), maxT = maxVal('T'), minL = minVal('L'), maxL = maxVal('L');
     
-    // TOPSIS Implementation in JS (Frontend)
-    const criteria = ddrResults.map(r => ({ rule: r.rule_name, c1: r.Cmax, c2: r.T, c3: r.L }));
-    const totalW = parseFloat(weights.wC) + parseFloat(weights.wT) + parseFloat(weights.wL);
-    const w = [parseFloat(weights.wC) / totalW, parseFloat(weights.wT) / totalW, parseFloat(weights.wL) / totalW];
-
-    // 1. Normalization (Vector)
-    let sqSum1 = 0, sqSum2 = 0, sqSum3 = 0;
-    criteria.forEach(c => {
-      sqSum1 += c.c1 * c.c1;
-      sqSum2 += c.c2 * c.c2;
-      sqSum3 += c.c3 * c.c3;
-    });
-    const d1 = Math.sqrt(sqSum1) || 1, d2 = Math.sqrt(sqSum2) || 1, d3 = Math.sqrt(sqSum3) || 1;
-
-    // 2. Weighted Normalized & PIS/NIS
-    const weighted = criteria.map(c => [ (c.c1 / d1) * w[0], (c.c2 / d2) * w[1], (c.c3 / d3) * w[2] ]);
-    const pis = [Infinity, Infinity, Infinity], nis = [-Infinity, -Infinity, -Infinity];
-    weighted.forEach(row => {
-      for (let i = 0; i < 3; i++) {
-        if (row[i] < pis[i]) pis[i] = row[i];
-        if (row[i] > nis[i]) nis[i] = row[i];
-      }
+    let processed = ddrResults.map(r => {
+      const r1 = minC / (r.Cmax || 0.1), r2 = minT / (r.T || 0.1), r3 = minL / (r.L || 1);
+      return { ...r, r1, r2, r3 };
     });
 
-    // 3. Distances & CC*
-    const topsisData = criteria.map((c, idx) => {
-      const row = weighted[idx];
-      const sPlus = Math.sqrt(row.reduce((acc, v, i) => acc + Math.pow(v - pis[i], 2), 0));
-      const sMinus = Math.sqrt(row.reduce((acc, v, i) => acc + Math.pow(v - nis[i], 2), 0));
-      const cc = sMinus / (sPlus + sMinus) || 0;
-      return { rule_name: c.rule, r1: c.c1, r2: c.c2, r3: c.c3, s_plus: sPlus.toFixed(4), s_minus: sMinus.toFixed(4), cc: cc.toFixed(4) };
-    });
+    const v1 = Math.max(...processed.map(p => p.r1)), v2 = Math.max(...processed.map(p => p.r2)), v3 = Math.max(...processed.map(p => p.r3));
+    
+    let final = processed.map(p => {
+      const s_plus = Math.sqrt(weights.wC * Math.pow(p.r1 - v1, 2) + weights.wT * Math.pow(p.r2 - v2, 2) + weights.wL * Math.pow(p.r3 - v3, 2));
+      const s_minus = Math.sqrt(weights.wC * Math.pow(p.r1 - 0, 2) + weights.wT * Math.pow(p.r2 - 0, 2) + weights.wL * Math.pow(p.r3 - 0, 2));
+      return { ...p, s_plus: s_plus.toFixed(4), s_minus: s_minus.toFixed(4), cc: (s_minus / (s_plus + s_minus)).toFixed(4) };
+    }).sort((a, b) => b.cc - a.cc);
 
-    topsisData.sort((a, b) => b.cc - a.cc);
-    setTopsisResults(topsisData);
-  };
-
-  useEffect(() => { if (ddrResults.length > 0) runTopsis(); }, [ddrResults, weights]);
-
-  const scrollToNext = (stage) => {
-    setActiveStage(stage);
-    setTimeout(() => {
-      const elements = document.querySelectorAll('.flow-step');
-      if (elements[stage - 1]) {
-        elements[stage - 1].scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }, 100);
+    setTopsisResults(final);
+    scrollToNext(5);
   };
 
   return (
-    <div className="notebook-container">
-      <div className="notebook-header" style={{ padding: '2rem 1rem', position: 'relative', overflow: 'hidden', minHeight: '160px' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2 style={{ fontSize: 'clamp(1.4rem, 4vw, 2.2rem)', letterSpacing: '-1px', margin: 0, lineHeight: 1.2 }}>UPMSP Akademik Karar Destek Sistemi</h2>
-            <div style={{ pointerEvents: 'none' }}>
-              <img src="/itu-logo.png" alt="ITU Logo" style={{ width: '90px', height: '90px', objectFit: 'contain' }} />
-            </div>
-          </div>
-
-          <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.6', maxWidth: '850px' }}>
-            Bu sistem, <a href="https://doi.org/10.1016/j.dajour.2024.100525" target="_blank" rel="noreferrer" style={{ color: 'var(--warning)', fontWeight: 'bold', textDecoration: 'underline' }}>Decision Analytics Journal (2024)</a>'da yayınlanan <br />
-            <strong>"A multi-objective production scheduling model and dynamic dispatching rules for unrelated parallel machines with sequence-dependent set-up times"</strong> <br />
-            isimli çalışma temel alınarak geliştirilmiştir. <br />
-            <span style={{ opacity: 0.8, fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>
-              Yazarlar: <em>Pham Duc Tai, Papimol Kongsri, Prasal Soeurn, Jirachai Buddhakulsomsiri</em>
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div className="academic-flow">
-        {/* STEP 01 */}
-        <div className={`flow-step ${activeStage >= 1 ? 'active' : ''}`}>
-          <div className="flow-step-number">01</div>
-          <div className="flow-step-node">
-            <h3><FileText size={20} /> 01. Giriş ve Problem Tanımı</h3>
-            <AcademicBlock items={[
-              { h: "Endüstriyel Motivasyon", t: "Bu çalışma, Tayland'daki en büyük çelik boru üreticisindeki gerçek bir üretim planlama probleminden motive edilmiştir. Müşteri siparişlerinden oluşan 244-298 iş, kapasiteleri ve hızları farklı 10 ilişkisiz paralel tezgaha çizelgelenmektedir. Çalışmanın amacı, üç çatışan hedefi (hız, gecikme, teslim terminleri) aynı anda optimize eden bir sistem kurmaktır. [Decision Analytics Journal 13, 2024]" },
-              { h: "Sıra-Bağımlı Hazırlık Süresi Problemi (Sᵢⱼₖ)", t: "Bir işin hazırlık süresi, atandığı tezgaha (k) ve kendisinden önce o tezgahta işlenen işe (i) bağlıdır. Farklı ürün ailelerinden işler art arda geldiğinde hazırlık süresi 3-11 saat sürerken, aynı aileden art arda gelenler yalnızca 20-40 dakika sürer. Her periyodun başındaki ilk iş 'Kukla İş (j=0)' olarak modellenir ve hazırlık süresi S₀,ⱼ,ₖ = 0 kabul edilir." },
-              { h: "Model Parametreleri (Bölüm 3.1)", t: "n = iş sayısı • m = tezgah sayısı • Pⱼₖ = j işinin k tezgahındaki işlem süresi (saat) • Sᵢⱼₖ = k tezgahında i'den sonra j işlenirken gereken hazırlık süresi • Dⱼ = j işinin teslim tarihi • NPⱼₖ = 1 ise j işi k tezgahında işlenebilir, 0 ise işlenemez" }
-            ]} />
-            <button className="btn btn-warning mt-4" onClick={() => scrollToNext(2)}>
-              <BookOpen size={16} /> Problem Parametrelerini Ayarla & Literatüre Geç
-            </button>
-          </div>
-        </div>
-
-        {/* STEP 02: Literatür Taraması */}
-        {activeStage >= 2 && (
+    <div className="flow-container">
+      <div className="flow-content">
+        
+        {/* STEP 01: Intro */}
+        {activeStage >= 1 && (
           <div className="flow-step active slide-in">
-            <div className="flow-step-number">02</div>
+            <div className="flow-step-number">01</div>
             <div className="flow-step-node">
-              <h3><BookOpen size={20} /> 02. Literatür Taraması (Bölüm 2)</h3>
+              <h3><BookOpen size={20} /> 01. Problem Tanımı ve Giriş (Bölüm 1-2)</h3>
               <AcademicBlock items={[
-                { h: "Araştırma Boşluğu (Research Gap)", t: "Tablo 1'e göre, tezgah ve sıra-bağımlı hazırlık süreli ilişkisiz paralel tezgah sistemlerinde Cmax, T ve L'â€™yi eş zamanlı optimize eden hiçbir çalışma yoktur. Bu çalışma bu boşluğu doldurmaktadır." },
-                { h: "Temel Referans 1 – Avalos-Rosales (2015)", t: "M1 modelinin temeli bu çalışmadan alınmıştır. Orijinal model yalnızca Cmax'ı minimize eder. Bu çalışma onu T ve L kriterlerini de kapsayacak şekilde genişletmiştir." },
-                { h: "Temel Referans 2 – Bektur & Sarac (2019)", t: "DDR sezgisellerine ilham veren bu çalışma, ATCS kuralını sıra-bağımlı hazırlık süreleri için uyarlar. Bu çalışma ise tek kural yerine SCT, SC-LPT ve SC-EDD adlı üç yeni kural geliştirir." }
+                { h: "Problem Kapsamı", t: "Sıra ve tezgah bağımlı hazırlık sürelerine (Sijk) sahip ilişkisiz paralel tezgah çizelgeleme (UPMSP). Üç temel amaç: Yayılma süresi (Cmax), Toplam Gecikme (T) ve Geciken İş Sayısı (L)." },
+                { h: "Sayısal Örnek (Tablo 2)", t: "Raporun 4. bölümünde kullanılan örnek veri seti: 3 İş, 2 Tezgah. İş 1 ve 2 aynı aileden (hazırlık süresi kısa), İş 3 farklı aileden (hazırlık süresi uzun) gelmektedir." }
               ]} />
-              <div className="mt-4" style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                <div className="output-header">[Tablo 1] İlgili Literatürün Özeti</div>
-                <table className="data-table small-table">
+              
+              {/* Tablo 2 — Sayısal Örnek Verileri */}
+              <div className="glass-panel mb-4" style={{ padding: '1rem' }}>
+                <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--warning)', marginBottom: '0.5rem' }}>📊 Tablo 2: Sayısal Örnek Veri Seti (P, S, D)</div>
+                <table className="data-table small-table" style={{ fontSize: '0.7rem' }}>
                   <thead>
-                    <tr><th>Yazar(lar)</th><th>Tezgah</th><th>Hazırlık</th><th>Ölçütler</th><th>Yöntem</th></tr>
+                    <tr><th>İş</th><th>M1 Pⱼₖ</th><th>M2 Pⱼₖ</th><th>Dⱼ (Termin)</th><th>Aile</th></tr>
                   </thead>
                   <tbody>
-                    <tr><td>Avalos-Rosales (2015)</td><td>Unrelated</td><td>Sijk</td><td>Cmax</td><td>MILP, Meta</td></tr>
-                    <tr><td>Logendran (2007)</td><td>Unrelated</td><td>Sijk</td><td>T</td><td>Heuristic</td></tr>
-                    <tr><td>Bektur (2019)</td><td>Unrelated</td><td>Sijk</td><td>ATCS</td><td>TS, SA</td></tr>
-                    <tr style={{ background: 'rgba(210,153,34,0.1)', fontWeight: 'bold' }}><td>Tai vd. (Bu Çalışma)</td><td>Unrelated</td><td>Sijk</td><td>Cmax, T, L</td><td>MILP, DDR</td></tr>
+                    <tr><td>J1</td><td>10.0</td><td>6.0</td><td>15.0</td><td>F1</td></tr>
+                    <tr><td>J2</td><td>12.0</td><td>15.0</td><td>20.0</td><td>F1</td></tr>
+                    <tr><td>J3</td><td>20.0</td><td>10.0</td><td>30.0</td><td>F2</td></tr>
                   </tbody>
                 </table>
               </div>
-              <div className="mt-4" style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1.5rem' }}>
-                <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--warning)', marginBottom: '0.75rem' }}>🧪 Bunu Kendiniz Deneyin: Problem Veri Seti Oluşturun</div>
-                <div className="flex-row" style={{ gap: '1.5rem', flexWrap: 'wrap' }}>
-                  <div className="form-group" style={{ flex: 1, minWidth: '130px' }}>
-                    <label>İş Sayısı (n)</label>
-                    <input type="number" className="input-field" value={inputJobs} onChange={e => setInputJobs(e.target.value)} placeholder="Örn: 10" />
-                  </div>
-                  <div className="form-group" style={{ flex: 1, minWidth: '130px' }}>
-                    <label>Tezgah Sayısı (m)</label>
-                    <input type="number" className="input-field" value={inputMachines} onChange={e => setInputMachines(e.target.value)} placeholder="Örn: 3" />
-                  </div>
-                  <div className="form-group" style={{ flex: 1, minWidth: '130px' }}>
-                    <label>Ürün Ailesi (F)</label>
-                    <input type="number" className="input-field" value={inputFamilies} onChange={e => setInputFamilies(e.target.value)} placeholder="Örn: 3" />
-                  </div>
-                  <div className="form-group" style={{ flex: 1, minWidth: '130px' }}>
-                    <label>NP Oranı (%)</label>
-                    <input type="number" className="input-field" value={inputNP} onChange={e => setInputNP(e.target.value)} placeholder="Örn: 10" />
-                  </div>
-                  <div className="form-group" style={{ flex: 1, minWidth: '130px' }}>
-                    <label>Talep Senaryosu</label>
-                    <select className="input-field" value={inputScenario} onChange={e => setInputScenario(e.target.value)}>
-                      <option value="high">Yüksek Talep (Sıkı Termin)</option>
-                      <option value="low">Düşük Talep (Gevşek Termin)</option>
-                    </select>
-                  </div>
-                </div>
-                <button className="btn btn-warning mt-4" onClick={generateData} disabled={loading}>
-                  {loading ? <div className="loader"></div> : <><Play size={16} /> Sistemi Başlat ve Veri Üret</>}
-                </button>
-                {problemData && (
-                  <div style={{ marginTop: '2rem' }}>
-                    <DataMatrixView data={problemData} title="Tablo 2: Problem Veri Matrisi (Pⱼₖ, Sᵢⱼₖ, Dⱼ)" />
-                    <button className="btn btn-warning mt-4" onClick={() => scrollToNext(3)}>
-                      <Calculator size={16} /> 03. Matematiksel Modelleme (MILP) Aşamasına Geç
-                    </button>
-                  </div>
-                )}
+              <div className="mt-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '1rem' }}>
+                <div className="form-group"><label>İş (n)</label><input type="number" className="input-field" value={inputJobs} onChange={e => setInputJobs(e.target.value)} /></div>
+                <div className="form-group"><label>Tezgah (m)</label><input type="number" className="input-field" value={inputMachines} onChange={e => setInputMachines(e.target.value)} /></div>
+                <div className="form-group"><label>Aile (F)</label><input type="number" className="input-field" value={inputFamilies} onChange={e => setInputFamilies(e.target.value)} /></div>
+                <div className="form-group"><label>NP Yüzde (%)</label><input type="number" className="input-field" value={inputNP} onChange={e => setInputNP(e.target.value)} /></div>
+                <div className="form-group"><label>Senaryo</label><select className="input-field" value={inputScenario} onChange={e => setInputScenario(e.target.value)}><option value="high">Yüksek Talep</option><option value="low">Düşük Talep</option></select></div>
               </div>
+              <button className="btn btn-warning mt-4" onClick={generateData} disabled={loading}><Play size={16} /> Veri Üret ve Başlat</button>
             </div>
           </div>
         )}
 
-        {/* STEP 03: MILP */}
-        {activeStage >= 3 && (
+        {/* STEP 02: MILP */}
+        {activeStage >= 2 && (
+          <div className="flow-step active slide-in">
+            <div className="flow-step-number">02</div>
+            <div className="flow-step-node">
+              <h3><Calculator size={20} /> 02. Matematiksel Modelleme (MILP - Bölüm 3)</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', margin: '1rem 0' }}>
+                <MathBox title="M1: Min Cmax" formula="min f₁ = Cmax" description="Yayılma süresini minimize eder." />
+                <MathBox title="M2: Min T" formula="min f₂ = Σ eⱼ⁺" description="Toplam teslim gecikmesini minimize eder." />
+                <MathBox title="M3: Min L" formula="min f₃ = Σ Uⱼ" description="Geciken iş sayısını minimize eder." />
+              </div>
+              <div className="glass-panel mb-4" style={{ padding: '1rem', fontSize: '0.75rem' }}>
+                <strong>📊 Tablo 6: Model Kompleksliği (n={problemData?.metadata.n}, m={problemData?.metadata.m})</strong> — Karar Değişkeni: {problemData?.metadata.n ** 2 * problemData?.metadata.m}+, İkili Değişken: {problemData?.metadata.n ** 2 * problemData?.metadata.m}+.
+              </div>
+              <DataMatrixView data={problemData} title="Problem Veri Matrisi" />
+              
+              {problemData.metadata.n <= 15 ? (
+                <button className="btn btn-primary mt-4" onClick={runCPSAT} disabled={loading}>
+                  <Calculator size={16} /> Kesin Çözümleyicileri Çalıştır (M1-M4)
+                </button>
+              ) : (
+                <div className="highlight-box mt-4" style={{ background: 'rgba(210,153,34,0.05)', border: '1px dashed var(--warning)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--warning)', marginBottom: '0.5rem' }}>
+                    <Activity size={18} /> <strong>BÜYÜK ÖLÇEKLİ PROBLEM TESPİT EDİLDİ</strong>
+                  </div>
+                  <p style={{ fontSize: '0.8rem', opacity: 0.8, marginBottom: '1rem' }}>
+                    İş sayısı (n={problemData.metadata.n}) kesin çözüm (MILP) sınırlarının üzerindedir. Akademik raporda (Bölüm 5.2) belirtildiği üzere, bu ölçekte çözüm <strong>Dinamik Dağıtım Kuralları (DDR)</strong> ile milisaniyeler içinde gerçekleştirilmelidir.
+                  </p>
+                  <button className="btn btn-warning" onClick={() => scrollToNext(4)}>
+                    <Zap size={16} /> SEZGİSEL ANALİZ (DDR) AŞAMASINA ATLA
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* STEP 03: MILP Results */}
+        {activeStage >= 3 && cpsatResults.M1 && (
           <div className="flow-step active slide-in">
             <div className="flow-step-number">03</div>
             <div className="flow-step-node">
-              <h3><Calculator size={20} /> 03. Matematiksel Modeller (MILP – Bölüm 3)</h3>
-              <AcademicBlock items={[
-                { h: "M1: Min Cmax (Yayılma Süresini Minimize Et)", t: "Temel model: Cmax = max(Cⱼ). Karar değişkeni Xᵢⱼₖ: j işi k tezgahında i'den hemen sonra çizelgelenirse 1, değilse 0. Kısıt (6): Cⱼ ≥ Cᵢ + Sᵢⱼₖ + Pⱼₖ – V·(1 – Xᵢⱼₖ). Kısıtlar (2-3) her işin tek öncülü ve ardılı olmasını, kısıt (5) her tezgahın kukla işle başlamasını garanti eder." },
-                { h: "M2: Min T (Toplam Gecikme) | M3: Min L (Geciken İş Sayısı)", t: "M2, M1'e eⱼ⁺ (tardiness) ve eⱼ⁻ (earliness) değişkenleri eklenerek türetilir. Hedef: Min Σ eⱼ⁺. M3 ise Uⱼ ∈ {0,1} ikili değişkeni ekler: Uⱼ = 1 ise j işi gecikmeli, hedef Min Σ Uⱼ. Bu üç model çatışan hedefler üretir." },
-                { h: "M4: AUGMECON (Artırılmış ε-Kısıt – Uzlaşmacı Model)", t: "5 adım: (1) M1,M2,M3'ü çöz → Ödeme tablosunu (payoff table) oluştur. (2) T ve L için aralık hesapla, grid noktaları belirle. (3) T≤T̄ ve L≤L̄ kısıtları altında Cmax'ı minimize et. (4) 126 kez çöz. (5) Baskılanmayan (non-dominated) Pareto çözümlerini seç. P1 problemi için 9 Pareto noktası elde edilmiştir." }
-              ]} />
-              {!problemData && <div style={{ padding: '1rem', background: 'rgba(255,193,7,0.1)', borderRadius: '8px', marginTop: '1rem', fontSize: '0.85rem', color: 'var(--warning)' }}>⚠️ Devam etmek için önce Adım 02'de veri seti oluşturun.</div>}
-              {problemData?.metadata.n > 15 ? (
-                <div className="highlight-box mt-4">
-                  <p>İş sayısı (n={problemData.metadata.n}) kesin çözüm sınırlarının üzerindedir. Sezgisel Analiz (DDR) aşamasına geçiliyor.</p>
-                  <button className="btn btn-warning mt-4" onClick={() => scrollToNext(4)}>Doğrudan Sezgisel Yöntemlere Geç</button>
-                </div>
-              ) : (
-                <div className="mt-4">
-                  <button className="btn btn-primary" onClick={runCPSAT} disabled={loading}><Calculator size={16} /> M1-M4 Tüm Akademik Modelleri Çöz</button>
-                  {cpsatResults.M1 && (
-                    <div className="mt-4" style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
-                      <div className="milp-result-card">
-                        <div className="output-header">M1 Modeli (Min Cmax - Yayılma Süresi)</div>
-                        <JobSequenceTable schedule={cpsatResults.M1.schedule} m={Number(inputMachines)} problemData={problemData} />
-                        <GanttChart schedule={cpsatResults.M1.schedule} m={Number(inputMachines)} n={Number(inputJobs)} />
-                      </div>
-                      <div className="milp-result-card">
-                        <div className="output-header">M2 Modeli (Min T - Toplam Gecikme)</div>
-                        <JobSequenceTable schedule={cpsatResults.M2.schedule} m={Number(inputMachines)} problemData={problemData} />
-                        <GanttChart schedule={cpsatResults.M2.schedule} m={Number(inputMachines)} n={Number(inputJobs)} />
-                      </div>
-                      <div className="milp-result-card">
-                        <div className="output-header">M3 Modeli (Min L - Geciken İş Sayısı)</div>
-                        <JobSequenceTable schedule={cpsatResults.M3.schedule} m={Number(inputMachines)} problemData={problemData} />
-                        <GanttChart schedule={cpsatResults.M3.schedule} m={Number(inputMachines)} n={Number(inputJobs)} />
-                      </div>
-                      <div className="milp-result-card" style={{ border: '2px solid var(--warning)', borderRadius: '12px', padding: '10px' }}>
-                        <div className="output-header" style={{ color: 'var(--warning)' }}>M4 Modeli (Uzlaşmacı / Çok Amaçlı Dengeli Çözüm)</div>
-                        <JobSequenceTable schedule={cpsatResults.M4.schedule} m={Number(inputMachines)} problemData={problemData} />
-                        <div style={{ overflowX: 'auto', marginTop: '1rem' }}>
-                          <div style={{ minWidth: '1000px' }}>
-                            <GanttChart schedule={cpsatResults.M4.schedule} m={Number(inputMachines)} n={Number(inputJobs)} />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+              <h3><Target size={20} /> 03. Kesin Çözüm Sonuçları (Tablo 7-9)</h3>
+              <PayoffTable results={cpsatResults} />
+              <MILPParetoChart results={cpsatResults} augmeconResults={augmeconResults} />
+              <button className="btn btn-accent mt-4" onClick={runAugmecon} disabled={loading}><BarChart3 size={16} /> Pareto Cephesini Hesapla (AUGMECON)</button>
+              
+              {/* Tablo 10, 11, 12 — Pareto Analizi */}
+              {augmeconResults && (
+                <div className="mt-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="glass-panel" style={{ padding: '1rem' }}>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#a371f7' }}>📊 Tablo 10: Hiperhacim Analysis</div>
+                    <p style={{ fontSize: '0.8rem', opacity: 0.8 }}>P1 Problem örneği için AUGMECON Hiperhacim: <strong>%91</strong> (P3 için %74).</p>
+                  </div>
+                  <div className="glass-panel" style={{ padding: '1rem' }}>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#a371f7' }}>📑 Tablo 11 & 12: Pareto Seçimi</div>
+                    <p style={{ fontSize: '0.75rem', opacity: 0.8 }}>Karar verici ağırlıkları (0.5, 0.4, 0.1) altında P1 için <strong>6. Çözüm</strong> seçilmiştir: Cmax=72.14, T=39.21, L=3.</p>
+                  </div>
                 </div>
               )}
-              <button className="btn btn-warning mt-4" onClick={() => scrollToNext(4)}>
-                <Zap size={16} /> 04. Sezgisel Analiz (DDR) Aşamasına Geç
-              </button>
+
+              <div className="mt-4"><JobSequenceTable schedule={cpsatResults.M4.schedule} m={Number(inputMachines)} problemData={problemData} /></div>
+              <button className="btn btn-warning mt-4" onClick={runDDR}><Zap size={16} /> Sezgisel Analiz (DDR) Aşamasına Geç</button>
             </div>
           </div>
         )}
@@ -754,12 +757,33 @@ export default function GuidedFlow() {
           <div className="flow-step active slide-in">
             <div className="flow-step-number">04</div>
             <div className="flow-step-node">
-              <h3><Zap size={20} /> 04. Dinamik Dağıtım Kuralları – DDR (Bölüm 4)</h3>
+              <h3><Zap size={20} /> 04. Dinamik Dağıtım Kuralları (DDR - Bölüm 4)</h3>
               <AcademicBlock items={[
-                { h: "SCT – En Kısa İş Tamamlanma Zamanı", t: "min(Sᵢⱼₖ + Pⱼₖ) formülüyle, bir sonraki iş ve tezgah aynı anda seçilir. Seçilen iş en kısa işlem süresine sahip olmak zorunda değil; 'hazırlık + işlem' toplamı en kısa olan işi seçer." },
-                { h: "SC-LPT & SC-EDD", t: "SC-LPT: Önce en uzun işlem süreli işi seçer (LPT mantığı), ardından bu iş için Sᵢⱼₖ + Pⱼₖ'yı minimize eden tezgahı bulur. SC-EDD: Önce teslim tarihi en yakın işi seçer (EDD mantığı), ardından aynı minimize işlemi yapılır." },
-                { h: "Hibrit Kural ve Kural Değiştirme Zamanı (tₛ)", t: "6 kombine kural: [SCT & SC-LPT: tₛ], [SCT & SC-EDD: tₛ], [SC-EDD & SCT: tₛ] vb. tₛ = 200, 250, 300, 350, 400, 450 saat olarak denenir. Çizelgelenen son işin Cⱼ değeri tₛ'yi aşınca kural değişir. Toplam 39 kural (3 tekli + 6×6 kombine) test edilir." }
+                { h: "SCT & SC-EDD & SC-LPT", t: "Sezgisel kurallar, hazırlık sürelerini minimize ederek işleri tezgahlara atar." },
+                { h: "Sayısal Adım Örneği (Tablo 3, 4)", t: "SCT ve Kombine kuralların adım adım ilerleyişi aşağıda detaylandırılmıştır." }
               ]} />
+
+              {/* Tablo 3 & 4 — Adım Adım İlerleme */}
+              <div className="mt-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="glass-panel" style={{ padding: '1rem' }}>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--warning)', marginBottom: '0.5rem' }}>📑 Tablo 3: SCT Adımları</div>
+                  <div style={{ fontSize: '0.7rem', opacity: 0.8 }}>
+                    Adım 1: J1 → M2 (C1=6)<br/>
+                    Adım 2: J2 → M1 (C2=22)<br/>
+                    Adım 3: J3 → M2 (C3=31)<br/>
+                    <strong>Sonuç: Cmax=31, T=2.0</strong>
+                  </div>
+                </div>
+                <div className="glass-panel" style={{ padding: '1rem' }}>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--accent)', marginBottom: '0.5rem' }}>📑 Tablo 4: [SCT & SC-LPT: 5]</div>
+                  <div style={{ fontSize: '0.7rem', opacity: 0.8 }}>
+                    Adım 1 (SCT): J1 → M2 (C1=6)<br/>
+                    Adım 2 (LPT): J3 → M1 (C3=28)<br/>
+                    Adım 3 (LPT): J2 → M2 (C2=22.5)<br/>
+                    <strong>Sonuç: Cmax=28, T=2.5</strong>
+                  </div>
+                </div>
+              </div>
 
               <div className="flex-column" style={{ gap: '1rem', alignItems: 'center', margin: '2rem 0' }}>
                 <button className="btn btn-warning" onClick={runDDR} disabled={loading} style={{ padding: '1rem 3rem', fontSize: '1.1rem', fontWeight: 'bold', boxShadow: '0 0 20px rgba(210,153,34,0.3)' }}>
@@ -784,34 +808,63 @@ export default function GuidedFlow() {
                   </div>
                 )}
               </div>
+
               {ddrResults.length > 0 && (
-                <div className="mt-4" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', borderLeft: '3px solid var(--warning)', paddingLeft: '0.75rem', lineHeight: '1.5' }}>
-                    <strong style={{ color: 'var(--warning)' }}>[Tablo 12] DDR Performans Matrisi</strong> — Her satır bir kuralın ürettiği çözümü gösterir. Cmax (yayılma süresi), T (toplam gecikme) ve L (geciken iş sayısı) sütunları birbiriyle çatışan hedefleri temsil eder. Sarı vurgulanan ilk 3 kural Cmax açısından en iyilerdir.
-                  </div>
-                  <ScrollableTable maxHeight="300px">
-                    <table className="data-table">
-                      <thead><tr><th>Sıra</th><th>Kural</th><th>Cmax ↓</th><th>T (Gecikme) ↓</th><th>L (Geciken İş) ↓</th></tr></thead>
-                      <tbody>{ddrResults.map((r, i) => <tr key={i} style={{ background: i < 3 ? 'rgba(210,153,34,0.05)' : 'transparent' }}><td style={{ fontWeight: 'bold', color: i === 0 ? 'var(--warning)' : 'inherit' }}>{i + 1}</td><td>{r.rule_name}</td><td>{r.Cmax.toFixed(2)}</td><td>{r.T.toFixed(2)}</td><td>{r.L}</td></tr>)}</tbody>
-                    </table>
-                  </ScrollableTable>
-                  <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                    <div className="output-header" style={{ marginBottom: '0.5rem' }}>Pareto Uzay Dağılımı (Cmax × T, Nokta Boyutu = L)</div>
-                    <div style={{ fontSize: '0.75rem', opacity: 0.7, marginBottom: '1rem' }}>Sarı noktalar Cmax açısından ilk 3 kuralı temsil eder. Hiçbir tek kural tüm kriterlerde baskın değildir — bu MCDM ihtiyacını doğrular.</div>
+                <div className="mt-4 slide-in">
+                  <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', marginBottom: '2rem' }}>
+                    <div className="output-header" style={{ marginBottom: '0.5rem' }}>DDR Sonuçları Pareto Dağılımı (Cmax × T, Boyut = L)</div>
                     <div style={{ height: '340px' }}>
                       <ResponsiveContainer width="100%" height="100%">
                         <ScatterChart margin={{ top: 10, right: 30, bottom: 30, left: 20 }}>
                           <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
-                          <XAxis type="number" dataKey="Cmax" name="Cmax" stroke="#8b949e" label={{ value: 'Cmax (Yayılma Süresi)', position: 'insideBottom', offset: -10, fill: '#8b949e', fontSize: 11 }} />
-                          <YAxis type="number" dataKey="T" name="T (Gecikme)" stroke="#8b949e" label={{ value: 'T (Gecikme)', angle: -90, position: 'insideLeft', fill: '#8b949e', fontSize: 11 }} />
-                          <ZAxis type="number" dataKey="L" range={[20, 200]} name="L (Geciken İş)" />
-                          <RechartsTooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ background: '#0d1117', border: '1px solid var(--border-color)', borderRadius: '8px' }} itemStyle={{ color: '#fff' }} formatter={(v, n) => [v, n]} />
-                          <Scatter data={ddrResults}>{ddrResults.map((e, i) => <Cell key={i} fill={i < 3 ? 'var(--warning)' : '#30363d'} />)}</Scatter>
+                          <XAxis type="number" dataKey="Cmax" name="Cmax" stroke="#8b949e" label={{ value: 'Cmax', position: 'insideBottom', offset: -10, fill: '#8b949e', fontSize: 11 }} />
+                          <YAxis type="number" dataKey="T" name="T (Gecikme)" stroke="#8b949e" label={{ value: 'T', angle: -90, position: 'insideLeft', fill: '#8b949e', fontSize: 11 }} />
+                          <ZAxis type="number" dataKey="L" range={[20, 200]} name="L" />
+                          <RechartsTooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ background: '#0d1117', border: '1px solid var(--border-color)', borderRadius: '8px' }} />
+                          <Scatter data={ddrResults.filter(r => r)}>
+                            {ddrResults.filter(r => r).map((e, i) => (
+                              <Cell key={i} fill={i < 3 ? 'var(--warning)' : '#3fb950'} />
+                            ))}
+                          </Scatter>
                         </ScatterChart>
                       </ResponsiveContainer>
                     </div>
                   </div>
-                  <button className="btn btn-warning" onClick={() => scrollToNext(5)}><Target size={16} /> 05. TOPSIS Karar Analizi Adımına Geç</button>
+
+                  <div className="glass-panel" style={{ padding: '1rem', background: 'rgba(0,0,0,0.2)', marginBottom: '1rem' }}>
+                    <strong>📊 Tablo 12: DDR Performans Matrisi</strong> (Senaryo Analizi)
+                    <ScrollableTable maxHeight="300px">
+                      <table className="data-table small-table">
+                        <tbody>
+                          {ddrResults
+                            .filter(r => r && typeof r.Cmax === 'number')
+                            .sort((a, b) => a.Cmax - b.Cmax)
+                            .map((r, i) => (
+                              <tr key={i} style={{ background: i < 3 ? 'rgba(210,153,34,0.05)' : 'transparent' }}>
+                                <td>{r.rule_name}</td>
+                                <td>{r.Cmax.toFixed(2)}</td>
+                                <td>{r.T.toFixed(2)}</td>
+                                <td>{r.L}</td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                    </ScrollableTable>
+                  </div>
+                  
+                  <div className="mt-4" style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', background: 'rgba(255,255,255,0.02)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                    <div className="form-group" style={{ flex: 1 }}><label style={{ color: 'var(--warning)', fontSize: '0.75rem' }}>w₁ (Cmax)</label><input type="number" step="0.05" className="input-field" value={weights.wC} onChange={e => setWeights({...weights, wC: Number(e.target.value)})} /></div>
+                    <div className="form-group" style={{ flex: 1 }}><label style={{ color: 'var(--warning)', fontSize: '0.75rem' }}>w₂ (T)</label><input type="number" step="0.05" className="input-field" value={weights.wT} onChange={e => setWeights({...weights, wT: Number(e.target.value)})} /></div>
+                    <div className="form-group" style={{ flex: 1 }}><label style={{ color: 'var(--warning)', fontSize: '0.75rem' }}>w₃ (L)</label><input type="number" step="0.05" className="input-field" value={weights.wL} onChange={e => setWeights({...weights, wL: Number(e.target.value)})} /></div>
+                    <button 
+                      className="btn btn-warning mt-auto" 
+                      onClick={runTopsis} 
+                      style={{ height: '42px', opacity: (loading || ddrResults.length < 39) ? 0.5 : 1 }}
+                      disabled={loading || ddrResults.length < 39}
+                    >
+                      <Activity size={16} /> TOPSIS Analizi Uygula
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -819,206 +872,93 @@ export default function GuidedFlow() {
         )}
 
         {/* STEP 05: TOPSIS */}
-        {activeStage >= 5 && (
+        {activeStage >= 5 && topsisResults.length > 0 && (
           <div className="flow-step active slide-in">
             <div className="flow-step-number">05</div>
             <div className="flow-step-node">
-              <h3><Target size={20} /> 05. Çok Kriterli Karar Verme – TOPSIS (Bölüm 5.3)</h3>
-              <AcademicBlock items={[
-                { h: "TOPSIS – 5 Adımlı Süreç", t: "Adım 1: Karar matrisi oluştur (her kural × 3 kriter). Adım 2: rₐᵦ = min(xₐᵦ) / xₐᵦ ile normalize et. Adım 3: v⁺ₐ = max(rₐᵦ) ve v⁻ₐ = min(rₐᵦ) ile ideal çözümleri belirle. Adım 4: S⁺ₐ ve S⁻ₐ ayrılma ölçülerini hesapla. Adım 5: C*ₐ = S⁻ₐ / (S⁺ₐ + S⁻ₐ) ile yakınlık katsayısını bul; en yüksek C* değeri kazanır." },
-                { h: "Ağırlıkların Anlamı", t: "wC: Üretim hızını (Cmax) ne kadar önemsiyor? wT: Toplam gecikmeyi (T) ne kadar önemsiyor? wL: Geciken iş sayısını (L) ne kadar önemsiyor? Ağırlıklar toplamı 1.0 olacak şekilde normalize edilir. Ağırlıkları değiştirerek farklı yönetim önceliklerini simüle edebilirsiniz." }
-              ]} />
-
-              <div className="mt-4" style={{ background: 'rgba(255,255,255,0.02)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                <div style={{ fontSize: '0.8rem', marginBottom: '1rem', borderLeft: '3px solid var(--warning)', paddingLeft: '0.75rem', lineHeight: '1.5', color: 'var(--text-secondary)' }}>
-                  Ağırlıkları değiştirerek farklı yönetim önceliklerini simüle edin, ardından <strong style={{ color: 'var(--warning)' }}>"Analizi Güncelle"</strong> butonuna basın. Ağırlıklar toplamı tam 1.0 olmalıdır.
-                </div>
-                <div className="flex-row" style={{ gap: '2rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-                  <div className="form-group" style={{ flex: 1, minWidth: '100px' }}>
-                    <label style={{ color: 'var(--warning)', fontWeight: 'bold', fontSize: '0.75rem', marginBottom: '8px', display: 'block' }}>w₁ (Cmax)</label>
-                    <input type="number" step="0.05" min="0" max="1" className="input-field" value={weights.wC} 
-                      onChange={e => { setWeights({ ...weights, wC: Number(e.target.value) }); setWeightsDirty(true); }} style={{ width: '100%' }} />
-                  </div>
-                  <div className="form-group" style={{ flex: 1, minWidth: '100px' }}>
-                    <label style={{ color: 'var(--warning)', fontWeight: 'bold', fontSize: '0.75rem', marginBottom: '8px', display: 'block' }}>w₂ (Tardiness)</label>
-                    <input type="number" step="0.05" min="0" max="1" className="input-field" value={weights.wT} 
-                      onChange={e => { setWeights({ ...weights, wT: Number(e.target.value) }); setWeightsDirty(true); }} style={{ width: '100%' }} />
-                  </div>
-                  <div className="form-group" style={{ flex: 1, minWidth: '100px' }}>
-                    <label style={{ color: 'var(--warning)', fontWeight: 'bold', fontSize: '0.75rem', marginBottom: '8px', display: 'block' }}>w₃ (Tardy Jobs)</label>
-                    <input type="number" step="0.05" min="0" max="1" className="input-field" value={weights.wL} 
-                      onChange={e => { setWeights({ ...weights, wL: Number(e.target.value) }); setWeightsDirty(true); }} style={{ width: '100%' }} />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    <button 
-                      className={`btn btn-warning ${Math.abs((weights.wC + weights.wT + weights.wL) - 1.0) < 0.001 ? 'pulse-glow' : ''}`}
-                      onClick={() => {
-                        runTopsis();
-                        setWeightsDirty(false); // Güncelledik
-                      }} 
-                      disabled={Math.abs((weights.wC + weights.wT + weights.wL) - 1.0) >= 0.001}
-                      style={{ 
-                        height: '42px', 
-                        padding: '0 2rem', 
-                        fontWeight: 'bold',
-                        opacity: Math.abs((weights.wC + weights.wT + weights.wL) - 1.0) < 0.001 ? 1 : 0.4,
-                        cursor: Math.abs((weights.wC + weights.wT + weights.wL) - 1.0) < 0.001 ? 'pointer' : 'not-allowed'
-                      }}
-                    >
-                      <Activity size={16} style={{ marginRight: '8px' }} /> {topsisResults.length > 0 ? 'ANALİZİ GÜNCELLE' : 'ANALİZİ UYGULA'}
-                    </button>
-                    <div style={{ 
-                      fontSize: '0.65rem', 
-                      textAlign: 'center', 
-                      color: Math.abs((weights.wC + weights.wT + weights.wL) - 1.0) < 0.001 ? '#4ade80' : '#ff7b72',
-                      fontWeight: 'bold'
-                    }}>
-                      Σw = {(weights.wC + weights.wT + weights.wL).toFixed(2)} {Math.abs((weights.wC + weights.wT + weights.wL) - 1.0) >= 0.001 ? '(Hata: 1.00 olmalı)' : '(Tamam)'}
-                    </div>
-                  </div>
-                </div>
+              <h3><Activity size={20} /> 05. TOPSIS ve Karar Verici Analizi (Bölüm 5.3)</h3>
+              <div className="glass-panel mt-4" style={{ padding: '1rem', borderLeft: '4px solid #3fb950' }}>
+                <strong>📊 Tablo 20: Etkili Kurallar Özeti</strong><br/>
+                <span style={{ fontSize: '0.75rem' }}>Düşük Talep: [SC-EDD & SCT: 200] | Yüksek Talep: SCT</span>
               </div>
+              <div className="highlight-box mt-4" style={{ fontSize: '0.75rem' }}>
+                <strong>💡 DM Senaryoları:</strong> wT ≥ 0.05 ise [SC-EDD & SCT: 200] baskındır. wC ≥ 0.88 ise [SCT & SC-EDD: 450] tercih edilir.
+              </div>
+              <TopsisNormalizationTable topsisResults={topsisResults} />
               
-              {topsisResults.length > 0 && (
-                <div className="mt-4" style={{ 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  gap: '2rem',
-                  opacity: weightsDirty ? 0.5 : 1, // Ağırlık değiştiyse tablo solar
-                  pointerEvents: weightsDirty ? 'none' : 'auto', // Güncellemeden tabloya dokunulmaz
-                  transition: 'opacity 0.3s ease',
-                  position: 'relative'
-                }}>
-                  {weightsDirty && (
-                    <div style={{ position: 'absolute', top: '-15px', left: '0', background: 'var(--warning)', color: '#000', fontSize: '0.7rem', padding: '2px 10px', borderRadius: '4px', fontWeight: 'bold', zIndex: 10 }}>
-                      ⚠️ AĞIRLIKLAR DEĞİŞTİ - LÜTFEN GÜNCELLEYİN
-                    </div>
-                  )}
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', borderLeft: '3px solid var(--warning)', paddingLeft: '0.75rem', lineHeight: '1.5' }}>
-                    <strong style={{ color: 'var(--warning)' }}>TOPSIS Analiz Matrisi (Tablo 21)</strong> — r₁/r₂/r₃ kuralın ham başarısıdır (değişmez).
-                    Seçtiğiniz ağırlıklar sadece <strong style={{ color: '#58a6ff' }}>S+, S- ve CC*</strong> sütunlarını etkileyerek sıralamayı belirler.
-                  </div>
-                  <ScrollableTable maxHeight="300px">
-                    <table className="data-table small-table">
-                      <thead><tr><th>Kural</th><th>r₁ (Cmax)</th><th>r₂ (T)</th><th>r₃ (L)</th><th>S⁺ (D⁺)</th><th>S⁻ (D⁻)</th><th>CC* (Yakınlık) ↑</th></tr></thead>
-                      <tbody>{topsisResults.map((r, i) => <tr key={i} style={{ background: i === 0 ? 'rgba(210,153,34,0.08)' : 'transparent' }}><td style={{ fontWeight: i === 0 ? 'bold' : 'normal', color: i === 0 ? 'var(--warning)' : 'inherit' }}>{r.rule_name}{i === 0 ? ' ★' : ''}</td><td>{r.r1.toFixed(1)}</td><td>{r.r2.toFixed(1)}</td><td>{r.r3}</td><td>{r.s_plus}</td><td>{r.s_minus}</td><td style={{ fontWeight: 'bold', color: i === 0 ? '#4ade80' : 'inherit' }}>{r.cc}</td></tr>)}</tbody>
-                    </table>
-                  </ScrollableTable>
-
-                  <div style={{ textAlign: 'center', border: '2px solid var(--warning)', background: 'rgba(210,153,34,0.05)', borderRadius: '12px', padding: '1.5rem' }}>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>TOPSIS SONUCU — EN YÜKSEK CC* SKORU</div>
-                    <h4 style={{ color: 'var(--warning)', letterSpacing: '1px', margin: '0.5rem 0' }}>{topsisResults[0].rule_name}</h4>
-                    <p style={{ fontSize: '1rem', marginTop: '0.25rem' }}>İdeale Yakınlık (CC*): <span style={{ fontWeight: 'bold', color: '#4ade80', fontSize: '1.3rem' }}>{topsisResults[0].cc}</span></p>
-                    <p style={{ fontSize: '0.75rem', opacity: 0.6, marginTop: '0.5rem' }}>Bu kural, seçtiğiniz ağırlıklar altında Cmax, T ve L kriterlerini en dengeli karşılayan çizelgeleme stratejisidir.</p>
-                  </div>
-
-                  <div style={{ background: '#0d1117', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                    <div className="output-header" style={{ marginBottom: '0.5rem' }}><CheckCircle size={16} /> Önerilen Çizelge: {topsisResults[0].rule_name}</div>
-                    <div style={{ fontSize: '0.75rem', opacity: 0.7, marginBottom: '1rem' }}>TOPSIS'in seçtiği optimal kural ile oluşturulan operasyonel çizelge. Mor bloklar hazırlık (Sᵢⱼₖ), yeşil bloklar işlem (Pⱼₖ) sürelerini gösterir.</div>
-                    
-                    <JobSequenceTable schedule={ddrResults.find(r => r.rule_name === topsisResults[0].rule_name)?.schedule} m={Number(inputMachines)} problemData={problemData} />
-                    
-                    <div style={{ overflowX: 'auto', marginTop: '2rem' }}>
-                      <div style={{ minWidth: '1200px' }}>
-                        <GanttChart schedule={ddrResults.find(r => r.rule_name === topsisResults[0].rule_name)?.schedule} m={Number(inputMachines)} n={Number(inputJobs)} />
-                      </div>
-                    </div>
-                    
-                    <CompactMetrics schedule={ddrResults.find(r => r.rule_name === topsisResults[0].rule_name)?.schedule} problemData={problemData} />
-                  </div>
-                  <button className="btn btn-warning mt-4" onClick={() => scrollToNext(6)}>
-                    <Activity size={16} /> 06. Sezgisel Performans (Gap Analizi) Değerlendirmesine Geç
-                  </button>
+              {/* ADD: Seçilen Kuralın Detaylı Çıktısı (Gantt & Liste) */}
+              <div className="mt-4 slide-in" style={{ borderTop: '1px solid var(--border-color)', paddingTop: '2rem' }}>
+                <div className="output-header" style={{ color: 'var(--accent)', marginBottom: '0.5rem' }}>
+                  🏆 Seçilen En İyi Kural: <span style={{ color: '#fff' }}>{topsisResults[0].rule_name}</span>
                 </div>
-              )}
+                <div style={{ fontSize: '0.75rem', opacity: 0.7, marginBottom: '1rem' }}>
+                  TOPSIS'in seçtiği optimal kural ile oluşturulan operasyonel çizelge. 
+                  <span style={{ color: '#9b59b6', fontWeight: 'bold' }}> Mor bloklar hazırlık (Sᵢⱼₖ)</span>, 
+                  <span style={{ color: '#27ae60', fontWeight: 'bold' }}> yeşil bloklar işlem (Pⱼₖ)</span> sürelerini gösterir.
+                </div>
+                
+                <JobSequenceTable 
+                  schedule={topsisResults[0].schedule} 
+                  m={Number(inputMachines)} 
+                  problemData={problemData} 
+                />
+                
+                <GanttChart 
+                  schedule={topsisResults[0].schedule} 
+                  m={Number(inputMachines)} 
+                  n={Number(inputJobs)} 
+                />
+
+                <CompactMetrics 
+                  schedule={topsisResults[0].schedule} 
+                  problemData={problemData} 
+                />
+              </div>
+
+              <button className="btn btn-warning mt-4" onClick={() => scrollToNext(6)}>06. Gap Analizi ve İstatistiklere Geç</button>
             </div>
           </div>
         )}
 
-        {/* STEP 06: Gap Analizi */}
+        {/* STEP 06: Stats & Gap */}
         {activeStage >= 6 && (
           <div className="flow-step active slide-in">
             <div className="flow-step-number">06</div>
             <div className="flow-step-node">
-              <h3><Activity size={20} /> 06. Hesaplamalı Çalışma – Gap Analizi (Bölüm 5.1.3)</h3>
-              <AcademicBlock items={[
-                { h: "Gap Analizi ve Çözüm Kalitesi", t: "Sezgisel çözümlerin (DDR) kalitesi, MILP optimal çözümüne olan yüzde uzaklık (%off Pareto) ile ölçülür. Makale Bölüm 5.2'de 18 aylık gerçek üretim verisiyle yapılan testlerde, DDR kurallarının karmaşık Sᵢⱼₖ matrisleri altında bile makul sürelerde kabul edilebilir sonuçlar verdiği kanıtlanmıştır." },
-                { h: "Büyük Ölçek Performansı", t: "Talep yoğunluğu arttıkça (n=298), MILP modellerinin çözüm süresi eksponansiyel artarken, geliştirdiğimiz DDR kuralları milisaniyeler içinde sonuç üretmektedir. Bu durum, endüstriyel ölçekte sezgisel yöntemlerin vazgeçilmezliğini vurgular." }
-              ]} />
-
-              {cpsatResults.M1 ? (
-                <div className="mt-4" style={{ padding: '1.5rem', background: 'rgba(210,153,34,0.05)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                  <div style={{ fontSize: '1rem', fontWeight: 'bold', marginBottom: '15px' }}><TrendingUp size={16} /> Sezgisel Yöntem Başarı Analizi (Gap % Analizi)</div>
-                  <div className="flex-row" style={{ gap: '3rem' }}>
-                    <div style={{ flex: 1, textAlign: 'center' }}>
-                      <div style={{ opacity: 0.6, fontSize: '0.8rem' }}>MILP Global Optimal (Cmax)</div>
-                      <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--warning)' }}>{cpsatResults.M4.Cmax}</div>
-                    </div>
-                    <div style={{ flex: 1, textAlign: 'center', borderLeft: '1px solid rgba(255,255,255,0.1)', borderRight: '1px solid rgba(255,255,255,0.1)' }}>
-                      <div style={{ opacity: 0.6, fontSize: '0.8rem' }}>DDR Heuristic Best (Cmax)</div>
-                      <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>{ddrResults.length > 0 ? Math.min(...ddrResults.map(r => r.Cmax)).toFixed(2) : '-'}</div>
-                    </div>
-                    <div style={{ flex: 1, textAlign: 'center' }}>
-                      <div style={{ opacity: 0.6, fontSize: '0.8rem' }}>Performance Gap (%)</div>
-                      <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#4ade80' }}>
-                        {cpsatResults?.M4 && ddrResults.length > 0 
-                          ? `${(((Math.min(...ddrResults.map(r => r.Cmax)) - cpsatResults.M4.Cmax) / cpsatResults.M4.Cmax) * 100).toFixed(2)}%`
-                          : '-%'}
-                      </div>
-                    </div>
-                  </div>
-                  <p style={{ fontSize: '0.75rem', marginTop: '1rem', opacity: 0.6, fontStyle: 'italic' }}>* Kaynak: Tablo 13, Bölüm 6.2. Gap değeri %0'a ne kadar yakınsa sezgisel çözüm o kadar kalitelidir.</p>
-                  <button className="btn btn-warning mt-4" onClick={() => scrollToNext(7)}>
-                    <CheckCircle size={16} /> 07. Akademik Değerlendirme ve Sonuca Git
-                  </button>
+              <h3><TrendingUp size={20} /> 06. Büyük Ölçek İstatistikleri (Bölüm 5.2)</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+                <div className="glass-panel" style={{ padding: '1rem' }}>
+                  <strong>📊 TABLO 14: BÜYÜK ÖRNEK</strong><br/>
+                  <span style={{ fontSize: '0.75rem' }}>244-298 iş, 26 aile, 18 aylık gerçek veri seti.</span>
                 </div>
-              ) : (
-                <div className="mt-4" style={{ padding: '2rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px dashed var(--border-color)', textAlign: 'center' }}>
-                  <div style={{ color: 'var(--warning)', marginBottom: '1rem' }}><Activity size={24} /></div>
-                  <h4 style={{ marginBottom: '0.5rem' }}>Büyük Ölçekli Problem (Kesin Çözüm Devre Dışı)</h4>
-                  <p style={{ fontSize: '0.85rem', opacity: 0.7, maxWidth: '600px', margin: '0 auto 1.5rem' }}>
-                    İş sayısı (n={problemData?.metadata.n}) global optimal çözüm sınırlarının üzerindedir. Akademik olarak bu ölçekte performans analizi doğrudan <strong>Sezgisel (DDR)</strong> sonuçları üzerinden gerçekleştirilir.
-                  </p>
-                  <button className="btn btn-warning" onClick={() => scrollToNext(7)}>
-                    <CheckCircle size={16} /> 07. Akademik Değerlendirme ve Sonuca Git
-                  </button>
+                <div className="glass-panel" style={{ padding: '1rem' }}>
+                  <strong>📈 TABLO 16 & 19: ANOVA</strong><br/>
+                  <span style={{ fontSize: '0.75rem' }}>SCT ve SC-EDD kuralları SC-LPT'den istatistiksel olarak üstündür (p &lt; 0.05).</span>
                 </div>
+              </div>
+              {cpsatResults.M4 && (
+                <HeuristicRadarChart optimal={cpsatResults.M4} winner={topsisResults[0]} standard={ddrResults.slice(0,3)} />
               )}
+              <button className="btn btn-warning mt-4" onClick={() => scrollToNext(7)}>07. Sonuç</button>
             </div>
           </div>
         )}
 
-        {/* STEP 07: Sonuç */}
+        {/* STEP 07: Conclusion */}
         {activeStage >= 7 && (
           <div className="flow-step active slide-in">
             <div className="flow-step-number">07</div>
             <div className="flow-step-node">
-              <h3><BookOpen size={20} /> 07. Sonuç ve Akademik Değerlendirme (Bölüm 6)</h3>
+              <h3><BookOpen size={20} /> 07. Sonuç ve Akademik Katkı (Bölüm 6)</h3>
               <AcademicBlock items={[
-                { h: "Çalışmanın 3 Temel Katkısı", t: "(1) Tezgah ve sıra-bağımlı hazırlık süreli UPMSP için Cmax, T ve L'yi birleştiren ilk çok amaçlı MILP modeli. (2) SCT, SC-LPT, SC-EDD ve 6 kombine kural içeren DDR sezgiselleri – kural değiştirme mekanizması literatürde yeni. (3) Her kuralın ne zaman baskın olduğunu belirleyen kapsamlı TOPSIS tabanlı MCDM analizi." },
-                { h: "Gelecek Araştırma Yönleri", t: "(1) Yeni dağıtım kuralları geliştirme. (2) Problemi çok operasyonlu sıralı sistemlere (job shop / flow shop) genişletme. (3) DDR kurallarını büyük örnekler için Pareto çözümleri üreten meta-sezgisellerin (GA, SA) başlangıç çözümü olarak kullanma." }
+                { h: "Önemli Bulgular", t: "Sıra-bağımlı hazırlık süreleri altında hibrit DDR kuralları, kesin çözümlere göre %5-10 gap ile milisaniyeler içinde sonuç üretir." },
+                { h: "Katkı", t: "Literatüre kazandırılan kural değiştirme mekanizması ve TOPSIS tabanlı seçim çerçevesi çelik boru üretiminde verimliliği artırmaktadır." }
               ]} />
-
-              <div className="mt-4" style={{ padding: '2rem', background: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid var(--border-color)', position: 'relative' }}>
-                <h4 style={{ color: 'var(--warning)', marginBottom: '1rem' }}>Akademik Proje Özeti</h4>
-                <p style={{ lineHeight: '1.7', opacity: 0.9 }}>
-                  Bu çalışma, <strong>İTÜ END505E Üretim Planlama ve Çizelgeleme</strong> dersi kapsamında, UPMSP problemleri için geliştirilen hibrit çözüm yaklaşımlarını bir dijital ikiz üzerinden test etmiştir.
-                </p>
-                <div className="flex-row mt-4" style={{ gap: '2rem' }}>
-                  <div className="highlight-box" style={{ flex: 1 }}>
-                    <strong>Sistem Başarısı:</strong> {cpsatResults.M4 ? `${(((Math.min(...ddrResults.map(r => r.Cmax)) - cpsatResults.M4.Cmax) / cpsatResults.M4.Cmax) * 100).toFixed(2)}% Gap` : 'Yüksek Verim'}
-                  </div>
-                  <div className="highlight-box" style={{ flex: 1 }}>
-                    <strong>Öneri:</strong> {topsisResults[0]?.rule_name} kuralı ile optimizasyon.
-                  </div>
-                </div>
-
-              </div>
             </div>
           </div>
         )}
+
       </div>
-      <div style={{ height: '100px' }}></div>
     </div>
   );
 }

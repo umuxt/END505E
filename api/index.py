@@ -318,3 +318,41 @@ def api_solve_cpsat(req: CPSATRequest):
 @app.get("/")
 def read_root():
     return {"message": "UPMSP API is running"}
+
+class AUGMECONRequest(BaseModel):
+    n: int
+    m: int
+    seed: int
+    n_families: int = 3
+    np_ratio: float = 0.5
+    scenario: str = "high"
+    time_limit: int = 8
+    grid_T: int = 5   # T ekseni için grid noktası sayısı (rapor: 20, biz performans için azaltıyoruz)
+
+@lru_cache(maxsize=16)
+def solve_augmecon_logic(n, m, seed, n_families, np_ratio, scenario, time_limit, grid_T):
+    problem = generate_problem(n, m, seed, n_families, np_ratio, scenario)
+
+    P  = {int(j): {int(k): problem["P"][str(j)][str(k)] for k in range(m)} for j in range(n)}
+    S  = {int(i): {int(j): {int(k): problem["S"][str(i)][str(j)][str(k)] for k in range(m)} for j in range(n)}
+          for i in list(range(n)) + [-1]}
+    D  = {int(j): float(problem["D"][str(j)]) for j in range(n)}
+    NP = {int(j): {int(k): problem["NP"][str(j)][str(k)] for k in range(m)} for j in range(n)}
+
+    from app.solver import solve_augmecon, ProblemData
+    p_data = ProblemData(n=n, m=m, P=P, S=S, D=D, NP=NP)
+
+    return solve_augmecon(p_data, time_limit=time_limit, grid_T=grid_T)
+
+@app.post("/api/solve_augmecon")
+def api_solve_augmecon(req: AUGMECONRequest):
+    try:
+        result = solve_augmecon_logic(
+            req.n, req.m, req.seed, req.n_families, req.np_ratio,
+            req.scenario, req.time_limit, req.grid_T
+        )
+        return {"status": "success", "result": result}
+    except Exception as e:
+        import traceback
+        print(f"AUGMECON ERROR: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=str(e))
