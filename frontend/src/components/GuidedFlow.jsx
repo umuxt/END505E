@@ -466,19 +466,19 @@ export default function GuidedFlow() {
     setDdrResults([]); // Sıfırla
     
     // 39 Kural Listesi (Sistematik oluştur)
-    const stdRules = ["SCT", "SC-EDD", "SC-LPT", "SC-WSPT"];
-    const r1s = ["SCT", "SC-EDD"];
-    const r2s = ["SCT", "SC-EDD", "SC-LPT", "SC-WSPT"];
-    const tsValues = [200, 400, 600, 800, 1000];
+    // 39 Kural Listesi (Akademik Set: 3 Standart + 6 Hibrit x 6 TS = 39)
+    const stdRules = ["SCT", "SC-EDD", "SC-LPT"];
+    const hybridPairs = [
+      ["SCT", "SC-LPT"], ["SCT", "SC-EDD"],
+      ["SC-EDD", "SCT"], ["SC-EDD", "SC-LPT"],
+      ["SC-LPT", "SCT"], ["SC-LPT", "SC-EDD"]
+    ];
+    const tsValues = [200, 250, 300, 350, 400, 450];
     
     let configs = [...stdRules];
-    r1s.forEach(r1 => {
-      r2s.forEach(r2 => {
-        tsValues.forEach(ts => {
-          if (r1 !== r2) {
-            configs.push(`[${r1} & ${r2}: ${ts}]`);
-          }
-        });
+    hybridPairs.forEach(([r1, r2]) => {
+      tsValues.forEach(ts => {
+        configs.push(`[${r1} & ${r2}: ${ts}]`);
       });
     });
 
