@@ -473,15 +473,15 @@ export default function GuidedFlow() {
 
   return (
     <div className="notebook-container">
-      <div className="notebook-header" style={{ padding: '1.5rem 1rem', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', right: '20px', top: '20px', opacity: 0.1, pointerEvents: 'none' }}>
-          <img src="/itu-logo.png" alt="ITU Logo" style={{ width: '90px' }} />
+      <div className="notebook-header" style={{ padding: '2rem 1rem', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', right: '30px', top: '30px', display: 'flex', alignItems: 'center', gap: '1rem', pointerEvents: 'none' }}>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: '0.8rem', fontWeight: '900', color: '#fff', letterSpacing: '2px' }}>İSTANBUL TEKNİK</div>
+            <div style={{ fontSize: '0.8rem', fontWeight: '900', color: '#fff', letterSpacing: '2px' }}>ÜNİVERSİTESİ</div>
+          </div>
+          <img src="/itu-logo.png" alt="ITU Logo" style={{ width: '60px', height: '60px' }} />
         </div>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
-            <img src="/itu-logo.png" alt="ITU" style={{ height: '36px' }} />
-            <div style={{ fontSize: 'clamp(0.8rem, 2vw, 1rem)', fontWeight: '900', color: '#fff', letterSpacing: '4px' }}>İSTANBUL TEKNİK ÜNİVERSİTESİ</div>
-          </div>
           <h2 style={{ fontSize: 'clamp(1.4rem, 4vw, 2.2rem)', letterSpacing: '-1px', marginBottom: '0.5rem', lineHeight: 1.2 }}>UPMSP Akademik Karar Destek Sistemi</h2>
           <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.5', marginBottom: '1rem', maxWidth: '650px' }}>
             Bu interaktif sistem, <a href="https://doi.org/10.1016/j.dajour.2024.100525" target="_blank" rel="noreferrer" style={{ color: 'var(--warning)', fontWeight: 'bold', textDecoration: 'underline' }}>Decision Analytics Journal (2024)</a>'da yayınlanan{' '}
