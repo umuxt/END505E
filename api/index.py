@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from functools import lru_cache
 import os
 import sys
 
@@ -162,53 +163,50 @@ class SingleDDRRequest(BaseModel):
     scenario: str = "high"
     rule_name: str
 
+@lru_cache(maxsize=128)
+def solve_single_ddr_logic(n, m, seed, n_families, np_ratio, scenario, rule_name):
+    problem = generate_problem(n, m, seed, n_families, np_ratio, scenario)
+    
+    # Veri hazırlama (Integer key dönüşümü)
+    P  = {int(j): {int(k): problem["P"][str(j)][str(k)] for k in range(m)} for j in range(n)}
+    S  = {int(i): {int(j): {int(k): problem["S"][str(i)][str(j)][str(k)] for k in range(m)} for j in range(n)}
+          for i in list(range(n)) + [-1]}
+    D  = {int(j): float(problem["D"][str(j)]) for j in range(n)}
+    NP = {int(j): {int(k): problem["NP"][str(j)][str(k)] for k in range(m)} for j in range(n)}
+
+    from app.ddr_heuristic import run_ddr
+    # Kural ismini ayrıştır
+    if "&" in rule_name:
+        import re
+        parts = re.findall(r"\[(.*) & (.*): (\d+)\]", rule_name)
+        if parts:
+            r1, r2, ts = parts[0]
+            res = run_ddr(n, m, P, S, D, NP, r1, r2, float(ts))
+        else:
+            raise ValueError(f"Geçersiz kural formatı: {rule_name}")
+    else:
+        res = run_ddr(n, m, P, S, D, NP, rule_name)
+
+    return {
+        "rule_name": res.rule_name,
+        "Cmax": res.Cmax,
+        "T": res.total_tardiness,
+        "L": res.num_tardy,
+        "solve_time": res.solve_time,
+        "schedule": {str(k): [list(step) for step in steps] for k, steps in res.schedule.items()}
+    }
+
 @app.post("/api/solve_single_ddr")
 def api_solve_single_ddr(req: SingleDDRRequest):
-    """39 kuraldan sadece bir tanesini çözer. Frontend döngüsü için optimize edildi."""
     try:
-        from app.ddr_heuristic import run_ddr
-        problem = generate_problem(req.n, req.m, req.seed, req.n_families, req.np_ratio, req.scenario)
-        
-        n, m = req.n, req.m
-        P  = {int(j): {int(k): problem["P"][str(j)][str(k)] for k in range(m)} for j in range(n)}
-        S  = {int(i): {int(j): {int(k): problem["S"][str(i)][str(j)][str(k)] for k in range(m)} for j in range(n)}
-              for i in list(range(n)) + [-1]}
-        D  = {int(j): float(problem["D"][str(j)]) for j in range(n)}
-        NP = {int(j): {int(k): problem["NP"][str(j)][str(k)] for k in range(m)} for j in range(n)}
-
-        # DEBUG: Gelen veriyi bas
-        print(f"DEBUG: Çözülüyor -> {req.rule_name} (n={n}, m={m})")
-
-        # Kural ismini ayrıştır (Hibrit kural mı?)
-        if "&" in req.rule_name:
-            import re
-            parts = re.findall(r"\[(.*) & (.*): (\d+)\]", req.rule_name)
-            if parts:
-                r1, r2, ts = parts[0]
-                print(f"DEBUG: Hibrit Tespit Edildi: {r1} + {r2} @ {ts}")
-                res = run_ddr(n, m, P, S, D, NP, r1, r2, float(ts))
-            else:
-                print(f"ERROR: Regex kuralı yakalayamadı! Kural: {req.rule_name}")
-                raise ValueError(f"Geçersiz kural formatı: {req.rule_name}")
-        else:
-            print(f"DEBUG: Standart Kural: {req.rule_name}")
-            res = run_ddr(n, m, P, S, D, NP, req.rule_name)
-
-        return {
-            "status": "success",
-            "result": {
-                "rule_name": res.rule_name,
-                "Cmax": float(res.Cmax),
-                "T": float(res.total_tardiness),
-                "L": int(res.num_tardy),
-                "solve_time": float(res.solve_time),
-                "schedule": {str(k): [list(step) for step in steps] for k, steps in res.schedule.items()}
-            }
-        }
+        result = solve_single_ddr_logic(
+            req.n, req.m, req.seed, req.n_families, req.np_ratio, req.scenario, req.rule_name
+        )
+        return {"status": "success", "result": result}
     except Exception as e:
         import traceback
         error_msg = traceback.format_exc()
-        print(error_msg)
+        print(f"ERROR: {error_msg}")
         raise HTTPException(status_code=500, detail=str(e))
 
 class SetupPageRequest(BaseModel):

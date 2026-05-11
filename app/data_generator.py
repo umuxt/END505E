@@ -20,6 +20,7 @@ Parametreler:
 """
 import json
 import random
+from functools import lru_cache
 import os
 
 
@@ -37,6 +38,7 @@ D_SLACK_HIGH_MIN, D_SLACK_HIGH_MAX = 0.2, 0.6
 # ─────────────────────────────────────────────────────────────────────────────
 
 
+@lru_cache(maxsize=32)
 def generate_problem(n: int, m: int, seed: int = 42,
                      n_families: int = 3, np_ratio: float = 0.0, 
                      scenario: str = "high") -> dict:
@@ -98,13 +100,9 @@ def generate_problem(n: int, m: int, seed: int = 42,
             if NP[j][k] == 1:
                 P[j][k] = rng.randint(P_MIN, P_MAX)
             else:
-                P[j][k] = BIG_P  # kullanılmayacak ama veri tutarlılığı için
-
-    # processing times generated
+                P[j][k] = BIG_P
 
     # ── Setup Times: S[i][j][k] ───────────────────────────────────────
-    # Aile tabanlı: aynı aileden kısa, farklı aileden uzun
-    # Kukla iş (-1) için hazırlık = 0
     S = {}
     for i in range(n):
         S[i] = {}
@@ -118,14 +116,11 @@ def generate_problem(n: int, m: int, seed: int = 42,
                 else:
                     S[i][j][k] = round(rng.uniform(S_MIN_DIFF, S_MAX_DIFF), 2)
 
-    # Kukla iş (indeks: -1) hazırlık = 0
     S[-1] = {}
     for j in range(n):
         S[-1][j] = {}
         for k in range(m):
             S[-1][j][k] = 0
-
-    # setup times generated
 
     # ── Due Dates: D[j] ───────────────────────────────────────────────
     eligible_p = [P[j][k] for j in range(n) for k in range(m) if NP[j][k] == 1]
