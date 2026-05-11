@@ -564,6 +564,7 @@ export default function GuidedFlow() {
 
   return (
     <div className="notebook-container">
+      {renderStepTracker()}
       <div className="notebook-header" style={{ padding: '2rem 1rem', position: 'relative', overflow: 'hidden', minHeight: '160px' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -595,7 +596,9 @@ export default function GuidedFlow() {
               { h: "Sıra-Bağımlı Hazırlık Süresi Problemi (Sᵢⱼₖ)", t: "Bir işin hazırlık süresi, atandığı tezgaha (k) ve kendisinden önce o tezgahta işlenen işe (i) bağlıdır. Farklı ürün ailelerinden işler art arda geldiğinde hazırlık süresi 3-11 saat sürerken, aynı aileden art arda gelenler yalnızca 20-40 dakika sürer. Her periyodun başındaki ilk iş 'Kukla İş (j=0)' olarak modellenir ve hazırlık süresi S₀,ⱼ,ₖ = 0 kabul edilir." },
               { h: "Model Parametreleri (Bölüm 3.1)", t: "n = iş sayısı • m = tezgah sayısı • Pⱼₖ = j işinin k tezgahındaki işlem süresi (saat) • Sᵢⱼₖ = k tezgahında i'den sonra j işlenirken gereken hazırlık süresi • Dⱼ = j işinin teslim tarihi • NPⱼₖ = 1 ise j işi k tezgahında işlenebilir, 0 ise işlenemez" }
             ]} />
-            <button className="btn btn-warning mt-4" onClick={() => scrollToNext(2)}><BookOpen size={16} /> Literatür Taramasına Geç</button>
+            <button className="btn btn-warning mt-4" onClick={() => scrollToNext(2)}>
+              <BookOpen size={16} style={{marginRight: '8px'}} /> Problem Parametrelerini Ayarla & Literatüre Geç
+            </button>
           </div>
         </div>
 
@@ -654,13 +657,17 @@ export default function GuidedFlow() {
                 <button className="btn btn-warning mt-4" onClick={generateData} disabled={loading}>
                   {loading ? <div className="loader"></div> : <><Play size={16} /> Sistemi Başlat ve Veri Üret</>}
                 </button>
-                {problemData && (
-                  <>
-                    <DataMatrixView data={problemData} title="Tablo 2: Problem Veri Matrisi (Pⱼₖ, Sᵢⱼₖ, Dⱼ)" />
-                    <button className="btn btn-warning mt-4" onClick={() => scrollToNext(3)}><Calculator size={16} /> 03. Matematiksel Modeller (MILP) Adımına Geç</button>
-                  </>
-                )}
-              </div>
+                  {problemData && (
+                    <div style={{ marginTop: '2.5rem', animation: 'fadeIn 0.5s ease' }}>
+                      <DataMatrixView data={problemData} title="Tablo 2: Problem Veri Matrisi (Pⱼₖ, Sᵢⱼₖ, Dⱼ)" />
+                      <div className="flex-row mt-4">
+                        <button className="btn btn-warning" onClick={() => scrollToNext(3)}>
+                          <Calculator size={16} style={{marginRight: '8px'}} /> 03. Matematiksel Modelleri (MILP) Analiz Et
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
             </div>
           </div>
         )}
@@ -712,7 +719,9 @@ export default function GuidedFlow() {
                   )}
                 </div>
               )}
-              <button className="btn btn-warning mt-4" onClick={() => scrollToNext(4)}><Zap size={16} /> Sezgisel Analiz (DDR) Adımına Geç</button>
+              <button className="btn btn-warning mt-4" onClick={() => scrollToNext(4)}>
+                <Zap size={16} style={{marginRight: '8px'}} /> 04. Sezgisel Çözüm (DDR) Algoritmalarına Geç
+              </button>
             </div>
           </div>
         )}
@@ -833,7 +842,11 @@ export default function GuidedFlow() {
                     <GanttChart schedule={ddrResults.find(r => r.rule_name === topsisResults[0].rule_name)?.schedule} m={Number(inputMachines)} n={Number(inputJobs)} />
                     <PerformanceMetricsCard schedule={ddrResults.find(r => r.rule_name === topsisResults[0].rule_name)?.schedule} problemData={problemData} />
                   </div>
-                  <button className="btn btn-warning" onClick={() => scrollToNext(6)}><Activity size={16} /> 06. Gap Analizi Adımına Geç</button>
+                  <div className="mt-4">
+                    <button className="btn btn-warning" onClick={() => scrollToNext(6)}>
+                      <Activity size={16} style={{marginRight: '8px'}} /> 06. Sezgisel Performans (Gap Analizi) Değerlendirmesine Geç
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -871,17 +884,22 @@ export default function GuidedFlow() {
                     </div>
                   </div>
                   <p style={{ fontSize: '0.75rem', marginTop: '1rem', opacity: 0.6, fontStyle: 'italic' }}>* Kaynak: Tablo 13, Bölüm 6.2. Gap değeri %0'a ne kadar yakınsa sezgisel çözüm o kadar kalitelidir.</p>
+                  <button className="btn btn-warning mt-4" onClick={() => scrollToNext(7)}>
+                    <CheckCircle size={16} style={{marginRight: '8px'}} /> 07. Akademik Değerlendirme ve Final Sonucuna Git
+                  </button>
                 </div>
               ) : (
-                <div className="mt-4" style={{ padding: '1.5rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px dashed var(--border-color)', textAlign: 'center' }}>
-                  <div style={{ color: 'var(--warning)', marginBottom: '0.5rem' }}><Activity size={24} /></div>
-                  <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Büyük Ölçekli Problem Tespit Edildi</div>
-                  <p style={{ fontSize: '0.85rem', opacity: 0.7, maxWidth: '600px', margin: '0 auto' }}>
-                    İş sayısı (n={problemData?.metadata.n}) kesin çözüm sınırlarının üzerindedir. Akademik olarak bu durumlarda MILP atlanarak doğrudan Sezgisel (DDR) performansı makale standartları ile karşılaştırılır.
+                <div className="mt-4" style={{ padding: '2rem', background: 'rgba(210,153,34,0.05)', borderRadius: '12px', border: '1px dashed var(--border-color)', textAlign: 'center' }}>
+                  <div style={{ color: 'var(--warning)', marginBottom: '1rem' }}><Activity size={32} /></div>
+                  <h4 style={{ marginBottom: '0.5rem' }}>Büyük Ölçekli Problem (Kesin Çözüm Devre Dışı)</h4>
+                  <p style={{ fontSize: '0.9rem', opacity: 0.8, maxWidth: '600px', margin: '0 auto 1.5rem' }}>
+                    İş sayısı (n={problemData?.metadata.n}) global optimal çözüm sınırlarının üzerindedir. Akademik standartlar gereği bu ölçekte performans analizi doğrudan <strong>En İyi Sezgisel (DDR)</strong> sonuçları üzerinden raporlanır.
                   </p>
+                  <button className="btn btn-warning" onClick={() => scrollToNext(7)}>
+                    <CheckCircle size={16} style={{marginRight: '8px'}} /> 07. Akademik Değerlendirme ve Sonuca İlerle
+                  </button>
                 </div>
               )}
-              <button className="btn btn-warning mt-4" onClick={() => scrollToNext(7)}><BookOpen size={16} /> 07. Final Değerlendirmesi ve Sonuç</button>
             </div>
           </div>
         )}
