@@ -499,14 +499,17 @@ export default function GuidedFlow() {
           })
         });
         const d = await res.json();
+        if (!res.ok) {
+          throw new Error(d.detail || "Sunucu hatası");
+        }
         if (d.status === 'success') {
           // Listeye yeni sonucu ekle ve anında sırala
           setDdrResults(prev => [...prev, d.result].sort((a, b) => a.Cmax - b.Cmax));
         }
       } catch (e) {
         console.error(`Kural hatası: ${configs[i]}`, e);
-        // Hata detayı varsa göster
-        if (i === 0) alert(`İlk kuralda hata oluştu: ${e.message}. Diğerleri devam ediyor olabilir...`);
+        // Her hatada uyarı ver (Detaylı)
+        alert(`HATA: ${configs[i]} çözülürken bir sorun oluştu.\nMesaj: ${e.message}`);
       }
     }
     
