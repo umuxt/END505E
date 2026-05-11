@@ -10,8 +10,10 @@ Makalede kullanılan TOPSIS süreci 5 temel adımdan oluşur:
 Her bir alternatif (Pareto çözümü veya kural) için 3 performans kriteri (Cₘₐₓ, T, L) baz alınarak bir matris oluşturulur.
 
 ### Adım 2: Normalizasyon
-Kriter değerlerini 0 ile 1 arasına çekmek için kullanılır. Makalede tüm kriterler "maliyet" (ne kadar az o kadar iyi) odaklı olduğu için min-max normalizasyonu tercih edilmiştir:
-- **Formül:** rᵢⱼ = min(xᵢⱼ) / xᵢⱼ (Bu formül makalede maliyet kriterlerini faydaya dönüştürmek için kullanılmıştır).
+Bu aşamada makalede iki ayrı kullanım vardır:
+- Küçük ölçekli Pareto çözümü seçiminde min-max normalizasyonu kullanılır.
+- DDR kurallarını TOPSIS ile sıralarken ise maliyet kriterleri için oran tabanlı normalizasyon kullanılır:
+- **Formül:** rᵢⱼ = \tilde{x}ⱼ / xᵢⱼ, burada \tilde{x}ⱼ = minᵢ{xᵢⱼ}.
 
 ### Adım 3: Ağırlıklı Normalize Matris
 Karar vericinin atadığı ağırlıklar (wⱼ) her bir normalize değerle çarpılır:
