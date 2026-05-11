@@ -239,7 +239,7 @@ def run_ddr(n: int, m: int, P: dict, S: dict, D: dict, NP: dict,
     total_tard = 0.0
     num_tardy  = 0
     for k_sched, jobs in schedule.items():
-        for j, s, e in jobs:
+        for j, s, e, setup in jobs:
             tard = max(0.0, e - D[j])
             total_tard += tard
             if tard > 0:
