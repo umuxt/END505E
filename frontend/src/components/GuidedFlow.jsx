@@ -498,16 +498,12 @@ export default function GuidedFlow() {
         <div className={`flow-step ${activeStage >= 1 ? 'active' : ''}`}>
           <div className="flow-step-number">01</div>
           <div className="flow-step-node">
-            <div className="flex-row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
             <h3><FileText size={20} /> 01. Giriş ve Problem Tanımı</h3>
-            </div>
             <AcademicBlock items={[
               { h: "Endüstriyel Motivasyon", t: "Bu çalışma, Tayland'daki en büyük çelik boru üreticisindeki gerçek bir üretim planlama probleminden motive edilmiştir. Müşteri siparişlerinden oluşan 244-298 iş, kapasiteleri ve hızları farklı 10 ilişkisiz paralel tezgaha çizelgelenmektedir. Çalışmanın amacı, üç çatışan hedefi (hız, gecikme, teslim terminleri) aynı anda optimize eden bir sistem kurmaktır. [Decision Analytics Journal 13, 2024]" },
               { h: "Sıra-Bağımlı Hazırlık Süresi Problemi (Sᵢⱼₖ)", t: "Bir işin hazırlık süresi, atandığı tezgaha (k) ve kendisinden önce o tezgahta işlenen işe (i) bağlıdır. Farklı ürün ailelerinden işler art arda geldiğinde hazırlık süresi 3-11 saat sürerken, aynı aileden art arda gelenler yalnızca 20-40 dakika sürer. Her periyodun başındaki ilk iş 'Kukla İş (j=0)' olarak modellenir ve hazırlık süresi S₀,ⱼ,ₖ = 0 kabul edilir." },
-              { h: "Model Parametreleri", t: "n = iş sayısı, m = tezgah sayısı, Pⱼₖ = j işinin k tezgahındaki işlem süresi (saat), Sᵢⱼₖ = k tezgahında i'den sonra j işlenirken gereken hazırlık süresi, Dⱼ = j işinin teslim tarihi (due date), NPⱼₖ = 1 ise j işi k tezgahında işlenebilir, 0 ise işlenemez." }
+              { h: "Model Parametreleri (Bölüm 3.1)", t: "n = iş sayısı • m = tezgah sayısı • Pⱼₖ = j işinin k tezgahındaki işlem süresi (saat) • Sᵢⱼₖ = k tezgahında i'den sonra j işlenirken gereken hazırlık süresi • Dⱼ = j işinin teslim tarihi • NPⱼₖ = 1 ise j işi k tezgahında işlenebilir, 0 ise işlenemez" }
             ]} />
-
-            <AgentInsight agent="paper" message="Tayland'daki büyük bir çelik boru üreticisinin karşılaştığı gerçek dünya probleminden motive edilen bu çalışma, ilişkisiz paralel tezgahları ve sıra-bağımlı hazırlık sürelerini (Sijk) ele alır." />
             <button className="btn btn-warning mt-4" onClick={() => scrollToNext(2)}><BookOpen size={16} /> Literatür Taramasına Geç</button>
           </div>
         </div>
@@ -517,16 +513,12 @@ export default function GuidedFlow() {
           <div className="flow-step active slide-in">
             <div className="flow-step-number">02</div>
             <div className="flow-step-node">
-              <div className="flex-row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3><BookOpen size={20} /> 02. Literatür Taraması (Bölüm 2)</h3>
-              </div>
+              <h3><BookOpen size={20} /> 02. Literatür Taraması (Bölüm 2)</h3>
               <AcademicBlock items={[
-                { h: "Araştırma Boşluğu (Research Gap)", t: "Tablo 1'e göre, tezgah ve sıra-bağımlı hazırlık süreli ilişkisiz paralel tezgah sistemlerinde Cmax, T ve L'yi eş zamanlı optimize eden hiçbir çalışma yoktur. Bu çalışma bu boşluğu doldurmaktadır." },
+                { h: "Araştırma Boşluğu (Research Gap)", t: "Tablo 1'e göre, tezgah ve sıra-bağımlı hazırlık süreli ilişkisiz paralel tezgah sistemlerinde Cmax, T ve L'â€™yi eş zamanlı optimize eden hiçbir çalışma yoktur. Bu çalışma bu boşluğu doldurmaktadır." },
                 { h: "Temel Referans 1 – Avalos-Rosales (2015)", t: "M1 modelinin temeli bu çalışmadan alınmıştır. Orijinal model yalnızca Cmax'ı minimize eder. Bu çalışma onu T ve L kriterlerini de kapsayacak şekilde genişletmiştir." },
                 { h: "Temel Referans 2 – Bektur & Sarac (2019)", t: "DDR sezgisellerine ilham veren bu çalışma, ATCS kuralını sıra-bağımlı hazırlık süreleri için uyarlar. Bu çalışma ise tek kural yerine SCT, SC-LPT ve SC-EDD adlı üç yeni kural geliştirir." }
               ]} />
-
-              <AgentInsight agent="paper" message="Bu çalışma, ilişkisiz paralel tezgahlar için üç farklı performans kriterini (Cmax, Tardiness, L) eş zamanlı olarak optimize eden literatürdeki ilk kapsamlı modeldir." />
               <div className="mt-4" style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
                 <div className="output-header">[Tablo 1] İlgili Literatürün Özeti</div>
                 <table className="data-table small-table">
@@ -542,7 +534,7 @@ export default function GuidedFlow() {
                 </table>
               </div>
               <div className="mt-4" style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1.5rem' }}>
-                <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--warning)', marginBottom: '0.75rem' }}>🧪 Problemi Kur: Veri Seti Oluştur</div>
+                <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--warning)', marginBottom: '0.75rem' }}>🧪 Bunu Kendiniz Deneyin: Problem Veri Seti Oluşturun</div>
                 <div className="flex-row" style={{ gap: '1.5rem', flexWrap: 'wrap' }}>
                   <div className="form-group" style={{ flex: 1, minWidth: '130px' }}>
                     <label>İş Sayısı (n)</label>
@@ -561,8 +553,15 @@ export default function GuidedFlow() {
                     <input type="number" className="input-field" value={inputNP} onChange={e => setInputNP(e.target.value)} placeholder="Örn: 20" />
                   </div>
                 </div>
-                <button className="btn btn-warning mt-4" onClick={() => { generateData(); scrollToNext(3); }} disabled={loading}><Play size={16} /> Sistemi Başlat ve Veri Üret</button>
-                {problemData && <DataMatrixView data={problemData} title="Tablo 2: Problem Veri Matrisi (Pⱼₖ, Sᵢⱼₖ, Dⱼ)" />}
+                <button className="btn btn-warning mt-4" onClick={generateData} disabled={loading}>
+                  {loading ? <div className="loader"></div> : <><Play size={16} /> Sistemi Başlat ve Veri Üret</>}
+                </button>
+                {problemData && (
+                  <>
+                    <DataMatrixView data={problemData} title="Tablo 2: Problem Veri Matrisi (Pⱼₖ, Sᵢⱼₖ, Dⱼ)" />
+                    <button className="btn btn-warning mt-4" onClick={() => scrollToNext(3)}><Calculator size={16} /> 03. Matematiksel Modeller (MILP) Adımına Geç</button>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -573,16 +572,13 @@ export default function GuidedFlow() {
           <div className="flow-step active slide-in">
             <div className="flow-step-number">03</div>
             <div className="flow-step-node">
-              <div className="flex-row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3><Calculator size={20} /> 03. Matematiksel Modeller (MILP – Bölüm 3)</h3>
-              </div>
+              <h3><Calculator size={20} /> 03. Matematiksel Modeller (MILP – Bölüm 3)</h3>
               <AcademicBlock items={[
                 { h: "M1: Min Cmax (Yayılma Süresini Minimize Et)", t: "Temel model: Cmax = max(Cⱼ). Karar değişkeni Xᵢⱼₖ: j işi k tezgahında i'den hemen sonra çizelgelenirse 1, değilse 0. Kısıt (6): Cⱼ ≥ Cᵢ + Sᵢⱼₖ + Pⱼₖ – V·(1 – Xᵢⱼₖ). Kısıtlar (2-3) her işin tek öncülü ve ardılı olmasını, kısıt (5) her tezgahın kukla işle başlamasını garanti eder." },
                 { h: "M2: Min T (Toplam Gecikme) | M3: Min L (Geciken İş Sayısı)", t: "M2, M1'e eⱼ⁺ (tardiness) ve eⱼ⁻ (earliness) değişkenleri eklenerek türetilir. Hedef: Min Σ eⱼ⁺. M3 ise Uⱼ ∈ {0,1} ikili değişkeni ekler: Uⱼ = 1 ise j işi gecikmeli, hedef Min Σ Uⱼ. Bu üç model çatışan hedefler üretir." },
                 { h: "M4: AUGMECON (Artırılmış ε-Kısıt – Uzlaşmacı Model)", t: "5 adım: (1) M1,M2,M3'ü çöz → Ödeme tablosunu (payoff table) oluştur. (2) T ve L için aralık hesapla, grid noktaları belirle. (3) T≤T̄ ve L≤L̄ kısıtları altında Cmax'ı minimize et. (4) 126 kez çöz. (5) Baskılanmayan (non-dominated) Pareto çözümlerini seç. P1 problemi için 9 Pareto noktası elde edilmiştir." }
               ]} />
-
-              <AgentInsight agent="paper" message="Küçük ölçekli örnekler (n<15) için Google CP-SAT çözücüsü ile global optimumu arıyoruz." />
+              {!problemData && <div style={{ padding: '1rem', background: 'rgba(255,193,7,0.1)', borderRadius: '8px', marginTop: '1rem', fontSize: '0.85rem', color: 'var(--warning)' }}>⚠️ Devam etmek için önce Adım 02'de veri seti oluşturun.</div>}
               {problemData?.metadata.n > 15 ? (
                 <div className="highlight-box mt-4">
                   <p>İş sayısı (n={problemData.metadata.n}) kesin çözüm sınırlarının üzerindedir. Sezgisel Analiz (DDR) aşamasına geçiliyor.</p>
