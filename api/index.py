@@ -142,6 +142,56 @@ def api_solve_ddr_by_params(req: DDRParamsRequest):
         print(error_msg)
         raise HTTPException(status_code=500, detail=error_msg)
 
+class SingleDDRRequest(BaseModel):
+    n: int
+    m: int
+    seed: int
+    n_families: int
+    np_ratio: float
+    scenario: str
+    rule_name: str
+
+@app.post("/api/solve_single_ddr")
+def api_solve_single_ddr(req: SingleDDRRequest):
+    """39 kuraldan sadece bir tanesini çözer. Frontend döngüsü için optimize edildi."""
+    try:
+        from app.ddr_heuristic import run_ddr
+        problem = generate_problem(req.n, req.m, req.seed, req.n_families, req.np_ratio, req.scenario)
+        
+        n, m = req.n, req.m
+        P  = {int(j): {int(k): problem["P"][str(j)][str(k)] for k in range(m)} for j in range(n)}
+        S  = {int(i): {int(j): {int(k): problem["S"][str(i)][str(j)][str(k)] for k in range(m)} for j in range(n)}
+              for i in list(range(n)) + [-1]}
+        D  = {int(j): float(problem["D"][str(j)]) for j in range(n)}
+        NP = {int(j): {int(k): problem["NP"][str(j)][str(k)] for k in range(m)} for j in range(n)}
+
+        # Kural ismini ayrıştır (Hibrit kural mı?)
+        # Örn: "[SCT & SC-LPT: 200]"
+        if "&" in req.rule_name:
+            import re
+            parts = re.findall(r"\[(.*) & (.*): (\d+)\]", req.rule_name)
+            if parts:
+                r1, r2, ts = parts[0]
+                res = run_ddr(n, m, P, S, D, NP, r1, r2, float(ts))
+            else:
+                raise ValueError("Geçersiz kural formatı")
+        else:
+            res = run_ddr(n, m, P, S, D, NP, req.rule_name)
+
+        return {
+            "status": "success",
+            "result": {
+                "rule_name": res.rule_name,
+                "Cmax": float(res.Cmax),
+                "T": float(res.total_tardiness),
+                "L": int(res.num_tardy),
+                "solve_time": float(res.solve_time),
+                "schedule": {str(k): [list(step) for step in steps] for k, steps in res.schedule.items()}
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 class SetupPageRequest(BaseModel):
     n: int
     m: int
