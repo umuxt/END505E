@@ -463,31 +463,57 @@ export default function GuidedFlow() {
   const runDDR = async () => {
     if (!problemData) return;
     setLoading(true);
-    try {
-      const res = await fetch(`${API_BASE}/solve_ddr_by_params`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          n: problemData.metadata.n,
-          m: problemData.metadata.m,
-          seed: problemData.metadata.seed,
-          n_families: problemData.metadata.n_families,
-          np_ratio: problemData.metadata.np_ratio,
-          scenario: inputScenario
-        })
+    setDdrResults([]); // Sıfırla
+    
+    // 39 Kural Listesi (Sistematik oluştur)
+    const stdRules = ["SCT", "SC-EDD", "SC-LPT", "SC-WSPT"];
+    const r1s = ["SCT", "SC-EDD"];
+    const r2s = ["SCT", "SC-EDD", "SC-LPT", "SC-WSPT"];
+    const tsValues = [200, 400, 600, 800, 1000];
+    
+    let configs = [...stdRules];
+    r1s.forEach(r1 => {
+      r2s.forEach(r2 => {
+        tsValues.forEach(ts => {
+          if (r1 !== r2) {
+            configs.push(`[${r1} & ${r2}: ${ts}]`);
+          }
+        });
       });
-      const data = await res.json();
-      if (data.status === 'success') {
-        setDdrResults(data.results.sort((a, b) => a.Cmax - b.Cmax));
-        setActiveStage(5);
-      } else {
-        throw new Error(data.detail || "Çözümleme başarısız.");
+    });
+
+    // Teker teker çöz ve listeye ekle
+    for (let i = 0; i < configs.length; i++) {
+      try {
+        const res = await fetch(`${API_BASE}/solve_single_ddr`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...problemData.metadata,
+            seed: problemData.metadata.seed,
+            rule_name: configs[i]
+          })
+        });
+        const d = await res.json();
+        if (d.status === 'success') {
+          // Listeye yeni sonucu ekle ve anında sırala
+          setDdrResults(prev => [...prev, d.result].sort((a, b) => a.Cmax - b.Cmax));
+        }
+      } catch (e) {
+        console.error(`Kural hatası: ${configs[i]}`, e);
       }
-    } catch (e) {
-      alert("Hata: " + e.message);
     }
+    
     setLoading(false);
+    setActiveStage(5);
   };
+
+  // DDR sonuçları her güncellendiğinde TOPSIS'i tetikle
+  useEffect(() => {
+    if (ddrResults.length > 0) {
+      runTopsis();
+    }
+  }, [ddrResults, weights]);
 
   const runTopsis = () => {
     if (ddrResults.length === 0) return;
@@ -713,16 +739,29 @@ export default function GuidedFlow() {
                 { h: "Hibrit Kural ve Kural Değiştirme Zamanı (tₛ)", t: "6 kombine kural: [SCT & SC-LPT: tₛ], [SCT & SC-EDD: tₛ], [SC-EDD & SCT: tₛ] vb. tₛ = 200, 250, 300, 350, 400, 450 saat olarak denenir. Çizelgelenen son işin Cⱼ değeri tₛ'yi aşınca kural değişir. Toplam 39 kural (3 tekli + 6×6 kombine) test edilir." }
               ]} />
 
-              <button className="btn btn-warning mt-4" onClick={runDDR} disabled={loading}>
-                {loading ? (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div className="loader" style={{ width: '16px', height: '16px' }}></div>
-                    <span>Hesaplanıyor (39 DDR Kuralı Test Ediliyor)...</span>
+              <div className="flex-column" style={{ gap: '1rem', alignItems: 'center', margin: '2rem 0' }}>
+                <button className="btn btn-warning" onClick={runDDR} disabled={loading} style={{ padding: '1rem 3rem', fontSize: '1.1rem', fontWeight: 'bold', boxShadow: '0 0 20px rgba(210,153,34,0.3)' }}>
+                  {loading ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div className="loader" style={{ width: '16px', height: '16px' }}></div>
+                      <span>Senaryolar Çözülüyor...</span>
+                    </div>
+                  ) : (
+                    <><Zap size={16} /> 39 FARKLI DDR SENARYOSUNU ANALİZ ET</>
+                  )}
+                </button>
+                {loading && (
+                  <div style={{ width: '100%', maxWidth: '500px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '5px', color: 'var(--warning)', fontWeight: 'bold' }}>
+                      <span>İlerleme: {ddrResults[ddrResults.length-1]?.rule_name || 'Başlanıyor...'}</span>
+                      <span>{Math.round((ddrResults.length / 34) * 100)}%</span>
+                    </div>
+                    <div style={{ height: '10px', background: 'rgba(255,255,255,0.05)', borderRadius: '5px', overflow: 'hidden', border: '1px solid #30363d' }}>
+                      <div style={{ height: '100%', background: 'var(--warning)', width: `${(ddrResults.length / 34) * 100}%`, transition: 'width 0.4s ease' }}></div>
+                    </div>
                   </div>
-                ) : (
-                  <><Zap size={16} /> 39 Farklı Dinamik Kuralı Analiz Et</>
                 )}
-              </button>
+              </div>
               {ddrResults.length > 0 && (
                 <div className="mt-4" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                   <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', borderLeft: '3px solid var(--warning)', paddingLeft: '0.75rem', lineHeight: '1.5' }}>
@@ -785,6 +824,9 @@ export default function GuidedFlow() {
                     <label style={{ color: 'var(--warning)', fontWeight: 'bold', fontSize: '0.75rem', marginBottom: '8px', display: 'block' }}>w₃ (Tardy Jobs)</label>
                     <input type="number" step="0.05" min="0" max="1" className="input-field" value={weights.wL} onChange={e => setWeights({ ...weights, wL: Number(e.target.value) })} style={{ width: '100%' }} />
                   </div>
+                  <button className="btn btn-warning" onClick={runTopsis} style={{ height: '42px', padding: '0 2rem', fontWeight: 'bold' }}>
+                    <Activity size={16} style={{ marginRight: '8px' }} /> ANALİZİ GÜNCELLE
+                  </button>
                 </div>
               </div>
               {topsisResults.length > 0 && (
@@ -803,7 +845,7 @@ export default function GuidedFlow() {
                   <div style={{ textAlign: 'center', border: '2px solid var(--warning)', background: 'rgba(210,153,34,0.05)', borderRadius: '12px', padding: '1.5rem' }}>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>TOPSIS SONUCU — EN YÜKSEK CC* SKORU</div>
                     <h4 style={{ color: 'var(--warning)', letterSpacing: '1px', margin: '0.5rem 0' }}>{topsisResults[0].rule_name}</h4>
-                    <p style={{ fontSize: '1rem', marginTop: '0.25rem' }}>İdeale Yakınlık (CC*): <span style={{ fontWeight: 'bold', color: '#4ade80', fontSize: '1.3rem' }}>{topsisResults[0].C_star?.toFixed(6)}</span></p>
+                    <p style={{ fontSize: '1rem', marginTop: '0.25rem' }}>İdeale Yakınlık (CC*): <span style={{ fontWeight: 'bold', color: '#4ade80', fontSize: '1.3rem' }}>{topsisResults[0].cc}</span></p>
                     <p style={{ fontSize: '0.75rem', opacity: 0.6, marginTop: '0.5rem' }}>Bu kural, seçtiğiniz ağırlıklar altında Cmax, T ve L kriterlerini en dengeli karşılayan çizelgeleme stratejisidir.</p>
                   </div>
 
