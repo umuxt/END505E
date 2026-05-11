@@ -370,6 +370,7 @@ export default function GuidedFlow() {
   const [inputMachines, setInputMachines] = useState('');
   const [inputFamilies, setInputFamilies] = useState('');
   const [inputNP, setInputNP] = useState('');
+  const [inputScenario, setInputScenario] = useState('high');
   const [problemData, setProblemData] = useState(null);
   const [cpsatResults, setCpsatResults] = useState({ M1: null, M2: null });
   const [ddrResults, setDdrResults] = useState([]);
@@ -388,7 +389,8 @@ export default function GuidedFlow() {
           m: Number(inputMachines),
           seed: 42,
           n_families: Number(inputFamilies) || 3,
-          np_ratio: Number(inputNP) || 0.1
+          np_ratio: (Number(inputNP) / 100) || 0.0,
+          scenario: inputScenario
         })
       });
       if (!res.ok) {
@@ -550,7 +552,14 @@ export default function GuidedFlow() {
                   </div>
                   <div className="form-group" style={{ flex: 1, minWidth: '130px' }}>
                     <label>NP Oranı (%)</label>
-                    <input type="number" className="input-field" value={inputNP} onChange={e => setInputNP(e.target.value)} placeholder="Örn: 20" />
+                    <input type="number" className="input-field" value={inputNP} onChange={e => setInputNP(e.target.value)} placeholder="Örn: 10" />
+                  </div>
+                  <div className="form-group" style={{ flex: 1, minWidth: '130px' }}>
+                    <label>Talep Senaryosu</label>
+                    <select className="input-field" value={inputScenario} onChange={e => setInputScenario(e.target.value)}>
+                      <option value="high">Yüksek Talep (Sıkı Termin)</option>
+                      <option value="low">Düşük Talep (Gevşek Termin)</option>
+                    </select>
                   </div>
                 </div>
                 <button className="btn btn-warning mt-4" onClick={generateData} disabled={loading}>

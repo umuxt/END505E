@@ -31,6 +31,7 @@ class GenerateRequest(BaseModel):
     seed: int = 42
     n_families: int = 3
     np_ratio: float = 0.0
+    scenario: str = "high"
 
 @app.post("/api/generate")
 def api_generate(req: GenerateRequest):
@@ -40,7 +41,8 @@ def api_generate(req: GenerateRequest):
             m=req.m, 
             seed=req.seed, 
             n_families=req.n_families, 
-            np_ratio=req.np_ratio
+            np_ratio=req.np_ratio,
+            scenario=req.scenario
         )
         return {"status": "success", "data": problem}
     except Exception as e:
