@@ -143,12 +143,12 @@ def api_solve_ddr_by_params(req: DDRParamsRequest):
         raise HTTPException(status_code=500, detail=error_msg)
 
 class SingleDDRRequest(BaseModel):
-    n: int
-    m: int
-    seed: int
-    n_families: int
-    np_ratio: float
-    scenario: str
+    n: int = 10
+    m: int = 3
+    seed: int = 42
+    n_families: int = 3
+    np_ratio: float = 0.5
+    scenario: str = "high"
     rule_name: str
 
 @app.post("/api/solve_single_ddr")

@@ -489,8 +489,12 @@ export default function GuidedFlow() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            ...problemData.metadata,
-            seed: problemData.metadata.seed,
+            n: Number(problemData.metadata.n),
+            m: Number(problemData.metadata.m),
+            seed: Number(problemData.metadata.seed || 42),
+            n_families: Number(problemData.metadata.n_families || 3),
+            np_ratio: parseFloat(problemData.metadata.np_ratio || 0.5),
+            scenario: problemData.metadata.scenario || 'high',
             rule_name: configs[i]
           })
         });
