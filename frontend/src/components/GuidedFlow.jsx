@@ -400,6 +400,7 @@ export default function GuidedFlow() {
   const [ddrResults, setDdrResults] = useState([]);
   const [topsisResults, setTopsisResults] = useState([]);
   const [weights, setWeights] = useState({ wC: 0.34, wT: 0.33, wL: 0.33 });
+  const [weightsDirty, setWeightsDirty] = useState(true); // Başlangıçta dirty
 
   const generateData = async () => {
     if (!inputJobs || !inputMachines) return alert("Lütfen iş ve tezgah sayılarını giriniz.");
@@ -522,12 +523,10 @@ export default function GuidedFlow() {
     setActiveStage(5);
   };
 
-  // DDR sonuçları her güncellendiğinde (yeni kural geldiğinde) otomatik çalıştır
+  // DDR sonuçları değiştiğinde TOPSIS'i sıfırla (Kullanıcı yeni veri setiyle tekrar butona basmalı)
   useEffect(() => {
-    if (ddrResults.length > 0) {
-      runTopsis();
-    }
-  }, [ddrResults]); // Buradan 'weights' çıkarıldı, artık ağırlık değişince otomatik çalışmayacak
+    setTopsisResults([]);
+  }, [ddrResults]);
 
   const runTopsis = () => {
     if (ddrResults.length === 0) return;
@@ -823,25 +822,31 @@ export default function GuidedFlow() {
 
               <div className="mt-4" style={{ background: 'rgba(255,255,255,0.02)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
                 <div style={{ fontSize: '0.8rem', marginBottom: '1rem', borderLeft: '3px solid var(--warning)', paddingLeft: '0.75rem', lineHeight: '1.5', color: 'var(--text-secondary)' }}>
-                  Ağırlıkları değiştirerek farklı yönetim önceliklerini simüle edin, ardından <strong style={{ color: 'var(--warning)' }}>"Analizi Güncelle"</strong> butonuna basın. Ağırlıklar otomatik olarak normalize edilir (Σw = 1.0).
+                  Ağırlıkları değiştirerek farklı yönetim önceliklerini simüle edin, ardından <strong style={{ color: 'var(--warning)' }}>"Analizi Güncelle"</strong> butonuna basın. Ağırlıklar toplamı tam 1.0 olmalıdır.
                 </div>
                 <div className="flex-row" style={{ gap: '2rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
                   <div className="form-group" style={{ flex: 1, minWidth: '100px' }}>
                     <label style={{ color: 'var(--warning)', fontWeight: 'bold', fontSize: '0.75rem', marginBottom: '8px', display: 'block' }}>w₁ (Cmax)</label>
-                    <input type="number" step="0.05" min="0" max="1" className="input-field" value={weights.wC} onChange={e => setWeights({ ...weights, wC: Number(e.target.value) })} style={{ width: '100%' }} />
+                    <input type="number" step="0.05" min="0" max="1" className="input-field" value={weights.wC} 
+                      onChange={e => { setWeights({ ...weights, wC: Number(e.target.value) }); setWeightsDirty(true); }} style={{ width: '100%' }} />
                   </div>
                   <div className="form-group" style={{ flex: 1, minWidth: '100px' }}>
                     <label style={{ color: 'var(--warning)', fontWeight: 'bold', fontSize: '0.75rem', marginBottom: '8px', display: 'block' }}>w₂ (Tardiness)</label>
-                    <input type="number" step="0.05" min="0" max="1" className="input-field" value={weights.wT} onChange={e => setWeights({ ...weights, wT: Number(e.target.value) })} style={{ width: '100%' }} />
+                    <input type="number" step="0.05" min="0" max="1" className="input-field" value={weights.wT} 
+                      onChange={e => { setWeights({ ...weights, wT: Number(e.target.value) }); setWeightsDirty(true); }} style={{ width: '100%' }} />
                   </div>
                   <div className="form-group" style={{ flex: 1, minWidth: '100px' }}>
                     <label style={{ color: 'var(--warning)', fontWeight: 'bold', fontSize: '0.75rem', marginBottom: '8px', display: 'block' }}>w₃ (Tardy Jobs)</label>
-                    <input type="number" step="0.05" min="0" max="1" className="input-field" value={weights.wL} onChange={e => setWeights({ ...weights, wL: Number(e.target.value) })} style={{ width: '100%' }} />
+                    <input type="number" step="0.05" min="0" max="1" className="input-field" value={weights.wL} 
+                      onChange={e => { setWeights({ ...weights, wL: Number(e.target.value) }); setWeightsDirty(true); }} style={{ width: '100%' }} />
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                     <button 
                       className={`btn btn-warning ${Math.abs((weights.wC + weights.wT + weights.wL) - 1.0) < 0.001 ? 'pulse-glow' : ''}`}
-                      onClick={runTopsis} 
+                      onClick={() => {
+                        runTopsis();
+                        setWeightsDirty(false); // Güncelledik
+                      }} 
                       disabled={Math.abs((weights.wC + weights.wT + weights.wL) - 1.0) >= 0.001}
                       style={{ 
                         height: '42px', 
@@ -851,7 +856,7 @@ export default function GuidedFlow() {
                         cursor: Math.abs((weights.wC + weights.wT + weights.wL) - 1.0) < 0.001 ? 'pointer' : 'not-allowed'
                       }}
                     >
-                      <Activity size={16} style={{ marginRight: '8px' }} /> ANALİZİ GÜNCELLE
+                      <Activity size={16} style={{ marginRight: '8px' }} /> {topsisResults.length > 0 ? 'ANALİZİ GÜNCELLE' : 'ANALİZİ UYGULA'}
                     </button>
                     <div style={{ 
                       fontSize: '0.65rem', 
@@ -864,8 +869,22 @@ export default function GuidedFlow() {
                   </div>
                 </div>
               </div>
+              
               {topsisResults.length > 0 && (
-                <div className="mt-4" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                <div className="mt-4" style={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  gap: '2rem',
+                  opacity: weightsDirty ? 0.5 : 1, // Ağırlık değiştiyse tablo solar
+                  pointerEvents: weightsDirty ? 'none' : 'auto', // Güncellemeden tabloya dokunulmaz
+                  transition: 'opacity 0.3s ease',
+                  position: 'relative'
+                }}>
+                  {weightsDirty && (
+                    <div style={{ position: 'absolute', top: '-15px', left: '0', background: 'var(--warning)', color: '#000', fontSize: '0.7rem', padding: '2px 10px', borderRadius: '4px', fontWeight: 'bold', zIndex: 10 }}>
+                      ⚠️ AĞIRLIKLAR DEĞİŞTİ - LÜTFEN GÜNCELLEYİN
+                    </div>
+                  )}
                   <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', borderLeft: '3px solid var(--warning)', paddingLeft: '0.75rem', lineHeight: '1.5' }}>
                     <strong style={{ color: 'var(--warning)' }}>TOPSIS Analiz Matrisi (Tablo 21)</strong> — r₁/r₂/r₃ kuralın ham başarısıdır (değişmez).
                     Seçtiğiniz ağırlıklar sadece <strong style={{ color: '#58a6ff' }}>S+, S- ve CC*</strong> sütunlarını etkileyerek sıralamayı belirler.
