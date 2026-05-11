@@ -404,6 +404,11 @@ export default function GuidedFlow() {
   const generateData = async () => {
     if (!inputJobs || !inputMachines) return alert("Lütfen iş ve tezgah sayılarını giriniz.");
     setLoading(true);
+    // Yeni veri üretilirken ESKİ sonuçları tamamen temizle (Mantıksal Güvenlik)
+    setDdrResults([]);
+    setTopsisResults([]);
+    setCpsatResults({ M1: null, M2: null, M3: null, M4: null });
+    
     try {
       const res = await fetch(`${API_BASE}/generate`, {
         method: 'POST',
@@ -517,12 +522,12 @@ export default function GuidedFlow() {
     setActiveStage(5);
   };
 
-  // DDR sonuçları her güncellendiğinde TOPSIS'i tetikle
+  // DDR sonuçları her güncellendiğinde (yeni kural geldiğinde) otomatik çalıştır
   useEffect(() => {
     if (ddrResults.length > 0) {
       runTopsis();
     }
-  }, [ddrResults, weights]);
+  }, [ddrResults]); // Buradan 'weights' çıkarıldı, artık ağırlık değişince otomatik çalışmayacak
 
   const runTopsis = () => {
     if (ddrResults.length === 0) return;
@@ -833,9 +838,30 @@ export default function GuidedFlow() {
                     <label style={{ color: 'var(--warning)', fontWeight: 'bold', fontSize: '0.75rem', marginBottom: '8px', display: 'block' }}>w₃ (Tardy Jobs)</label>
                     <input type="number" step="0.05" min="0" max="1" className="input-field" value={weights.wL} onChange={e => setWeights({ ...weights, wL: Number(e.target.value) })} style={{ width: '100%' }} />
                   </div>
-                  <button className="btn btn-warning" onClick={runTopsis} style={{ height: '42px', padding: '0 2rem', fontWeight: 'bold' }}>
-                    <Activity size={16} style={{ marginRight: '8px' }} /> ANALİZİ GÜNCELLE
-                  </button>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    <button 
+                      className={`btn btn-warning ${Math.abs((weights.wC + weights.wT + weights.wL) - 1.0) < 0.001 ? 'pulse-glow' : ''}`}
+                      onClick={runTopsis} 
+                      disabled={Math.abs((weights.wC + weights.wT + weights.wL) - 1.0) >= 0.001}
+                      style={{ 
+                        height: '42px', 
+                        padding: '0 2rem', 
+                        fontWeight: 'bold',
+                        opacity: Math.abs((weights.wC + weights.wT + weights.wL) - 1.0) < 0.001 ? 1 : 0.4,
+                        cursor: Math.abs((weights.wC + weights.wT + weights.wL) - 1.0) < 0.001 ? 'pointer' : 'not-allowed'
+                      }}
+                    >
+                      <Activity size={16} style={{ marginRight: '8px' }} /> ANALİZİ GÜNCELLE
+                    </button>
+                    <div style={{ 
+                      fontSize: '0.65rem', 
+                      textAlign: 'center', 
+                      color: Math.abs((weights.wC + weights.wT + weights.wL) - 1.0) < 0.001 ? '#4ade80' : '#ff7b72',
+                      fontWeight: 'bold'
+                    }}>
+                      Σw = {(weights.wC + weights.wT + weights.wL).toFixed(2)} {Math.abs((weights.wC + weights.wT + weights.wL) - 1.0) >= 0.001 ? '(Hata: 1.00 olmalı)' : '(Tamam)'}
+                    </div>
+                  </div>
                 </div>
               </div>
               {topsisResults.length > 0 && (
@@ -895,12 +921,14 @@ export default function GuidedFlow() {
                     </div>
                     <div style={{ flex: 1, textAlign: 'center', borderLeft: '1px solid rgba(255,255,255,0.1)', borderRight: '1px solid rgba(255,255,255,0.1)' }}>
                       <div style={{ opacity: 0.6, fontSize: '0.8rem' }}>DDR Heuristic Best (Cmax)</div>
-                      <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>{Math.min(...ddrResults.map(r => r.Cmax))}</div>
+                      <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>{ddrResults.length > 0 ? Math.min(...ddrResults.map(r => r.Cmax)).toFixed(2) : '-'}</div>
                     </div>
                     <div style={{ flex: 1, textAlign: 'center' }}>
                       <div style={{ opacity: 0.6, fontSize: '0.8rem' }}>Performance Gap (%)</div>
                       <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#4ade80' }}>
-                        {(((Math.min(...ddrResults.map(r => r.Cmax)) - cpsatResults.M4.Cmax) / cpsatResults.M4.Cmax) * 100).toFixed(2)}%
+                        {cpsatResults?.M4 && ddrResults.length > 0 
+                          ? `${(((Math.min(...ddrResults.map(r => r.Cmax)) - cpsatResults.M4.Cmax) / cpsatResults.M4.Cmax) * 100).toFixed(2)}%`
+                          : '-%'}
                       </div>
                     </div>
                   </div>
