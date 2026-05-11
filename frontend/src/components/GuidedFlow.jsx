@@ -473,22 +473,20 @@ export default function GuidedFlow() {
 
   return (
     <div className="notebook-container">
-      <div className="notebook-header" style={{ paddingLeft: '3rem', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', right: '40px', top: '20px', opacity: 0.15, pointerEvents: 'none' }}>
-          <img src="/itu-logo.png" alt="ITU Logo" style={{ width: '120px' }} />
+      <div className="notebook-header" style={{ padding: '1.5rem 1rem', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', right: '20px', top: '20px', opacity: 0.1, pointerEvents: 'none' }}>
+          <img src="/itu-logo.png" alt="ITU Logo" style={{ width: '90px' }} />
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
-              <img src="/itu-logo.png" alt="ITU" style={{ height: '32px' }} />
-              <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-secondary)', letterSpacing: '2px' }}>İSTANBUL TEKNİK ÜNİVERSİTESİ</div>
-            </div>
-            <h2 style={{ fontSize: '2.4rem', letterSpacing: '-1.5px', marginBottom: '0.5rem' }}>UPMSP Akademik Karar Destek Sistemi</h2>
-            <div style={{ maxWidth: '800px', fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.5', marginBottom: '1.5rem' }}>
-              Bu interaktif sistem, <a href="https://doi.org/10.1016/j.dajour.2024.100525" target="_blank" rel="noreferrer" style={{ color: 'var(--warning)', fontWeight: 'bold', textDecoration: 'underline' }}>Decision Analytics Journal (2024)</a>'da yayınlanan 
-              <em> "A multi-objective production scheduling model and dynamic dispatching rules..."</em> makalesi temel alınarak, 
-              <strong> İTÜ END505E Proje Ödevi</strong> kapsamında bir dijital ikiz uygulaması olarak geliştirilmiştir.
-            </div>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+            <img src="/itu-logo.png" alt="ITU" style={{ height: '28px' }} />
+            <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--text-secondary)', letterSpacing: '2px' }}>İSTANBUL TEKNİK ÜNİVERSİTESİ</div>
+          </div>
+          <h2 style={{ fontSize: 'clamp(1.4rem, 4vw, 2.2rem)', letterSpacing: '-1px', marginBottom: '0.5rem', lineHeight: 1.2 }}>UPMSP Akademik Karar Destek Sistemi</h2>
+          <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.5', marginBottom: '1rem', maxWidth: '650px' }}>
+            Bu interaktif sistem, <a href="https://doi.org/10.1016/j.dajour.2024.100525" target="_blank" rel="noreferrer" style={{ color: 'var(--warning)', fontWeight: 'bold', textDecoration: 'underline' }}>Decision Analytics Journal (2024)</a>'da yayınlanan{' '}
+            <em>"A multi-objective production scheduling model and dynamic dispatching rules..."</em> makalesi temel alınarak,{' '}
+            <strong>İTÜ END505E Proje Ödevi</strong> kapsamında geliştirilmiştir.
           </div>
         </div>
       </div>

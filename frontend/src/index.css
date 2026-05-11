@@ -129,15 +129,32 @@ body {
   background: var(--accent);
   color: #fff;
   border: none;
-  padding: 0.75rem 1.5rem;
+  padding: 0.65rem 1.25rem;
   border-radius: 6px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.btn-sm {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+.btn-warning {
+  background: var(--warning);
+  color: #000;
+}
+.btn-warning:hover {
+  background: #b8821e;
+  box-shadow: 0 0 15px rgba(210, 153, 34, 0.4);
+  transform: translateY(-1px);
 }
 
 .btn:hover {
@@ -211,7 +228,7 @@ body {
   padding-left: 2rem;
   position: relative;
   border-left: 2px solid rgba(210, 153, 34, 0.2);
-  margin-left: 1rem;
+  margin-left: 2.5rem;
 }
 
 .flow-step {
@@ -256,7 +273,7 @@ body {
 
 .flow-step-number {
   position: absolute;
-  left: -4rem;
+  left: -4.5rem;
   top: 0;
   width: 32px;
   height: 32px;
@@ -269,6 +286,7 @@ body {
   font-weight: bold;
   font-size: 0.8rem;
   color: var(--warning);
+  flex-shrink: 0;
 }
 
 .flow-step.active .flow-step-number {
@@ -782,9 +800,9 @@ body {
 
 /* Computational Notebook Styles */
 .notebook-container {
-  max-width: 1200px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 2rem 0;
+  padding: 2rem 1.5rem;
 }
 
 .notebook-header {
@@ -1040,4 +1058,163 @@ body {
 
 .row-best {
   background: rgba(210, 153, 34, 0.1) !important;
+}
+
+/* ============================================================
+   RESPONSIVE — Mobile First
+   ============================================================ */
+
+/* Tablet (≤768px) */
+@media (max-width: 768px) {
+  .notebook-container {
+    padding: 1rem 0.75rem;
+  }
+
+  .notebook-header {
+    padding-left: 1rem !important;
+    margin-bottom: 1.5rem;
+  }
+
+  .notebook-header h2 {
+    font-size: 1.5rem !important;
+    letter-spacing: -0.5px !important;
+  }
+
+  /* Flow stepper mobile */
+  .academic-flow {
+    margin-left: 1rem;
+    padding-left: 1.5rem;
+  }
+
+  .flow-step-number {
+    left: -3rem;
+    width: 26px;
+    height: 26px;
+    font-size: 0.7rem;
+  }
+
+  .flow-step::before {
+    left: -1.65rem;
+  }
+
+  .flow-step-node {
+    padding: 1rem;
+  }
+
+  .flow-step-node h3 {
+    font-size: 1rem;
+  }
+
+  /* Form groups stack vertically */
+  .flex-row {
+    flex-wrap: wrap;
+  }
+
+  .form-group {
+    min-width: 140px !important;
+  }
+
+  /* Buttons full width on small screens */
+  .btn-warning, .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Tables scroll horizontally */
+  .data-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .data-table {
+    font-size: 0.75rem;
+  }
+
+  .data-table th, .data-table td {
+    padding: 0.4rem 0.35rem;
+    white-space: nowrap;
+  }
+
+  /* Grid collapse */
+  .grid-2 {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  /* Gantt zoom control */
+  .gantt-container input[type="range"] {
+    width: 70px;
+  }
+
+  /* Header flex direction */
+  .notebook-header > div {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+/* Mobile (≤480px) */
+@media (max-width: 480px) {
+  body {
+    font-size: 14px;
+  }
+
+  .notebook-container {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .academic-flow {
+    margin-left: 0.5rem;
+    padding-left: 1rem;
+    border-left-width: 1px;
+  }
+
+  .flow-step-number {
+    display: none;
+  }
+
+  .flow-step::before {
+    left: -1.1rem;
+    width: 8px;
+    height: 8px;
+  }
+
+  .flow-step {
+    padding-left: 1rem;
+    padding-bottom: 2rem;
+  }
+
+  .flow-step-node {
+    padding: 0.75rem;
+    border-radius: 8px;
+  }
+
+  .flow-step-node h3 {
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+
+  .output-header {
+    font-size: 0.75rem;
+  }
+
+  .notebook-header h2 {
+    font-size: 1.2rem !important;
+  }
+
+  .btn {
+    padding: 0.55rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .small-table th, .small-table td {
+    padding: 0.35rem 0.25rem;
+    font-size: 0.7rem;
+  }
+
+  /* TOPSIS weight inputs full width */
+  .form-group[style*="minWidth"] {
+    min-width: 100% !important;
+    flex: 1 1 100% !important;
+  }
 }
