@@ -618,62 +618,69 @@ export default function GuidedFlow() {
           </div>
         )}
 
-        {/* STEP 3: DDR */}
+        {/* STEP 04: DDR */}
         {activeStage >= 3 && (
           <div className="flow-step active slide-in">
             <div className="flow-step-number">04</div>
             <div className="flow-step-node">
-              <div className="flex-row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3><Zap size={20} /> 04. Dinamik Dağıtım Kuralları – DDR (Bölüm 4)</h3>
-              </div>
+              <h3><Zap size={20} /> 04. Dinamik Dağıtım Kuralları – DDR (Bölüm 4)</h3>
               <AcademicBlock items={[
                 { h: "SCT – En Kısa İş Tamamlanma Zamanı", t: "min(Sᵢⱼₖ + Pⱼₖ) formülüyle, bir sonraki iş ve tezgah aynı anda seçilir. Seçilen iş en kısa işlem süresine sahip olmak zorunda değil; 'hazırlık + işlem' toplamı en kısa olan işi seçer." },
                 { h: "SC-LPT & SC-EDD", t: "SC-LPT: Önce en uzun işlem süreli işi seçer (LPT mantığı), ardından bu iş için Sᵢⱼₖ + Pⱼₖ'yı minimize eden tezgahı bulur. SC-EDD: Önce teslim tarihi en yakın işi seçer (EDD mantığı), ardından aynı minimize işlemi yapılır." },
                 { h: "Hibrit Kural ve Kural Değiştirme Zamanı (tₛ)", t: "6 kombine kural: [SCT & SC-LPT: tₛ], [SCT & SC-EDD: tₛ], [SC-EDD & SCT: tₛ] vb. tₛ = 200, 250, 300, 350, 400, 450 saat olarak denenir. Çizelgelenen son işin Cⱼ değeri tₛ'yi aşınca kural değişir. Toplam 39 kural (3 tekli + 6×6 kombine) test edilir." }
               ]} />
 
-              <AgentInsight agent="frontend" message="39 farklı Dinamik Dağıtım Kuralı (DDR) sonucunu eş zamanlı olarak görselleştiriyoruz." />
-              <button className="btn btn-warning mt-4" onClick={runDDR} disabled={loading}><Zap size={16} /> 39 Kuralı Test Et</button>
+              <button className="btn btn-warning mt-4" onClick={runDDR} disabled={loading}>
+                {loading ? <div className="loader"></div> : <><Zap size={16} /> 39 DDR Kuralını Çalıştır</>}
+              </button>
               {ddrResults.length > 0 && (
                 <div className="mt-4" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                  <div className="output-header">[Tablo 12] DDR Performans Matrisi</div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', borderLeft: '3px solid var(--warning)', paddingLeft: '0.75rem', lineHeight: '1.5' }}>
+                    <strong style={{ color: 'var(--warning)' }}>[Tablo 12] DDR Performans Matrisi</strong> — Her satır bir kuralın ürettiği çözümü gösterir. Cmax (yayılma süresi), T (toplam gecikme) ve L (geciken iş sayısı) sütunları birbiriyle çatışan hedefleri temsil eder. Sarı vurgulanan ilk 3 kural Cmax açısından en iyilerdir.
+                  </div>
                   <ScrollableTable maxHeight="300px">
                     <table className="data-table">
-                      <thead><tr><th>Sıra</th><th>Kural</th><th>Cmax</th><th>T</th><th>L</th></tr></thead>
-                      <tbody>{ddrResults.map((r, i) => <tr key={i}><td>{i + 1}</td><td>{r.rule_name}</td><td>{r.Cmax.toFixed(2)}</td><td>{r.T.toFixed(2)}</td><td>{r.L}</td></tr>)}</tbody>
+                      <thead><tr><th>Sıra</th><th>Kural</th><th>Cmax ↓</th><th>T (Gecikme) ↓</th><th>L (Geciken İş) ↓</th></tr></thead>
+                      <tbody>{ddrResults.map((r, i) => <tr key={i} style={{ background: i < 3 ? 'rgba(210,153,34,0.05)' : 'transparent' }}><td style={{ fontWeight: 'bold', color: i === 0 ? 'var(--warning)' : 'inherit' }}>{i + 1}</td><td>{r.rule_name}</td><td>{r.Cmax.toFixed(2)}</td><td>{r.T.toFixed(2)}</td><td>{r.L}</td></tr>)}</tbody>
                     </table>
                   </ScrollableTable>
-                  <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', height: '400px' }}>
-                    <div className="output-header">3B Pareto Dağılımı</div>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <ScatterChart margin={{ top: 20, right: 30, bottom: 30, left: 20 }}>
-                        <CartesianGrid strokeDasharray="3 3" opacity={0.1} /><XAxis type="number" dataKey="Cmax" name="Cmax" stroke="#8b949e" /><YAxis type="number" dataKey="T" name="T" stroke="#8b949e" /><ZAxis type="number" dataKey="L" range={[20, 200]} name="L" /><RechartsTooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ background: '#0d1117', border: '1px solid var(--border-color)', borderRadius: '8px' }} itemStyle={{ color: '#fff' }} labelStyle={{ color: '#fff' }} /><Scatter data={ddrResults}>{ddrResults.map((e, i) => <Cell key={i} fill={i < 3 ? 'var(--warning)' : '#30363d'} />)}</Scatter>
-                      </ScatterChart>
-                    </ResponsiveContainer>
+                  <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                    <div className="output-header" style={{ marginBottom: '0.5rem' }}>Pareto Uzay Dağılımı (Cmax × T, Nokta Boyutu = L)</div>
+                    <div style={{ fontSize: '0.75rem', opacity: 0.7, marginBottom: '1rem' }}>Sarı noktalar Cmax açısından ilk 3 kuralı temsil eder. Hiçbir tek kural tüm kriterlerde baskın değildir — bu MCDM ihtiyacını doğrular.</div>
+                    <div style={{ height: '340px' }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <ScatterChart margin={{ top: 10, right: 30, bottom: 30, left: 20 }}>
+                          <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+                          <XAxis type="number" dataKey="Cmax" name="Cmax" stroke="#8b949e" label={{ value: 'Cmax (Yayılma Süresi)', position: 'insideBottom', offset: -10, fill: '#8b949e', fontSize: 11 }} />
+                          <YAxis type="number" dataKey="T" name="T (Gecikme)" stroke="#8b949e" label={{ value: 'T (Gecikme)', angle: -90, position: 'insideLeft', fill: '#8b949e', fontSize: 11 }} />
+                          <ZAxis type="number" dataKey="L" range={[20, 200]} name="L (Geciken İş)" />
+                          <RechartsTooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ background: '#0d1117', border: '1px solid var(--border-color)', borderRadius: '8px' }} itemStyle={{ color: '#fff' }} formatter={(v, n) => [v, n]} />
+                          <Scatter data={ddrResults}>{ddrResults.map((e, i) => <Cell key={i} fill={i < 3 ? 'var(--warning)' : '#30363d'} />)}</Scatter>
+                        </ScatterChart>
+                      </ResponsiveContainer>
+                    </div>
                   </div>
+                  <button className="btn btn-warning" onClick={() => scrollToNext(5)}><Target size={16} /> 05. TOPSIS Karar Analizi Adımına Geç</button>
                 </div>
               )}
             </div>
           </div>
         )}
 
-        {/* STEP 4: TOPSIS */}
+        {/* STEP 05: TOPSIS */}
         {activeStage >= 4 && (
           <div className="flow-step active slide-in">
             <div className="flow-step-number">05</div>
             <div className="flow-step-node">
-              <div className="flex-row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3><Target size={20} /> 05. Çok Kriterli Karar Verme – TOPSIS (Bölüm 5.3)</h3>
-              </div>
+              <h3><Target size={20} /> 05. Çok Kriterli Karar Verme – TOPSIS (Bölüm 5.3)</h3>
               <AcademicBlock items={[
                 { h: "TOPSIS – 5 Adımlı Süreç", t: "Adım 1: Karar matrisi oluştur (her kural × 3 kriter). Adım 2: rₐᵦ = min(xₐᵦ) / xₐᵦ ile normalize et. Adım 3: v⁺ₐ = max(rₐᵦ) ve v⁻ₐ = min(rₐᵦ) ile ideal çözümleri belirle. Adım 4: S⁺ₐ ve S⁻ₐ ayrılma ölçülerini hesapla. Adım 5: C*ₐ = S⁻ₐ / (S⁺ₐ + S⁻ₐ) ile yakınlık katsayısını bul; en yüksek C* değeri kazanır." },
                 { h: "Ağırlıkların Anlamı", t: "wC: Üretim hızını (Cmax) ne kadar önemsiyor? wT: Toplam gecikmeyi (T) ne kadar önemsiyor? wL: Geciken iş sayısını (L) ne kadar önemsiyor? Ağırlıklar toplamı 1.0 olacak şekilde normalize edilir. Ağırlıkları değiştirerek farklı yönetim önceliklerini simüle edebilirsiniz." }
               ]} />
 
-              <AgentInsight agent="paper" message="Adaylar arasından İdeal Çözüme (C*) en yakın olanı belirliyoruz." />
-              <div className="interactive-box mt-4" style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '1.5rem', borderRadius: '12px' }}>
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginBottom: '1rem', borderLeft: '2px solid var(--warning)', paddingLeft: '8px' }}>
-                  <TrendingUp size={12} style={{ marginRight: '4px' }} /> Not: Girdiğiniz ağırlıklar sistem tarafından otomatik olarak normalize edilecektir (Σw = 1.0).
+              <div className="mt-4" style={{ background: 'rgba(255,255,255,0.02)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                <div style={{ fontSize: '0.8rem', marginBottom: '1rem', borderLeft: '3px solid var(--warning)', paddingLeft: '0.75rem', lineHeight: '1.5', color: 'var(--text-secondary)' }}>
+                  Ağırlıkları değiştirerek farklı yönetim önceliklerini simüle edin, ardından <strong style={{ color: 'var(--warning)' }}>"Analizi Güncelle"</strong> butonuna basın. Ağırlıklar otomatik olarak normalize edilir (Σw = 1.0).
                 </div>
                 <div className="flex-row" style={{ gap: '2rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
                   <div className="form-group" style={{ flex: 1, minWidth: '100px' }}>
@@ -695,62 +702,42 @@ export default function GuidedFlow() {
               </div>
               {topsisResults.length > 0 && (
                 <div className="mt-4" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                  <div className="output-header"><BarChart3 size={16} /> TOPSIS Detay Analiz Matrisi</div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', borderLeft: '3px solid var(--warning)', paddingLeft: '0.75rem', lineHeight: '1.5' }}>
+                    <strong style={{ color: 'var(--warning)' }}>TOPSIS Analiz Matrisi (Tablo 21)</strong> — r₁/r₂/r₃: normalize edilmiş Cmax/T/L değerleri (r = min/x, büyük = iyi). S⁺: pozitif idealden uzaklık, S⁻: negatif idealden uzaklık. CC* = S⁻/(S⁺+S⁻) en yüksek olan kural kazanır.
+                  </div>
                   <ScrollableTable maxHeight="300px">
                     <table className="data-table small-table">
-                      <thead><tr><th>Kural</th><th>r₁</th><th>r₂</th><th>r₃</th><th>S⁺</th><th>S⁻</th><th>CCᵢ</th></tr></thead>
-                      <tbody>{topsisResults.map((r, i) => <tr key={i}><td>{r.rule_name}</td><td>{r.r[0]}</td><td>{r.r[1]}</td><td>{r.r[2]}</td><td>{r.S_pos}</td><td>{r.S_neg}</td><td style={{ fontWeight: 'bold' }}>{r.C_star.toFixed(4)}</td></tr>)}</tbody>
+                      <thead><tr><th>Kural</th><th>r₁ (Cmax)</th><th>r₂ (T)</th><th>r₃ (L)</th><th>S⁺ (İdeal↑)</th><th>S⁻ (İdeal↓)</th><th>CC* ↑</th></tr></thead>
+                      <tbody>{topsisResults.map((r, i) => <tr key={i} style={{ background: i === 0 ? 'rgba(210,153,34,0.08)' : 'transparent' }}><td style={{ fontWeight: i === 0 ? 'bold' : 'normal', color: i === 0 ? 'var(--warning)' : 'inherit' }}>{r.rule_name}{i === 0 ? ' ★' : ''}</td><td>{r.r[0]}</td><td>{r.r[1]}</td><td>{r.r[2]}</td><td>{r.S_pos}</td><td>{r.S_neg}</td><td style={{ fontWeight: 'bold', color: i === 0 ? '#4ade80' : 'inherit' }}>{r.C_star.toFixed(4)}</td></tr>)}</tbody>
                     </table>
                   </ScrollableTable>
-                  
-                  <div className="winner-box" style={{ textAlign: 'center', border: '2px solid var(--warning)', background: 'rgba(210,153,34,0.05)' }}>
-                    <h4 style={{ color: 'var(--warning)', letterSpacing: '1px' }}>OPTIMAL AKADEMİK KARAR: {topsisResults[0].rule_name}</h4>
-                    <p style={{ fontSize: '1.1rem', marginTop: '5px' }}>İdeale Yakınlık Katsayısı (C* / CCᵢ): <span style={{ fontWeight: 'bold', color: '#4ade80' }}>{topsisResults[0].C_star?.toFixed(6)}</span></p>
+
+                  <div style={{ textAlign: 'center', border: '2px solid var(--warning)', background: 'rgba(210,153,34,0.05)', borderRadius: '12px', padding: '1.5rem' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>TOPSIS SONUCU — EN YÜKSEK CC* SKORU</div>
+                    <h4 style={{ color: 'var(--warning)', letterSpacing: '1px', margin: '0.5rem 0' }}>{topsisResults[0].rule_name}</h4>
+                    <p style={{ fontSize: '1rem', marginTop: '0.25rem' }}>İdeale Yakınlık (CC*): <span style={{ fontWeight: 'bold', color: '#4ade80', fontSize: '1.3rem' }}>{topsisResults[0].C_star?.toFixed(6)}</span></p>
+                    <p style={{ fontSize: '0.75rem', opacity: 0.6, marginTop: '0.5rem' }}>Bu kural, seçtiğiniz ağırlıklar altında Cmax, T ve L kriterlerini en dengeli karşılayan çizelgeleme stratejisidir.</p>
                   </div>
 
-                  {cpsatResults.M1 && (
-                    <div className="mt-4" style={{ padding: '1rem', background: 'rgba(210,153,34,0.05)', borderRadius: '8px', border: '1px solid var(--warning)' }}>
-                      <div style={{ fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '10px' }}><TrendingUp size={14} /> [Tablo 13] Sezgisel Performans Analizi (Gap Analizi)</div>
-                      <div className="flex-row" style={{ gap: '2rem' }}>
-                        <div style={{ flex: 1 }}>
-                          <small style={{ opacity: 0.7 }}>MILP Best (M4):</small>
-                          <div style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>Cmax: {cpsatResults.M4.Cmax}</div>
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          <small style={{ opacity: 0.7 }}>DDR Best (SCT):</small>
-                          <div style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>Cmax: {Math.min(...ddrResults.map(r => r.Cmax))}</div>
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          <small style={{ opacity: 0.7 }}>Performance Gap:</small>
-                          <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--warning)' }}>
-                            {(((Math.min(...ddrResults.map(r => r.Cmax)) - cpsatResults.M4.Cmax) / cpsatResults.M4.Cmax) * 100).toFixed(2)}%
-                          </div>
-                        </div>
-                      </div>
-                      <p style={{ fontSize: '0.7rem', marginTop: '8px', opacity: 0.6 }}>*Gap % ne kadar düşükse, sezgisel yöntem optimal çözüme o kadar yakındır (Makale Bölüm 6.2).</p>
-                    </div>
-                  )}
-
-                  <div style={{ marginTop: '2rem', background: '#0d1117', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                    <div className="output-header"><CheckCircle size={16} /> FİNAL OPERASYONEL PLANI</div>
+                  <div style={{ background: '#0d1117', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                    <div className="output-header" style={{ marginBottom: '0.5rem' }}><CheckCircle size={16} /> Önerilen Çizelge: {topsisResults[0].rule_name}</div>
+                    <div style={{ fontSize: '0.75rem', opacity: 0.7, marginBottom: '1rem' }}>TOPSIS'in seçtiği optimal kural ile oluşturulan operasyonel çizelge. Mor bloklar hazırlık (Sᵢⱼₖ), yeşil bloklar işlem (Pⱼₖ) sürelerini gösterir.</div>
                     <JobSequenceTable schedule={ddrResults.find(r => r.rule_name === topsisResults[0].rule_name)?.schedule} m={Number(inputMachines)} problemData={problemData} />
                     <GanttChart schedule={ddrResults.find(r => r.rule_name === topsisResults[0].rule_name)?.schedule} m={Number(inputMachines)} n={Number(inputJobs)} />
                   </div>
-                  <button className="btn btn-warning mt-4" onClick={() => scrollToNext(5)}><Activity size={16} /> Karşılaştırmalı Performans Analizine Geç</button>
+                  <button className="btn btn-warning" onClick={() => scrollToNext(5)}><Activity size={16} /> 06. Gap Analizi Adımına Geç</button>
                 </div>
               )}
             </div>
           </div>
         )}
 
-        {/* STEP 06: Hesaplamalı Sonuçlar */}
+        {/* STEP 06: Gap Analizi */}
         {activeStage >= 5 && cpsatResults.M1 && (
           <div className="flow-step active slide-in">
             <div className="flow-step-number">06</div>
             <div className="flow-step-node">
-              <div className="flex-row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3><Activity size={20} /> 06. Hesaplamalı Çalışma – Gap Analizi (Bölüm 5.1.3)</h3>
-              </div>
+              <h3><Activity size={20} /> 06. Hesaplamalı Çalışma – Gap Analizi (Bölüm 5.1.3)</h3>
               <AcademicBlock items={[
                 { h: "Gap Analizi (Tablo 13)", t: "Sezgisel çözümlerin kalitesi, MILP optimal çözümüne olan yüzde uzaklık (%off Pareto) ile ölçülür. Örnek: [SC-EDD & SC-LPT: 60] kuralı Cmax için %41.35 daha kötü olabilirken T için %2.31 daha iyi olabilir. Bu, sezgisel çözümün Pareto çözümünden baskılanmadığını gösterir." },
                 { h: "Büyük Ölçek Performansı (Bölüm 5.2)", t: "18 aylık gerçek üretim verisiyle (244-298 iş/ay) test sonuçları: Yüksek talep için en iyi kurallar SCT (Cmax), SC-EDD (T) ve [SCT & SC-EDD: 450] (L). Düşük talep için [SC-EDD & SCT: 200] hem T hem L'de baskındır." }
@@ -783,14 +770,12 @@ export default function GuidedFlow() {
           </div>
         )}
 
-        {/* STEP 07: Kapanış */}
+        {/* STEP 07: Sonuç */}
         {activeStage >= 6 && (
           <div className="flow-step active slide-in">
             <div className="flow-step-number">07</div>
             <div className="flow-step-node">
-              <div className="flex-row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3><BookOpen size={20} /> 07. Sonuç ve Akademik Değerlendirme (Bölüm 6)</h3>
-              </div>
+              <h3><BookOpen size={20} /> 07. Sonuç ve Akademik Değerlendirme (Bölüm 6)</h3>
               <AcademicBlock items={[
                 { h: "Çalışmanın 3 Temel Katkısı", t: "(1) Tezgah ve sıra-bağımlı hazırlık süreli UPMSP için Cmax, T ve L'yi birleştiren ilk çok amaçlı MILP modeli. (2) SCT, SC-LPT, SC-EDD ve 6 kombine kural içeren DDR sezgiselleri – kural değiştirme mekanizması literatürde yeni. (3) Her kuralın ne zaman baskın olduğunu belirleyen kapsamlı TOPSIS tabanlı MCDM analizi." },
                 { h: "Gelecek Araştırma Yönleri", t: "(1) Yeni dağıtım kuralları geliştirme. (2) Problemi çok operasyonlu sıralı sistemlere (job shop / flow shop) genişletme. (3) DDR kurallarını büyük örnekler için Pareto çözümleri üreten meta-sezgisellerin (GA, SA) başlangıç çözümü olarak kullanma." }
