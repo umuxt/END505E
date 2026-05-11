@@ -581,6 +581,16 @@ export default function GuidedFlow() {
 
   useEffect(() => { if (ddrResults.length > 0) runTopsis(); }, [ddrResults]);
 
+  const scrollToNext = (stage) => {
+    setActiveStage(stage);
+    setTimeout(() => {
+      const elements = document.querySelectorAll('.flow-step');
+      if (elements[stage - 1]) {
+        elements[stage - 1].scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+  };
+
   return (
     <div className="notebook-container">
       <SideInfoPanel stage={infoStage} onClose={() => setInfoStage(null)} />
@@ -634,7 +644,7 @@ export default function GuidedFlow() {
                   <input type="number" className="input-field" value={inputNP} onChange={e => setInputNP(e.target.value)} placeholder="Örn: 20" />
                 </div>
               </div>
-              <button className="btn btn-warning mt-4" onClick={generateData} disabled={loading}><Play size={16} /> Sistemi Başlat ve Veri Üret</button>
+              <button className="btn btn-warning mt-4" onClick={() => { generateData(); scrollToNext(2); }} disabled={loading}><Play size={16} /> Sistemi Başlat ve Veri Üret</button>
             </div>
             {problemData && <DataMatrixView data={problemData} title="Tablo 2: Problem Veri Matrisi" />}
           </div>
@@ -664,7 +674,7 @@ export default function GuidedFlow() {
                   </tbody>
                 </table>
               </div>
-              <button className="btn btn-warning mt-4" onClick={() => setActiveStage(prev => Math.max(prev, 2))}><Calculator size={16} /> Matematiksel Modelleme Adımına Geç</button>
+              <button className="btn btn-warning mt-4" onClick={() => scrollToNext(3)}><Calculator size={16} /> Matematiksel Modelleme Adımına Geç</button>
             </div>
           </div>
         )}
@@ -713,7 +723,7 @@ export default function GuidedFlow() {
                   )}
                 </div>
               )}
-              <button className="btn btn-warning mt-4" onClick={() => setActiveStage(prev => Math.max(prev, 3))}><Zap size={16} /> Sezgisel Analiz (DDR) Adımına Geç</button>
+              <button className="btn btn-warning mt-4" onClick={() => scrollToNext(4)}><Zap size={16} /> Sezgisel Analiz (DDR) Adımına Geç</button>
             </div>
           </div>
         )}
@@ -827,7 +837,7 @@ export default function GuidedFlow() {
                     <JobSequenceTable schedule={ddrResults.find(r => r.rule_name === topsisResults[0].rule_name)?.schedule} m={Number(inputMachines)} problemData={problemData} />
                     <GanttChart schedule={ddrResults.find(r => r.rule_name === topsisResults[0].rule_name)?.schedule} m={Number(inputMachines)} n={Number(inputJobs)} />
                   </div>
-                  <button className="btn btn-warning mt-4" onClick={() => setActiveStage(prev => Math.max(prev, 5))}><Activity size={16} /> Karşılaştırmalı Performans Analizine Geç</button>
+                  <button className="btn btn-warning mt-4" onClick={() => scrollToNext(5)}><Activity size={16} /> Karşılaştırmalı Performans Analizine Geç</button>
                 </div>
               )}
             </div>
@@ -865,7 +875,7 @@ export default function GuidedFlow() {
                   * Makale Bölüm 6.2'de belirtildiği üzere, Gap değeri düşük çıktıkça sezgisel yöntemimiz (DDR) global optimal çözüme o kadar çok yaklaşmaktadır.
                 </p>
               </div>
-              <button className="btn btn-warning mt-4" onClick={() => setActiveStage(prev => Math.max(prev, 6))}><BookOpen size={16} /> 07. Final Değerlendirmesi ve Sonuç</button>
+              <button className="btn btn-warning mt-4" onClick={() => scrollToNext(6)}><BookOpen size={16} /> 07. Final Değerlendirmesi ve Sonuç</button>
             </div>
           </div>
         )}
