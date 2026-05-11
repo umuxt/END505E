@@ -764,7 +764,7 @@ export default function GuidedFlow() {
                 </div>
               ) : (
                 <div className="mt-4" style={{ padding: '1.5rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px dashed var(--border-color)', textAlign: 'center' }}>
-                  <div style={{ color: var(--warning), marginBottom: '0.5rem' }}><Activity size={24} /></div>
+                  <div style={{ color: 'var(--warning)', marginBottom: '0.5rem' }}><Activity size={24} /></div>
                   <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Büyük Ölçekli Problem Tespit Edildi</div>
                   <p style={{ fontSize: '0.85rem', opacity: 0.7, maxWidth: '600px', margin: '0 auto' }}>
                     İş sayısı (n={problemData?.metadata.n}) kesin çözüm sınırlarının üzerindedir. Akademik olarak bu durumlarda MILP atlanarak doğrudan Sezgisel (DDR) performansı makale standartları ile karşılaştırılır.
@@ -805,7 +805,7 @@ export default function GuidedFlow() {
                   <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--accent)', letterSpacing: '1px', marginBottom: '1rem', textAlign: 'center' }}>🤖 ÇOKLU AJAN KONSENSÜS PANELİ (AGENT AUDIT)</div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
                     <div style={{ background: 'rgba(88, 166, 255, 0.05)', padding: '1rem', borderRadius: '8px', borderLeft: '3px solid var(--accent)' }}>
-                      <div style={{ fontWeight: 'bold', fontSize: '0.8rem', color: var(--accent) }}>Paper Agent (Titizlik)</div>
+                      <div style={{ fontWeight: 'bold', fontSize: '0.8rem', color: 'var(--accent)' }}>Paper Agent (Titizlik)</div>
                       <p style={{ fontSize: '0.75rem', marginTop: '0.5rem', fontStyle: 'italic' }}>"Tüm veri setleri makale standartlarına uygun işlendi. Tablo 12 ve 21'deki matematiksel tutarlılık onaylandı."</p>
                     </div>
                     <div style={{ background: 'rgba(74, 222, 128, 0.05)', padding: '1rem', borderRadius: '8px', borderLeft: '3px solid #4ade80' }}>
@@ -813,7 +813,7 @@ export default function GuidedFlow() {
                       <p style={{ fontSize: '0.75rem', marginTop: '0.5rem', fontStyle: 'italic' }}>"39 DDR kuralı milisaniyeler içinde çözüldü. SDST matrisi {problemData?.metadata.n} iş için kayıpsız optimize edildi."</p>
                     </div>
                     <div style={{ background: 'rgba(210, 153, 34, 0.05)', padding: '1rem', borderRadius: '8px', borderLeft: '3px solid var(--warning)' }}>
-                      <div style={{ fontWeight: 'bold', fontSize: '0.8rem', color: var(--warning) }}>MCDM Agent (Karar Dengesi)</div>
+                      <div style={{ fontWeight: 'bold', fontSize: '0.8rem', color: 'var(--warning)' }}>MCDM Agent (Karar Dengesi)</div>
                       <p style={{ fontSize: '0.75rem', marginTop: '0.5rem', fontStyle: 'italic' }}>"TOPSIS ideal çözüme en yakın kuralı ({topsisResults[0]?.rule_name}) belirledi. Çatışan hedefler başarıyla dengelendi."</p>
                     </div>
                   </div>
