@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Calculator, Zap, Target, Activity, FileText, BarChart3, Copy, CheckCircle, HelpCircle, X, BookOpen, TrendingUp } from 'lucide-react';
+import { Play, Calculator, Zap, Target, Activity, FileText, BarChart3, Copy, CheckCircle, BookOpen, TrendingUp } from 'lucide-react';
 import { ScatterChart, Scatter, XAxis, YAxis, ZAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from 'recharts';
 
 const API_BASE = '/api';
@@ -345,147 +345,27 @@ const JobSequenceTable = React.memo(({ schedule, m, problemData }) => {
   );
 });
 
-// --- Side Info Panel ---
-const SideInfoPanel = ({ stage, onClose }) => {
-  if (!stage) return null;
-
-  const infoContent = {
-    1: {
-      title: "Adım 01: Problem Doğası ve Parametreler",
-      sections: [
-        {
-          h: "Endüstriyel Motivasyon",
-          t: "Bu sistem, Tayland'daki büyük bir çelik boru üreticisinin karşılaştığı gerçek dünya probleminden motive edilmiştir. 200+ iş ve karmaşık tezgah bağımlılıkları içerir."
-        },
-        {
-          h: "İlişkisiz Paralel Tezgahlar (UPMSP)",
-          t: "İşlem süreleri iş-tezgah çiftine bağlıdır (Pjk). Her tezgah her işi yapamaz (NP kısıtı). Bir işin hızı, atandığı makinenin teknolojisine göre değişir."
-        },
-        {
-          h: "Sıra-Bağımlı Hazırlık (Sijk)",
-          t: "Makalenin kalbi burasıdır. i işinden j işine geçerken gereken hazırlık süresi, hem tezgaha hem de işlerin sırasına bağlıdır. 'Dummy Job 0' konseptiyle her periyodun başındaki ilk hazırlık 0 kabul edilir."
-        }
-      ]
-    },
-    2: {
-      title: "Adım 02: Matematiksel Modeller (MILP)",
-      sections: [
-        {
-          h: "M1, M2 ve M3 Modelleri",
-          t: "M1: Yayılma Süresini (Cmax) minimize eder. M2: Toplam Gecikmeyi (T) minimize eder. M3: Geciken İş Sayısını (L) minimize eder. Bunlar çatışan hedeflerdir."
-        },
-        {
-          h: "AUGMECON Yöntemi (M4)",
-          t: "Artırılmış Epsilon-Kısıt yöntemiyle Pareto çözümleri bulunur. Adımlar: 1. Ödeme tablosu (payoff table) oluştur, 2. Grid noktalarını (kesişim) belirle, 3. Her grid için modeli çöz, 4. Baskılanmayan çözümleri (Pareto) seç."
-        },
-        {
-          h: "NP-Hard Doğası",
-          t: "Bu problem kombinatoryal olarak patlar. 15 işten sonrası için kesin çözüm (optimal) bulmak saatler sürer, bu yüzden DDR sezgisellerine ihtiyaç duyulur."
-        }
-      ]
-    },
-    3: {
-      title: "Adım 03: Dinamik Dağıtım Kuralları (DDR)",
-      sections: [
-        {
-          h: "Temel Sezgiseller",
-          t: "SCT: En kısa tamamlanma zamanı. SC-LPT: Önce en uzun işi seçip en iyi tezgaha atar. SC-EDD: Önce teslim tarihi en yakın olanı seçer."
-        },
-        {
-          h: "Hibrit Kural Mekanizması (ts)",
-          t: "Makaledeki en büyük yenilik kural değiştirme zamanıdır (ts). Fabrika belli bir doluluğa ulaşana kadar SCT (hız) ile çalışır, ts süresi aşılınca vites değiştirip SC-EDD (teslimat) moduna geçer."
-        }
-      ]
-    },
-    4: {
-      title: "Adım 05: Karar Analizi (TOPSIS)",
-      sections: [
-        {
-          h: "MCDM (Çok Kriterli Karar Verme)",
-          t: "Üretim müdürü hıza, müşteri temsilcisi terminleri ister. TOPSIS, bu kriterlere verilen ağırlıklara göre 'İdeal Çözüme' en yakın kuralı matematiksel olarak kanıtlar."
-        },
-        {
-          h: "Normalize Performans Matrisi",
-          t: "Tüm sonuçlar 0-1 arasına çekilir (rij = min / xij). Ardından pozitif ideal (v+) ve negatif ideal (v-) uzaklıklar hesaplanarak CCi* (bağıl yakınlık) skoru üretilir."
-        }
-      ]
-    },
-    5: {
-      title: "Adım 06: Hesaplamalı Çalışma ve Performans",
-      sections: [
-        {
-          h: "Gap Analizi Nedir?",
-          t: "Sezgisel yöntemlerin (DDR) kalitesini ölçmek için, bu sonuçlar matematiksel modelin (MILP) bulduğu global optimal sonuçlarla karşılaştırılır. Aradaki fark 'Gap' olarak adlandırılır."
-        },
-        {
-          h: "Karmaşıklık Analizi",
-          t: "İş sayısı arttıkça MILP modellerinin çözüm süresi üstel olarak artarken, DDR kuralları sabit ve çok düşük bir sürede çözüm üretmeye devam eder."
-        }
-      ]
-    },
-    6: {
-      title: "Adım 02: Literatür Taraması (Academic Background)",
-      sections: [
-        {
-          h: "Problem Sınıflandırması",
-          t: "Literatürde paralel tezgahlar; Özdeş (Identical), Tekdüze (Uniform) ve İlişkisiz (Unrelated) olarak üçe ayrılır. Bu çalışma 'Unrelated' sınıfındaki en karmaşık Sijk kısıtını ele alır."
-        },
-        {
-          h: "Önceki Çalışmalar vs Bu Çalışma",
-          t: "Pek çok çalışma sadece Cmax veya sadece Gecikme üzerine yoğunlaşırken, bu çalışma hem MILP (Kesin Çözüm) hem DDR (Sezgisel) hem de TOPSIS (MCDM) süreçlerini birleştiren literatürdeki ilk kapsamlı modeldir."
-        }
-      ]
-    },
-    7: {
-      title: "Adım 07: Sonuç ve Değerlendirme",
-      sections: [
-        {
-          h: "Akademik Çıkarımlar",
-          t: "Çalışma, sıra-bağımlı hazırlık sürelerinin (Sijk) çizelgeleme performansını nasıl domine ettiğini göstermiştir. Doğru kural seçimi verimliliği %20-30 artırabilmektedir."
-        },
-        {
-          h: "Gelecek Çalışmalar",
-          t: "Model, enerji tüketimi veya dinamik iş gelişleri gibi ek kısıtlar eklenerek daha da geliştirilebilir."
-        }
-      ]
-    }
-  };
-
-  const content = infoContent[stage];
-
-  return (
-    <div className="side-panel-overlay" onClick={onClose}>
-      <div className="side-panel slide-right" onClick={e => e.stopPropagation()}>
-        <div className="side-panel-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-            <BookOpen size={24} color="var(--warning)" />
-            <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{content.title}</span>
-          </div>
-          <button className="close-btn" onClick={onClose}><X size={24}/></button>
-        </div>
-        <div className="side-panel-content">
-          {content.sections.map((s, i) => (
-            <div key={i} className="info-section-academic">
-              <h3>{s.h}</h3>
-              <p>{s.t}</p>
-            </div>
-          ))}
-          <div className="academic-source-footer">
-            <small>Referans: Decision Analytics Journal 13 (2024) 100525</small>
-            <br />
-            <small>Problem: Unrelated Parallel Machines with SDST</small>
-          </div>
-        </div>
+// --- Academic Content Block (Inline Report Narrative) ---
+const AcademicBlock = ({ items }) => (
+  <div style={{ margin: '1.5rem 0', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+    {items.map((item, i) => (
+      <div key={i} style={{
+        background: 'rgba(255,255,255,0.02)',
+        borderLeft: '3px solid var(--warning)',
+        padding: '0.9rem 1.2rem',
+        borderRadius: '0 8px 8px 0'
+      }}>
+        {item.h && <div style={{ fontWeight: 'bold', color: 'var(--warning)', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.4rem' }}>{item.h}</div>}
+        <div style={{ fontSize: '0.9rem', lineHeight: '1.6', opacity: 0.9 }}>{item.t}</div>
       </div>
-    </div>
-  );
-};
+    ))}
+  </div>
+);
 
 // --- MAIN FLOW COMPONENT ---
 export default function GuidedFlow() {
   const [loading, setLoading] = useState(false);
   const [activeStage, setActiveStage] = useState(1);
-  const [infoStage, setInfoStage] = useState(null);
   const [inputJobs, setInputJobs] = useState('');
   const [inputMachines, setInputMachines] = useState('');
   const [inputFamilies, setInputFamilies] = useState('');
@@ -593,7 +473,6 @@ export default function GuidedFlow() {
 
   return (
     <div className="notebook-container">
-      <SideInfoPanel stage={infoStage} onClose={() => setInfoStage(null)} />
       <div className="notebook-header" style={{ paddingLeft: '3rem', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', right: '40px', top: '20px', opacity: 0.15, pointerEvents: 'none' }}>
           <img src="/itu-logo.png" alt="ITU Logo" style={{ width: '120px' }} />
@@ -620,9 +499,14 @@ export default function GuidedFlow() {
           <div className="flow-step-number">01</div>
           <div className="flow-step-node">
             <div className="flex-row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3><FileText size={20} /> 01. Giriş ve Problem Tanımı</h3>
-              <button className="info-btn-academic" onClick={() => setInfoStage(1)} title="Detaylı Bilgi"><HelpCircle size={18} style={{ marginRight: '6px' }} /> Detay</button>
+            <h3><FileText size={20} /> 01. Giriş ve Problem Tanımı</h3>
             </div>
+            <AcademicBlock items={[
+              { h: "Endüstriyel Motivasyon", t: "Bu çalışma, Tayland'daki en büyük çelik boru üreticisindeki gerçek bir üretim planlama probleminden motive edilmiştir. Müşteri siparişlerinden oluşan 244-298 iş, kapasiteleri ve hızları farklı 10 ilişkisiz paralel tezgaha çizelgelenmektedir. Çalışmanın amacı, üç çatışan hedefi (hız, gecikme, teslim terminleri) aynı anda optimize eden bir sistem kurmaktır. [Decision Analytics Journal 13, 2024]" },
+              { h: "Sıra-Bağımlı Hazırlık Süresi Problemi (Sᵢⱼₖ)", t: "Bir işin hazırlık süresi, atandığı tezgaha (k) ve kendisinden önce o tezgahta işlenen işe (i) bağlıdır. Farklı ürün ailelerinden işler art arda geldiğinde hazırlık süresi 3-11 saat sürerken, aynı aileden art arda gelenler yalnızca 20-40 dakika sürer. Her periyodun başındaki ilk iş 'Kukla İş (j=0)' olarak modellenir ve hazırlık süresi S₀,ⱼ,ₖ = 0 kabul edilir." },
+              { h: "Model Parametreleri", t: "n = iş sayısı, m = tezgah sayısı, Pⱼₖ = j işinin k tezgahındaki işlem süresi (saat), Sᵢⱼₖ = k tezgahında i'den sonra j işlenirken gereken hazırlık süresi, Dⱼ = j işinin teslim tarihi (due date), NPⱼₖ = 1 ise j işi k tezgahında işlenebilir, 0 ise işlenemez." }
+            ]} />
+
             <AgentInsight agent="paper" message="Tayland'daki büyük bir çelik boru üreticisinin karşılaştığı gerçek dünya probleminden motive edilen bu çalışma, ilişkisiz paralel tezgahları ve sıra-bağımlı hazırlık sürelerini (Sijk) ele alır." />
             <p className="text-secondary mt-2">Makale Bölüm 3.1'de tanımlanan üretim kısıtları ve sistem parametreleri aşağıda belirlenmektedir.</p>
             <div className="interactive-box mt-4">
@@ -656,9 +540,14 @@ export default function GuidedFlow() {
             <div className="flow-step-number">02</div>
             <div className="flow-step-node">
               <div className="flex-row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3><BookOpen size={20} /> 02. Literatür Taraması (Tablo 1)</h3>
-                <button className="info-btn-academic" onClick={() => setInfoStage(6)} title="Detaylı Bilgi"><HelpCircle size={18} style={{ marginRight: '6px' }} /> Detay</button>
+                <h3><BookOpen size={20} /> 02. Literatür Taraması (Bölüm 2)</h3>
               </div>
+              <AcademicBlock items={[
+                { h: "Araştırma Boşluğu (Research Gap)", t: "Tablo 1'e göre, tezgah ve sıra-bağımlı hazırlık süreli ilişkisiz paralel tezgah sistemlerinde Cmax, T ve L'yi eş zamanlı optimize eden hiçbir çalışma yoktur. Bu çalışma bu boşluğu doldurmaktadır." },
+                { h: "Temel Referans 1 – Avalos-Rosales (2015)", t: "M1 modelinin temeli bu çalışmadan alınmıştır. Orijinal model yalnızca Cmax'ı minimize eder. Bu çalışma onu T ve L kriterlerini de kapsayacak şekilde genişletmiştir." },
+                { h: "Temel Referans 2 – Bektur & Sarac (2019)", t: "DDR sezgisellerine ilham veren bu çalışma, ATCS kuralını sıra-bağımlı hazırlık süreleri için uyarlar. Bu çalışma ise tek kural yerine SCT, SC-LPT ve SC-EDD adlı üç yeni kural geliştirir." }
+              ]} />
+
               <AgentInsight agent="paper" message="Bu çalışma, ilişkisiz paralel tezgahlar için üç farklı performans kriterini (Cmax, Tardiness, L) eş zamanlı olarak optimize eden literatürdeki ilk kapsamlı modeldir." />
               <div className="mt-4" style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
                 <div className="output-header">[Tablo 1] İlgili Literatürün Özeti</div>
@@ -685,9 +574,14 @@ export default function GuidedFlow() {
             <div className="flow-step-number">03</div>
             <div className="flow-step-node">
               <div className="flex-row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3><Calculator size={20} /> 03. Matematiksel Modeller (MILP)</h3>
-                <button className="info-btn-academic" onClick={() => setInfoStage(2)} title="Detaylı Bilgi"><HelpCircle size={18} style={{ marginRight: '6px' }} /> Detay</button>
+                <h3><Calculator size={20} /> 03. Matematiksel Modeller (MILP – Bölüm 3)</h3>
               </div>
+              <AcademicBlock items={[
+                { h: "M1: Min Cmax (Yayılma Süresini Minimize Et)", t: "Temel model: Cmax = max(Cⱼ). Karar değişkeni Xᵢⱼₖ: j işi k tezgahında i'den hemen sonra çizelgelenirse 1, değilse 0. Kısıt (6): Cⱼ ≥ Cᵢ + Sᵢⱼₖ + Pⱼₖ – V·(1 – Xᵢⱼₖ). Kısıtlar (2-3) her işin tek öncülü ve ardılı olmasını, kısıt (5) her tezgahın kukla işle başlamasını garanti eder." },
+                { h: "M2: Min T (Toplam Gecikme) | M3: Min L (Geciken İş Sayısı)", t: "M2, M1'e eⱼ⁺ (tardiness) ve eⱼ⁻ (earliness) değişkenleri eklenerek türetilir. Hedef: Min Σ eⱼ⁺. M3 ise Uⱼ ∈ {0,1} ikili değişkeni ekler: Uⱼ = 1 ise j işi gecikmeli, hedef Min Σ Uⱼ. Bu üç model çatışan hedefler üretir." },
+                { h: "M4: AUGMECON (Artırılmış ε-Kısıt – Uzlaşmacı Model)", t: "5 adım: (1) M1,M2,M3'ü çöz → Ödeme tablosunu (payoff table) oluştur. (2) T ve L için aralık hesapla, grid noktaları belirle. (3) T≤T̄ ve L≤L̄ kısıtları altında Cmax'ı minimize et. (4) 126 kez çöz. (5) Baskılanmayan (non-dominated) Pareto çözümlerini seç. P1 problemi için 9 Pareto noktası elde edilmiştir." }
+              ]} />
+
               <AgentInsight agent="paper" message="Küçük ölçekli örnekler (n<15) için Google CP-SAT çözücüsü ile global optimumu arıyoruz." />
               {problemData?.metadata.n > 15 ? (
                 <div className="highlight-box mt-4">
@@ -734,9 +628,14 @@ export default function GuidedFlow() {
             <div className="flow-step-number">04</div>
             <div className="flow-step-node">
               <div className="flex-row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3><Zap size={20} /> 04. Dinamik Dağıtım Kuralları (DDR)</h3>
-                <button className="info-btn-academic" onClick={() => setInfoStage(3)} title="Detaylı Bilgi"><HelpCircle size={18} style={{ marginRight: '6px' }} /> Detay</button>
+                <h3><Zap size={20} /> 04. Dinamik Dağıtım Kuralları – DDR (Bölüm 4)</h3>
               </div>
+              <AcademicBlock items={[
+                { h: "SCT – En Kısa İş Tamamlanma Zamanı", t: "min(Sᵢⱼₖ + Pⱼₖ) formülüyle, bir sonraki iş ve tezgah aynı anda seçilir. Seçilen iş en kısa işlem süresine sahip olmak zorunda değil; 'hazırlık + işlem' toplamı en kısa olan işi seçer." },
+                { h: "SC-LPT & SC-EDD", t: "SC-LPT: Önce en uzun işlem süreli işi seçer (LPT mantığı), ardından bu iş için Sᵢⱼₖ + Pⱼₖ'yı minimize eden tezgahı bulur. SC-EDD: Önce teslim tarihi en yakın işi seçer (EDD mantığı), ardından aynı minimize işlemi yapılır." },
+                { h: "Hibrit Kural ve Kural Değiştirme Zamanı (tₛ)", t: "6 kombine kural: [SCT & SC-LPT: tₛ], [SCT & SC-EDD: tₛ], [SC-EDD & SCT: tₛ] vb. tₛ = 200, 250, 300, 350, 400, 450 saat olarak denenir. Çizelgelenen son işin Cⱼ değeri tₛ'yi aşınca kural değişir. Toplam 39 kural (3 tekli + 6×6 kombine) test edilir." }
+              ]} />
+
               <AgentInsight agent="frontend" message="39 farklı Dinamik Dağıtım Kuralı (DDR) sonucunu eş zamanlı olarak görselleştiriyoruz." />
               <button className="btn btn-warning mt-4" onClick={runDDR} disabled={loading}><Zap size={16} /> 39 Kuralı Test Et</button>
               {ddrResults.length > 0 && (
@@ -768,9 +667,13 @@ export default function GuidedFlow() {
             <div className="flow-step-number">05</div>
             <div className="flow-step-node">
               <div className="flex-row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3><Target size={20} /> 05. Karar Analizi (TOPSIS)</h3>
-                <button className="info-btn-academic" onClick={() => setInfoStage(4)} title="Detaylı Bilgi"><HelpCircle size={18} style={{ marginRight: '6px' }} /> Detay</button>
+                <h3><Target size={20} /> 05. Çok Kriterli Karar Verme – TOPSIS (Bölüm 5.3)</h3>
               </div>
+              <AcademicBlock items={[
+                { h: "TOPSIS – 5 Adımlı Süreç", t: "Adım 1: Karar matrisi oluştur (her kural × 3 kriter). Adım 2: rₐᵦ = min(xₐᵦ) / xₐᵦ ile normalize et. Adım 3: v⁺ₐ = max(rₐᵦ) ve v⁻ₐ = min(rₐᵦ) ile ideal çözümleri belirle. Adım 4: S⁺ₐ ve S⁻ₐ ayrılma ölçülerini hesapla. Adım 5: C*ₐ = S⁻ₐ / (S⁺ₐ + S⁻ₐ) ile yakınlık katsayısını bul; en yüksek C* değeri kazanır." },
+                { h: "Ağırlıkların Anlamı", t: "wC: Üretim hızını (Cmax) ne kadar önemsiyor? wT: Toplam gecikmeyi (T) ne kadar önemsiyor? wL: Geciken iş sayısını (L) ne kadar önemsiyor? Ağırlıklar toplamı 1.0 olacak şekilde normalize edilir. Ağırlıkları değiştirerek farklı yönetim önceliklerini simüle edebilirsiniz." }
+              ]} />
+
               <AgentInsight agent="paper" message="Adaylar arasından İdeal Çözüme (C*) en yakın olanı belirliyoruz." />
               <div className="interactive-box mt-4" style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '1.5rem', borderRadius: '12px' }}>
                 <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginBottom: '1rem', borderLeft: '2px solid var(--warning)', paddingLeft: '8px' }}>
@@ -850,9 +753,13 @@ export default function GuidedFlow() {
             <div className="flow-step-number">06</div>
             <div className="flow-step-node">
               <div className="flex-row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3><Activity size={20} /> 06. Hesaplamalı Çalışma ve Performans</h3>
-                <button className="info-btn-academic" onClick={() => setInfoStage(5)} title="Detaylı Bilgi"><HelpCircle size={18} style={{ marginRight: '6px' }} /> Detay</button>
+                <h3><Activity size={20} /> 06. Hesaplamalı Çalışma – Gap Analizi (Bölüm 5.1.3)</h3>
               </div>
+              <AcademicBlock items={[
+                { h: "Gap Analizi (Tablo 13)", t: "Sezgisel çözümlerin kalitesi, MILP optimal çözümüne olan yüzde uzaklık (%off Pareto) ile ölçülür. Örnek: [SC-EDD & SC-LPT: 60] kuralı Cmax için %41.35 daha kötü olabilirken T için %2.31 daha iyi olabilir. Bu, sezgisel çözümün Pareto çözümünden baskılanmadığını gösterir." },
+                { h: "Büyük Ölçek Performansı (Bölüm 5.2)", t: "18 aylık gerçek üretim verisiyle (244-298 iş/ay) test sonuçları: Yüksek talep için en iyi kurallar SCT (Cmax), SC-EDD (T) ve [SCT & SC-EDD: 450] (L). Düşük talep için [SC-EDD & SCT: 200] hem T hem L'de baskındır." }
+              ]} />
+
               <div className="mt-4" style={{ padding: '1.5rem', background: 'rgba(210,153,34,0.05)', borderRadius: '12px', border: '1px solid var(--warning)' }}>
                 <div style={{ fontSize: '1rem', fontWeight: 'bold', marginBottom: '15px' }}><TrendingUp size={16} /> Sezgisel Yöntem Başarı Analizi (Gap % Analizi)</div>
                 <div className="flex-row" style={{ gap: '3rem' }}>
@@ -886,9 +793,13 @@ export default function GuidedFlow() {
             <div className="flow-step-number">07</div>
             <div className="flow-step-node">
               <div className="flex-row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3><BookOpen size={20} /> 07. Sonuç ve Genel Değerlendirme</h3>
-                <button className="info-btn-academic" onClick={() => setInfoStage(7)} title="Detaylı Bilgi"><HelpCircle size={18} style={{ marginRight: '6px' }} /> Detay</button>
+                <h3><BookOpen size={20} /> 07. Sonuç ve Akademik Değerlendirme (Bölüm 6)</h3>
               </div>
+              <AcademicBlock items={[
+                { h: "Çalışmanın 3 Temel Katkısı", t: "(1) Tezgah ve sıra-bağımlı hazırlık süreli UPMSP için Cmax, T ve L'yi birleştiren ilk çok amaçlı MILP modeli. (2) SCT, SC-LPT, SC-EDD ve 6 kombine kural içeren DDR sezgiselleri – kural değiştirme mekanizması literatürde yeni. (3) Her kuralın ne zaman baskın olduğunu belirleyen kapsamlı TOPSIS tabanlı MCDM analizi." },
+                { h: "Gelecek Araştırma Yönleri", t: "(1) Yeni dağıtım kuralları geliştirme. (2) Problemi çok operasyonlu sıralı sistemlere (job shop / flow shop) genişletme. (3) DDR kurallarını büyük örnekler için Pareto çözümleri üreten meta-sezgisellerin (GA, SA) başlangıç çözümü olarak kullanma." }
+              ]} />
+
               <div className="mt-4" style={{ padding: '2rem', background: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid var(--border-color)', position: 'relative' }}>
                 <div style={{ position: 'absolute', right: '20px', bottom: '20px', opacity: 0.05 }}>
                   <img src="/itu-logo.png" alt="ITU" style={{ width: '150px' }} />
