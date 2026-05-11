@@ -505,6 +505,8 @@ export default function GuidedFlow() {
         }
       } catch (e) {
         console.error(`Kural hatası: ${configs[i]}`, e);
+        // Hata detayı varsa göster
+        if (i === 0) alert(`İlk kuralda hata oluştu: ${e.message}. Diğerleri devam ediyor olabilir...`);
       }
     }
     

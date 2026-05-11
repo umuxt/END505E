@@ -190,6 +190,9 @@ def api_solve_single_ddr(req: SingleDDRRequest):
             }
         }
     except Exception as e:
+        import traceback
+        error_msg = traceback.format_exc()
+        print(error_msg)
         raise HTTPException(status_code=500, detail=str(e))
 
 class SetupPageRequest(BaseModel):
