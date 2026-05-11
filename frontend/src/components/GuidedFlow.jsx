@@ -763,10 +763,10 @@ export default function GuidedFlow() {
                   <div style={{ width: '100%', maxWidth: '500px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '5px', color: 'var(--warning)', fontWeight: 'bold' }}>
                       <span>İlerleme: {ddrResults[ddrResults.length-1]?.rule_name || 'Başlanıyor...'}</span>
-                      <span>{Math.round((ddrResults.length / 34) * 100)}%</span>
+                      <span>{Math.round((ddrResults.length / 39) * 100)}%</span>
                     </div>
                     <div style={{ height: '10px', background: 'rgba(255,255,255,0.05)', borderRadius: '5px', overflow: 'hidden', border: '1px solid #30363d' }}>
-                      <div style={{ height: '100%', background: 'var(--warning)', width: `${(ddrResults.length / 34) * 100}%`, transition: 'width 0.4s ease' }}></div>
+                      <div style={{ height: '100%', background: 'var(--warning)', width: `${(ddrResults.length / 39) * 100}%`, transition: 'width 0.4s ease' }}></div>
                     </div>
                   </div>
                 )}

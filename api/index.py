@@ -16,6 +16,17 @@ from app.solver import ProblemData
 
 app = FastAPI(title="UPMSP Backend API")
 
+from fastapi.responses import JSONResponse
+@app.exception_handler(Exception)
+async def global_exception_handler(request, exc):
+    import traceback
+    err = traceback.format_exc()
+    print(f"!!! GLOBAL HATA !!!\n{err}")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Sistem Hatası: {str(exc)}", "traceback": err},
+    )
+
 # Geliştirme ortamında (Vite vb.) CORS hatalarını önlemek için
 app.add_middleware(
     CORSMiddleware,
@@ -165,17 +176,22 @@ def api_solve_single_ddr(req: SingleDDRRequest):
         D  = {int(j): float(problem["D"][str(j)]) for j in range(n)}
         NP = {int(j): {int(k): problem["NP"][str(j)][str(k)] for k in range(m)} for j in range(n)}
 
+        # DEBUG: Gelen veriyi bas
+        print(f"DEBUG: Çözülüyor -> {req.rule_name} (n={n}, m={m})")
+
         # Kural ismini ayrıştır (Hibrit kural mı?)
-        # Örn: "[SCT & SC-LPT: 200]"
         if "&" in req.rule_name:
             import re
             parts = re.findall(r"\[(.*) & (.*): (\d+)\]", req.rule_name)
             if parts:
                 r1, r2, ts = parts[0]
+                print(f"DEBUG: Hibrit Tespit Edildi: {r1} + {r2} @ {ts}")
                 res = run_ddr(n, m, P, S, D, NP, r1, r2, float(ts))
             else:
-                raise ValueError("Geçersiz kural formatı")
+                print(f"ERROR: Regex kuralı yakalayamadı! Kural: {req.rule_name}")
+                raise ValueError(f"Geçersiz kural formatı: {req.rule_name}")
         else:
+            print(f"DEBUG: Standart Kural: {req.rule_name}")
             res = run_ddr(n, m, P, S, D, NP, req.rule_name)
 
         return {
