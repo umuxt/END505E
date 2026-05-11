@@ -278,7 +278,10 @@ def run_all_rules(n: int, m: int, P: dict, S: dict, D: dict, NP: dict,
         for ts in ts_values:
             configs.append((r1, r2, ts))
 
-    with ThreadPoolExecutor() as executor:
+    # Paralel çalıştır (Vite/Vercel kaynaklarını yormamak için limitli)
+    import os
+    workers = min(4, os.cpu_count() or 1)
+    with ThreadPoolExecutor(max_workers=workers) as executor:
         results = list(executor.map(execute_config, configs))
 
     return results
