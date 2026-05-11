@@ -693,16 +693,16 @@ export default function GuidedFlow() {
                 </div>
                 <div className="flex-row" style={{ gap: '2rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
                   <div className="form-group" style={{ flex: 1, minWidth: '100px' }}>
-                    <label style={{ color: 'var(--warning)', fontWeight: 'bold', fontSize: '0.75rem', marginBottom: '8px', display: 'block' }}>w₁ (Yayılma Süresi - Cmax)</label>
-                    <input type="number" step="0.01" className="input-field" value={weights.wC} onChange={e => setWeights({ ...weights, wC: e.target.value })} style={{ width: '100%' }} />
+                    <label style={{ color: 'var(--warning)', fontWeight: 'bold', fontSize: '0.75rem', marginBottom: '8px', display: 'block' }}>w₁ (Cmax)</label>
+                    <input type="number" step="0.05" min="0" max="1" className="input-field" value={weights.wC} onChange={e => setWeights({ ...weights, wC: Number(e.target.value) })} style={{ width: '100%' }} />
                   </div>
                   <div className="form-group" style={{ flex: 1, minWidth: '100px' }}>
-                    <label style={{ color: 'var(--warning)', fontWeight: 'bold', fontSize: '0.75rem', marginBottom: '8px', display: 'block' }}>w₂ (Toplam Gecikme - T)</label>
-                    <input type="number" step="0.01" className="input-field" value={weights.wT} onChange={e => setWeights({ ...weights, wT: e.target.value })} style={{ width: '100%' }} />
+                    <label style={{ color: 'var(--warning)', fontWeight: 'bold', fontSize: '0.75rem', marginBottom: '8px', display: 'block' }}>w₂ (Tardiness)</label>
+                    <input type="number" step="0.05" min="0" max="1" className="input-field" value={weights.wT} onChange={e => setWeights({ ...weights, wT: Number(e.target.value) })} style={{ width: '100%' }} />
                   </div>
                   <div className="form-group" style={{ flex: 1, minWidth: '100px' }}>
-                    <label style={{ color: 'var(--warning)', fontWeight: 'bold', fontSize: '0.75rem', marginBottom: '8px', display: 'block' }}>w₃ (Geciken İş - L)</label>
-                    <input type="number" step="0.01" className="input-field" value={weights.wL} onChange={e => setWeights({ ...weights, wL: e.target.value })} style={{ width: '100%' }} />
+                    <label style={{ color: 'var(--warning)', fontWeight: 'bold', fontSize: '0.75rem', marginBottom: '8px', display: 'block' }}>w₃ (Tardy Jobs)</label>
+                    <input type="number" step="0.05" min="0" max="1" className="input-field" value={weights.wL} onChange={e => setWeights({ ...weights, wL: Number(e.target.value) })} style={{ width: '100%' }} />
                   </div>
                   <button className="btn btn-warning" onClick={runTopsis} disabled={loading} style={{ height: '42px', padding: '0 2rem', fontWeight: 'bold' }}>
                     {loading ? <div className="loader"></div> : <><Target size={16} style={{ marginRight: '8px' }} /> ANALİZİ GÜNCELLE</>}
@@ -712,7 +712,8 @@ export default function GuidedFlow() {
               {topsisResults.length > 0 && (
                 <div className="mt-4" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                   <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', borderLeft: '3px solid var(--warning)', paddingLeft: '0.75rem', lineHeight: '1.5' }}>
-                    <strong style={{ color: 'var(--warning)' }}>TOPSIS Analiz Matrisi (Tablo 21)</strong> — r₁/r₂/r₃: normalize edilmiş Cmax/T/L değerleri (r = min/x, büyük = iyi). S⁺: pozitif idealden uzaklık, S⁻: negatif idealden uzaklık. CC* = S⁻/(S⁺+S⁻) en yüksek olan kural kazanır.
+                    <strong style={{ color: 'var(--warning)' }}>TOPSIS Analiz Matrisi (Tablo 21)</strong> — r₁/r₂/r₃ kuralın ham başarısıdır (değişmez). 
+                    Seçtiğiniz ağırlıklar sadece <strong style={{ color: '#58a6ff' }}>S+, S- ve CC*</strong> sütunlarını etkileyerek sıralamayı belirler.
                   </div>
                   <ScrollableTable maxHeight="300px">
                     <table className="data-table small-table">
