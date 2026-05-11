@@ -485,20 +485,47 @@ export default function GuidedFlow() {
     setLoading(false);
   };
 
-  const runTopsis = async () => {
+  const runTopsis = () => {
     if (ddrResults.length === 0) return;
-    setLoading(true);
-    try {
-      await new Promise(r => setTimeout(r, 400));
-      const total = parseFloat(weights.wC) + parseFloat(weights.wT) + parseFloat(weights.wL);
-      const res = await fetch(`${API_BASE}/topsis`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ candidates: ddrResults, wC: parseFloat(weights.wC) / total, wT: parseFloat(weights.wT) / total, wL: parseFloat(weights.wL) / total }) });
-      const data = await res.json();
-      setTopsisResults(data.results);
-    } catch (e) { }
-    setLoading(false);
+    
+    // TOPSIS Implementation in JS (Frontend)
+    const criteria = ddrResults.map(r => ({ rule: r.rule_name, c1: r.Cmax, c2: r.T, c3: r.L }));
+    const totalW = parseFloat(weights.wC) + parseFloat(weights.wT) + parseFloat(weights.wL);
+    const w = [parseFloat(weights.wC) / totalW, parseFloat(weights.wT) / totalW, parseFloat(weights.wL) / totalW];
+
+    // 1. Normalization (Vector)
+    let sqSum1 = 0, sqSum2 = 0, sqSum3 = 0;
+    criteria.forEach(c => {
+      sqSum1 += c.c1 * c.c1;
+      sqSum2 += c.c2 * c.c2;
+      sqSum3 += c.c3 * c.c3;
+    });
+    const d1 = Math.sqrt(sqSum1) || 1, d2 = Math.sqrt(sqSum2) || 1, d3 = Math.sqrt(sqSum3) || 1;
+
+    // 2. Weighted Normalized & PIS/NIS
+    const weighted = criteria.map(c => [ (c.c1 / d1) * w[0], (c.c2 / d2) * w[1], (c.c3 / d3) * w[2] ]);
+    const pis = [Infinity, Infinity, Infinity], nis = [-Infinity, -Infinity, -Infinity];
+    weighted.forEach(row => {
+      for (let i = 0; i < 3; i++) {
+        if (row[i] < pis[i]) pis[i] = row[i];
+        if (row[i] > nis[i]) nis[i] = row[i];
+      }
+    });
+
+    // 3. Distances & CC*
+    const topsisData = criteria.map((c, idx) => {
+      const row = weighted[idx];
+      const sPlus = Math.sqrt(row.reduce((acc, v, i) => acc + Math.pow(v - pis[i], 2), 0));
+      const sMinus = Math.sqrt(row.reduce((acc, v, i) => acc + Math.pow(v - nis[i], 2), 0));
+      const cc = sMinus / (sPlus + sMinus) || 0;
+      return { rule_name: c.rule, r1: c.c1, r2: c.c2, r3: c.c3, s_plus: sPlus.toFixed(4), s_minus: sMinus.toFixed(4), cc: cc.toFixed(4) };
+    });
+
+    topsisData.sort((a, b) => b.cc - a.cc);
+    setTopsisResults(topsisData);
   };
 
-  useEffect(() => { if (ddrResults.length > 0) runTopsis(); }, [ddrResults]);
+  useEffect(() => { if (ddrResults.length > 0) runTopsis(); }, [ddrResults, weights]);
 
   const scrollToNext = (stage) => {
     setActiveStage(stage);
@@ -754,9 +781,6 @@ export default function GuidedFlow() {
                     <label style={{ color: 'var(--warning)', fontWeight: 'bold', fontSize: '0.75rem', marginBottom: '8px', display: 'block' }}>w₃ (Tardy Jobs)</label>
                     <input type="number" step="0.05" min="0" max="1" className="input-field" value={weights.wL} onChange={e => setWeights({ ...weights, wL: Number(e.target.value) })} style={{ width: '100%' }} />
                   </div>
-                  <button className="btn btn-warning" onClick={runTopsis} disabled={loading} style={{ height: '42px', padding: '0 2rem', fontWeight: 'bold' }}>
-                    {loading ? <div className="loader"></div> : <><Target size={16} style={{ marginRight: '8px' }} /> ANALİZİ GÜNCELLE</>}
-                  </button>
                 </div>
               </div>
               {topsisResults.length > 0 && (
@@ -767,8 +791,8 @@ export default function GuidedFlow() {
                   </div>
                   <ScrollableTable maxHeight="300px">
                     <table className="data-table small-table">
-                      <thead><tr><th>Kural</th><th>r₁ (Cmax)</th><th>r₂ (T)</th><th>r₃ (L)</th><th>S⁺ (İdeal↑)</th><th>S⁻ (İdeal↓)</th><th>CC* ↑</th></tr></thead>
-                      <tbody>{topsisResults.map((r, i) => <tr key={i} style={{ background: i === 0 ? 'rgba(210,153,34,0.08)' : 'transparent' }}><td style={{ fontWeight: i === 0 ? 'bold' : 'normal', color: i === 0 ? 'var(--warning)' : 'inherit' }}>{r.rule_name}{i === 0 ? ' ★' : ''}</td><td>{r.r[0]}</td><td>{r.r[1]}</td><td>{r.r[2]}</td><td>{r.S_pos}</td><td>{r.S_neg}</td><td style={{ fontWeight: 'bold', color: i === 0 ? '#4ade80' : 'inherit' }}>{r.C_star.toFixed(4)}</td></tr>)}</tbody>
+                      <thead><tr><th>Kural</th><th>r₁ (Cmax)</th><th>r₂ (T)</th><th>r₃ (L)</th><th>S⁺ (D⁺)</th><th>S⁻ (D⁻)</th><th>CC* (Yakınlık) ↑</th></tr></thead>
+                      <tbody>{topsisResults.map((r, i) => <tr key={i} style={{ background: i === 0 ? 'rgba(210,153,34,0.08)' : 'transparent' }}><td style={{ fontWeight: i === 0 ? 'bold' : 'normal', color: i === 0 ? 'var(--warning)' : 'inherit' }}>{r.rule_name}{i === 0 ? ' ★' : ''}</td><td>{r.r1.toFixed(1)}</td><td>{r.r2.toFixed(1)}</td><td>{r.r3}</td><td>{r.s_plus}</td><td>{r.s_minus}</td><td style={{ fontWeight: 'bold', color: i === 0 ? '#4ade80' : 'inherit' }}>{r.cc}</td></tr>)}</tbody>
                     </table>
                   </ScrollableTable>
 

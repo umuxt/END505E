@@ -263,23 +263,23 @@ def run_all_rules(n: int, m: int, P: dict, S: dict, D: dict, NP: dict,
                   ts_values: list = TS_VALUES,
                   verbose: bool = False) -> list[DDRResult]:
     """
-    Makaledeki 39 kural konfigürasyonunu çalıştırır ve sonuçları döndürür.
-
-    Returns:
-        List[DDRResult] sıralı liste
+    Makaledeki 39 kural konfigürasyonunu paralel olarak çalıştırır.
     """
-    results = []
+    from concurrent.futures import ThreadPoolExecutor
 
-    # 3 tek kural
+    def execute_config(config):
+        return run_ddr(n, m, P, S, D, NP, *config, verbose=verbose)
+
+    configs = []
     for rule in [RULE_SCT, RULE_SCLPT, RULE_SCEDD]:
-        r = run_ddr(n, m, P, S, D, NP, rule, verbose=verbose)
-        results.append(r)
+        configs.append((rule, None, float("inf")))
 
-    # 6 × 6 = 36 kombine kural
     for r1, r2 in COMBINED_PAIRS:
         for ts in ts_values:
-            r = run_ddr(n, m, P, S, D, NP, r1, r2, ts, verbose=verbose)
-            results.append(r)
+            configs.append((r1, r2, ts))
+
+    with ThreadPoolExecutor() as executor:
+        results = list(executor.map(execute_config, configs))
 
     return results
 
