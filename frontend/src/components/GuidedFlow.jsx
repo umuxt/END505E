@@ -474,18 +474,20 @@ export default function GuidedFlow() {
   return (
     <div className="notebook-container">
       <div className="notebook-header" style={{ padding: '2rem 1rem', position: 'relative', overflow: 'hidden', minHeight: '160px' }}>
-        <div style={{ position: 'absolute', right: '30px', top: '25px', pointerEvents: 'none' }}>
-          <img src="/itu-logo.png" alt="ITU Logo" style={{ width: '100px', height: '100px', objectFit: 'contain' }} />
-        </div>
-        <div>
-          <h2 style={{ fontSize: 'clamp(1.4rem, 4vw, 2.2rem)', letterSpacing: '-1px', marginBottom: '0.75rem', lineHeight: 1.2, maxWidth: '85%' }}>UPMSP Akademik Karar Destek Sistemi</h2>
-          <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1rem', maxWidth: '750px' }}>
-            Bu sistem, <a href="https://doi.org/10.1016/j.dajour.2024.100525" target="_blank" rel="noreferrer" style={{ color: 'var(--warning)', fontWeight: 'bold', textDecoration: 'underline' }}>Decision Analytics Journal (2024)</a>'da yayınlanan <br />
-            <strong>"A multi-objective production scheduling model and dynamic dispatching rules for unrelated parallel machines with sequence-dependent set-up times"</strong> <br />
-            isimli çalışma temel alınarak geliştirilmiştir. <br />
-            <span style={{ opacity: 0.8, fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>
-              Yazarlar: <em>Pham Duc Tai, Papimol Kongsri, Prasal Soeurn, Jirachai Buddhakulsomsiri</em>
-            </span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '2rem' }}>
+          <div style={{ flex: 1 }}>
+            <h2 style={{ fontSize: 'clamp(1.4rem, 4vw, 2.2rem)', letterSpacing: '-1px', marginBottom: '0.75rem', lineHeight: 1.2 }}>UPMSP Akademik Karar Destek Sistemi</h2>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1rem', maxWidth: '750px' }}>
+              Bu sistem, <a href="https://doi.org/10.1016/j.dajour.2024.100525" target="_blank" rel="noreferrer" style={{ color: 'var(--warning)', fontWeight: 'bold', textDecoration: 'underline' }}>Decision Analytics Journal (2024)</a>'da yayınlanan <br />
+              <strong>"A multi-objective production scheduling model and dynamic dispatching rules for unrelated parallel machines with sequence-dependent set-up times"</strong> <br />
+              isimli çalışma temel alınarak geliştirilmiştir. <br />
+              <span style={{ opacity: 0.8, fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>
+                Yazarlar: <em>Pham Duc Tai, Papimol Kongsri, Prasal Soeurn, Jirachai Buddhakulsomsiri</em>
+              </span>
+            </div>
+          </div>
+          <div style={{ pointerEvents: 'none', shrink: 0 }}>
+            <img src="/itu-logo.png" alt="ITU Logo" style={{ width: '90px', height: '90px', objectFit: 'contain' }} />
           </div>
         </div>
       </div>
@@ -506,7 +508,7 @@ export default function GuidedFlow() {
         </div>
 
         {/* STEP 02: Literatür Taraması */}
-        {activeStage >= 1 && (
+        {activeStage >= 2 && (
           <div className="flow-step active slide-in">
             <div className="flow-step-number">02</div>
             <div className="flow-step-node">
@@ -565,7 +567,7 @@ export default function GuidedFlow() {
         )}
 
         {/* STEP 03: MILP */}
-        {activeStage >= 2 && (
+        {activeStage >= 3 && (
           <div className="flow-step active slide-in">
             <div className="flow-step-number">03</div>
             <div className="flow-step-node">
@@ -579,7 +581,7 @@ export default function GuidedFlow() {
               {problemData?.metadata.n > 15 ? (
                 <div className="highlight-box mt-4">
                   <p>İş sayısı (n={problemData.metadata.n}) kesin çözüm sınırlarının üzerindedir. Sezgisel Analiz (DDR) aşamasına geçiliyor.</p>
-                  <button className="btn btn-warning mt-4" onClick={() => setActiveStage(3)}>Doğrudan Sezgisel Yöntemlere Geç</button>
+                  <button className="btn btn-warning mt-4" onClick={() => scrollToNext(4)}>Doğrudan Sezgisel Yöntemlere Geç</button>
                 </div>
               ) : (
                 <div className="mt-4">
@@ -616,7 +618,7 @@ export default function GuidedFlow() {
         )}
 
         {/* STEP 04: DDR */}
-        {activeStage >= 3 && (
+        {activeStage >= 4 && (
           <div className="flow-step active slide-in">
             <div className="flow-step-number">04</div>
             <div className="flow-step-node">
@@ -665,7 +667,7 @@ export default function GuidedFlow() {
         )}
 
         {/* STEP 05: TOPSIS */}
-        {activeStage >= 4 && (
+        {activeStage >= 5 && (
           <div className="flow-step active slide-in">
             <div className="flow-step-number">05</div>
             <div className="flow-step-node">
@@ -722,7 +724,7 @@ export default function GuidedFlow() {
                     <JobSequenceTable schedule={ddrResults.find(r => r.rule_name === topsisResults[0].rule_name)?.schedule} m={Number(inputMachines)} problemData={problemData} />
                     <GanttChart schedule={ddrResults.find(r => r.rule_name === topsisResults[0].rule_name)?.schedule} m={Number(inputMachines)} n={Number(inputJobs)} />
                   </div>
-                  <button className="btn btn-warning" onClick={() => scrollToNext(5)}><Activity size={16} /> 06. Gap Analizi Adımına Geç</button>
+                  <button className="btn btn-warning" onClick={() => scrollToNext(6)}><Activity size={16} /> 06. Gap Analizi Adımına Geç</button>
                 </div>
               )}
             </div>
@@ -730,7 +732,7 @@ export default function GuidedFlow() {
         )}
 
         {/* STEP 06: Gap Analizi */}
-        {activeStage >= 5 && (
+        {activeStage >= 6 && (
           <div className="flow-step active slide-in">
             <div className="flow-step-number">06</div>
             <div className="flow-step-node">
@@ -770,13 +772,13 @@ export default function GuidedFlow() {
                   </p>
                 </div>
               )}
-              <button className="btn btn-warning mt-4" onClick={() => scrollToNext(6)}><BookOpen size={16} /> 07. Final Değerlendirmesi ve Sonuç</button>
+              <button className="btn btn-warning mt-4" onClick={() => scrollToNext(7)}><BookOpen size={16} /> 07. Final Değerlendirmesi ve Sonuç</button>
             </div>
           </div>
         )}
 
         {/* STEP 07: Sonuç */}
-        {activeStage >= 6 && (
+        {activeStage >= 7 && (
           <div className="flow-step active slide-in">
             <div className="flow-step-number">07</div>
             <div className="flow-step-node">
