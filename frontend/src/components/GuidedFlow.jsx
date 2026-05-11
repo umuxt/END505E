@@ -345,6 +345,78 @@ const JobSequenceTable = React.memo(({ schedule, m, problemData }) => {
   );
 });
 
+const PerformanceMetricsCard = ({ schedule, problemData }) => {
+  if (!schedule || !problemData) return null;
+  
+  let totalC = 0;
+  let totalT = 0;
+  let totalE = 0;
+  let numL = 0;
+  let maxC = 0;
+  let totalP = 0;
+  let totalJobs = 0;
+
+  Object.values(schedule).forEach(machineJobs => {
+    machineJobs.forEach(([jIdx, start, end]) => {
+      const dj = problemData.D[jIdx];
+      const pj = problemData.P[jIdx]; // Bu aslında makineye göre değişir, basitleştirme için bitiş-başlangıç kullanılabilir
+      const completion = end;
+      
+      totalC += completion;
+      const tardiness = Math.max(0, completion - dj);
+      const earliness = Math.max(0, dj - completion);
+      
+      totalT += tardiness;
+      totalE += earliness;
+      if (tardiness > 0.01) numL++;
+      if (completion > maxC) maxC = completion;
+      
+      // Gerçek işlem süresi (setup hariç)
+      totalP += (end - start);
+      totalJobs++;
+    });
+  });
+
+  const avgF = totalC / totalJobs;
+  const utilization = (totalP / (Object.keys(schedule).length * maxC)) * 100;
+
+  const metricStyle = { flex: 1, minWidth: '150px', padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' };
+  const labelStyle = { fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '0.5rem', display: 'block' };
+  const valueStyle = { fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--warning)' };
+
+  return (
+    <div style={{ marginTop: '2rem', padding: '1.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+      <div className="output-header" style={{ marginBottom: '1rem' }}><TrendingUp size={16} /> Akademik Performans Göstergeleri (KPIs)</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem' }}>
+        <div style={metricStyle}>
+          <span style={labelStyle}>Cmax (Yayılma Süresi)</span>
+          <div style={valueStyle}>{maxC.toFixed(2)}h</div>
+        </div>
+        <div style={metricStyle}>
+          <span style={labelStyle}>F-bar (Ort. Akış Süresi)</span>
+          <div style={{...valueStyle, color: '#58a6ff'}}>{avgF.toFixed(2)}h</div>
+        </div>
+        <div style={metricStyle}>
+          <span style={labelStyle}>ΣT (Toplam Gecikme)</span>
+          <div style={{...valueStyle, color: '#ff7b72'}}>{totalT.toFixed(2)}h</div>
+        </div>
+        <div style={metricStyle}>
+          <span style={labelStyle}>L (Geciken İş Sayısı)</span>
+          <div style={{...valueStyle, color: '#ff7b72'}}>{numL}</div>
+        </div>
+        <div style={metricStyle}>
+          <span style={labelStyle}>ΣE (Toplam Erken Bitirme)</span>
+          <div style={{...valueStyle, color: '#4ade80'}}>{totalE.toFixed(2)}h</div>
+        </div>
+        <div style={metricStyle}>
+          <span style={labelStyle}>U-bar (Kullanım Oranı)</span>
+          <div style={{...valueStyle, color: 'var(--accent)'}}>%{utilization.toFixed(1)}</div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // --- Academic Content Block (Inline Report Narrative) ---
 const AcademicBlock = ({ items }) => (
   <div style={{ margin: '1.5rem 0', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -634,6 +706,7 @@ export default function GuidedFlow() {
                         <div className="output-header" style={{ color: 'var(--warning)' }}>M4 Modeli (Uzlaşmacı / Çok Amaçlı Dengeli Çözüm)</div>
                         <JobSequenceTable schedule={cpsatResults.M4.schedule} m={Number(inputMachines)} problemData={problemData} />
                         <GanttChart schedule={cpsatResults.M4.schedule} m={Number(inputMachines)} n={Number(inputJobs)} />
+                        <PerformanceMetricsCard schedule={cpsatResults.M4.schedule} problemData={problemData} />
                       </div>
                     </div>
                   )}
@@ -758,6 +831,7 @@ export default function GuidedFlow() {
                     <div style={{ fontSize: '0.75rem', opacity: 0.7, marginBottom: '1rem' }}>TOPSIS'in seçtiği optimal kural ile oluşturulan operasyonel çizelge. Mor bloklar hazırlık (Sᵢⱼₖ), yeşil bloklar işlem (Pⱼₖ) sürelerini gösterir.</div>
                     <JobSequenceTable schedule={ddrResults.find(r => r.rule_name === topsisResults[0].rule_name)?.schedule} m={Number(inputMachines)} problemData={problemData} />
                     <GanttChart schedule={ddrResults.find(r => r.rule_name === topsisResults[0].rule_name)?.schedule} m={Number(inputMachines)} n={Number(inputJobs)} />
+                    <PerformanceMetricsCard schedule={ddrResults.find(r => r.rule_name === topsisResults[0].rule_name)?.schedule} problemData={problemData} />
                   </div>
                   <button className="btn btn-warning" onClick={() => scrollToNext(6)}><Activity size={16} /> 06. Gap Analizi Adımına Geç</button>
                 </div>
