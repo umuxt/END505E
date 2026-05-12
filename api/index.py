@@ -14,6 +14,7 @@ from app.data_generator import generate_problem
 from app.ddr_heuristic import run_all_rules
 from app.topsis import run_topsis
 from app.solver import ProblemData
+from app.report_analytics import build_report_bundle
 
 app = FastAPI(title="UPMSP Backend API")
 
@@ -318,6 +319,17 @@ def api_solve_cpsat(req: CPSATRequest):
 @app.get("/")
 def read_root():
     return {"message": "UPMSP API is running"}
+
+
+@app.get("/api/report_bundle")
+def api_report_bundle():
+    try:
+        return {"status": "success", "report": build_report_bundle()}
+    except Exception as e:
+        import traceback
+        error_msg = traceback.format_exc()
+        print(f"REPORT BUNDLE ERROR: {error_msg}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 class AUGMECONRequest(BaseModel):
     n: int

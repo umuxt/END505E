@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Play, Calculator, Zap, Target, Activity, FileText, BarChart3, Copy, CheckCircle, BookOpen, TrendingUp, Database } from 'lucide-react';
 import { 
   ScatterChart, Scatter, XAxis, YAxis, ZAxis, CartesianGrid, Tooltip as RechartsTooltip, 
   ResponsiveContainer, Cell, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
   Legend
 } from 'recharts';
+import { flowNarratives } from './flowNarratives';
 
 const API_BASE = '/api';
 
@@ -575,6 +576,111 @@ const AcademicBlock = ({ items }) => (
   </div>
 );
 
+const ReportArtifactCard = ({ label, title, status, note, children, tone = 'var(--accent)' }) => (
+  <div className="glass-panel" style={{ padding: '1rem', borderLeft: `4px solid ${tone}`, background: 'rgba(255,255,255,0.02)' }}>
+    <div className="flex-row" style={{ justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+      <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#e6edf3' }}>{label} · {title}</div>
+      <div style={{ fontSize: '0.65rem', fontWeight: 'bold', textTransform: 'uppercase', color: tone, letterSpacing: '0.08em' }}>{status}</div>
+    </div>
+    {note && <div style={{ marginTop: '0.65rem', fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{note}</div>}
+    {children && <div style={{ marginTop: '0.9rem' }}>{children}</div>}
+  </div>
+);
+
+const ReportAtlasSection = ({ title, subtitle, children }) => (
+  <details className="glass-panel mt-4 slide-in" open style={{ padding: '1rem 1.1rem', borderLeft: '4px solid var(--warning)' }}>
+    <summary style={{ cursor: 'pointer', listStyle: 'none', fontWeight: 800, color: 'var(--warning)', marginBottom: '0.5rem' }}>
+      {title}
+    </summary>
+    {subtitle && <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>{subtitle}</div>}
+    <div style={{ display: 'grid', gap: '0.9rem' }}>{children}</div>
+  </details>
+);
+
+const ReportAtlas = ({ problemData, cpsatResults, augmeconResults, ddrResults, topsisResults, inputJobs, inputMachines, reportBundle, reportBundleError, weights }) => {
+  const selectedRule = topsisResults?.[0];
+  const report14 = reportBundle?.table14;
+  const report15 = reportBundle?.table15;
+  const report16 = reportBundle?.table16;
+  const report17 = reportBundle?.table17;
+  const report18 = reportBundle?.table18;
+  const report19 = reportBundle?.table19;
+
+  return (
+    <div className="report-atlas-container mt-4" style={{ borderTop: '2px dashed var(--border-color)', paddingTop: '2rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.5rem' }}>
+        <Activity size={24} style={{ color: 'var(--accent)' }} />
+        <h2 style={{ fontSize: '1.25rem', margin: 0 }}>Rapor Atlası: Makale & Uygulama Eşleşmesi</h2>
+      </div>
+
+      <ReportAtlasSection title="5. Hesaplamalı Çalışma Sonuçları" subtitle="Tablo 14 - Tablo 21 arası büyük ölçekli ve karar analizi verileri">
+        <ReportArtifactCard
+          label="Tablo 14 / Tablo 15"
+          title="Talep trendi, kümeleme ve örneklerin özet istatistiği"
+          status={report14 ? 'live backend' : 'paper reference'}
+          note="Live backend: aylık büyük örnek özeti ve 1B k-means kümeleme sonucu."
+        >
+          {report14 && report15 ? (
+            <>
+              <ScrollableTable maxHeight="260px">
+                <table className="data-table small-table">
+                  <thead>
+                    <tr>
+                      <th>Ay</th><th>Senaryo</th><th>İş</th><th>Aile</th><th>Elig%</th><th>Avg P</th><th>Setup S</th><th>Setup D</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {report14.instances.map((row) => (
+                      <tr key={row.month}>
+                        <td>{row.month}</td>
+                        <td>{row.scenario}</td>
+                        <td>{row.jobs}</td>
+                        <td>{row.families}</td>
+                        <td>{(row.eligible_ratio * 100).toFixed(1)}%</td>
+                        <td>{row.avg_processing?.toFixed?.(2)}</td>
+                        <td>{row.avg_setup_same?.toFixed?.(2)}</td>
+                        <td>{row.avg_setup_diff?.toFixed?.(2)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </ScrollableTable>
+            </>
+          ) : (
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+              Rapor bundle yüklenirken bu bölüm referans açıklama olarak kalır.
+            </div>
+          )}
+        </ReportArtifactCard>
+
+        <ReportArtifactCard
+          label="Tablo 16 / 17 / 18 / 19"
+          title="DDR Performans Analizi (ANOVA & Regresyon)"
+          status={report16 ? 'live backend' : 'paper reference'}
+        >
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+            {report16 ? 'ANOVA ve regresyon katmanları backend verisiyle güncellenmiştir.' : 'DDR sonuçları ve özetler hazırlandığında bu bölüm dolar.'}
+          </div>
+        </ReportArtifactCard>
+
+        <ReportArtifactCard
+          label="Tablo 20 / Tablo 21"
+          title="Etkili kurallar ve TOPSIS tabanlı seçim"
+          status={selectedRule ? 'live backend' : 'paper reference'}
+          note="Live backend: TOPSIS tablosu ve kural seçimi."
+        >
+          {selectedRule && weights ? (
+            <>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.75rem' }}>Ağırlıklar: wC {weights.wC}, wT {weights.wT}, wL {weights.wL}</div>
+              <TopsisNormalizationTable topsisResults={topsisResults} />
+            </>
+          ) : <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>TOPSIS çalıştırıldığında Tablo 20-21 burada temsil edilir.</div>}
+        </ReportArtifactCard>
+      </ReportAtlasSection>
+    </div>
+  );
+};
+
 export default function GuidedFlow() {
   const [loading, setLoading] = useState(false);
   const [activeStage, setActiveStage] = useState(1);
@@ -589,11 +695,38 @@ export default function GuidedFlow() {
   const [ddrResults, setDdrResults] = useState([]);
   const [topsisResults, setTopsisResults] = useState([]);
   const [weights, setWeights] = useState({ wC: 0.34, wT: 0.33, wL: 0.33 });
+  const [reportBundle, setReportBundle] = useState(null);
+  const [reportBundleError, setReportBundleError] = useState(null);
+  const stageRefs = useRef({});
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadReportBundle = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/report_bundle`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.detail || 'Rapor bundle alınamadı');
+        if (!cancelled) {
+          setReportBundle(data.report);
+          setReportBundleError(null);
+        }
+      } catch (error) {
+        if (!cancelled) setReportBundleError(error.message);
+      }
+    };
+    loadReportBundle();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const scrollToNext = (stage) => {
     setActiveStage(stage);
     setTimeout(() => {
-      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      const target = stageRefs.current[stage];
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }, 100);
   };
 
@@ -762,28 +895,38 @@ export default function GuidedFlow() {
       <div className="flow-content">
         
         {/* CHAPTER 1: Giriş */}
-        <div className={`flow-step ${activeStage >= 1 ? 'active' : ''}`}>
+        <div ref={(el) => { stageRefs.current[1] = el; }} className={`flow-step ${activeStage >= 1 ? 'active' : ''}`}>
           <div className="flow-step-number">01</div>
           <div className="flow-step-node">
             <h3><BookOpen size={20} /> 01. Giriş (Introduction)</h3>
             <AcademicBlock items={[
-              { h: "Motivasyon", t: "Bu çalışma, ilişkisiz paralel tezgahlarda (UPMSP) sıra ve tezgah bağımlı hazırlık sürelerini (Sᵢⱼₖ) ele alan çok amaçlı bir çizelgeleme sistemidir." },
-              { h: "Akademik Çerçeve", t: "Performans ölçütleri: Yayılma Süresi (Cₘₐₓ), Toplam Gecikme (T) ve Geciken İş Sayısı (L). Bu kriterler arasındaki ödünleşim, Karar Destek Sistemimizin temelidir." }
+              { h: "Motivasyon", t: flowNarratives.introMotivation },
+              { h: "Akademik Çerçeve", t: flowNarratives.introMetrics }
             ]} />
-            <AcademicInsight message="Raporun 1. bölümünde belirtildiği üzere, Tayland'daki çelik boru üreticisinin 298 işlik gerçek senaryosunu modellemek için önce bu teorik altyapının kurulması, kısıtların ve amaç fonksiyonlarının matematiksel olarak tanımlanması elzemdir." />
+            
+            <ReportArtifactCard
+              label="Section 1"
+              title="Giriş ve Notasyon Eşleşmesi"
+              status="paper reference"
+              note="Rapordaki Bölüm 1 ve 2'nin uygulamadaki karşılığıdır."
+            >
+              <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>{flowNarratives.introApplied}</div>
+            </ReportArtifactCard>
+
             <button className="btn btn-warning mt-4" onClick={() => scrollToNext(2)}>Literatür Taramasına Geç</button>
           </div>
         </div>
 
         {/* CHAPTER 2: Literatür */}
         {activeStage >= 2 && (
-          <div className="flow-step active slide-in">
+          <div ref={(el) => { stageRefs.current[2] = el; }} className="flow-step active slide-in">
             <div className="flow-step-number">02</div>
             <div className="flow-step-node">
               <h3><FileText size={20} /> 02. Literatür Taraması (Literature Review)</h3>
               <AcademicBlock items={[
-                { h: "Araştırma Boşluğu", t: "Tablo 1'de gösterildiği üzere, literatürde Sᵢⱼₖ dâhil edilerek Cₘₐₓ, T ve L'yi eş zamanlı optimize eden başka bir çalışma bulunmamaktadır." }
+                { h: "Araştırma Boşluğu", t: flowNarratives.literatureGap }
               ]} />
+              
               <div className="glass-panel mb-4" style={{ padding: '1rem' }}>
                 <div className="output-header">Tablo 1: Literatür Özeti</div>
                 <table className="data-table small-table">
@@ -795,7 +938,16 @@ export default function GuidedFlow() {
                   </tbody>
                 </table>
               </div>
-              <AcademicInsight message="Literatürdeki bu araştırma boşluğunu doldurmak için tasarladığımız sistem, hem AUGMECON ile Pareto-optimal çözümleri bulmayı hem de DDR ile büyük ölçekli problemlerde hızlı ve verimli kararlar almayı hedefler." />
+
+              <ReportArtifactCard
+                label="Bölüm 2"
+                title="Literatür Taraması Eşleşmesi"
+                status="paper reference"
+                note="Rapordaki literatür tablosunun uygulama içindeki izdüşümüdür."
+              >
+                <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>{flowNarratives.literatureApplied}</div>
+              </ReportArtifactCard>
+
               <button className="btn btn-warning mt-4" onClick={() => scrollToNext(3)}>Problem Tanımı ve Veri Üretimine Geç</button>
             </div>
           </div>
@@ -803,13 +955,14 @@ export default function GuidedFlow() {
 
         {/* CHAPTER 3: Problem Tanımı ve Veri Üretimi */}
         {activeStage >= 3 && (activeStage === 3 || problemData) && (
-          <div className="flow-step active slide-in">
+          <div ref={(el) => { stageRefs.current[3] = el; }} className="flow-step active slide-in">
             <div className="flow-step-number">03</div>
             <div className="flow-step-node">
               <h3><Database size={20} /> 03. Problem Tanımı ve Veri Üretimi (Bölüm 3.1)</h3>
               <AcademicBlock items={[
-                { h: "Sayısal Örnek (Tablo 2)", t: "Analizlerimizde referans aldığımız 3 İş ve 2 Tezgahlık küçük ölçekli veri seti aşağıdadır." }
+                { h: "Sayısal Örnek (Tablo 2)", t: flowNarratives.dataSetIntro }
               ]} />
+              <AcademicInsight message={flowNarratives.prepTimeImportance} />
               <div className="glass-panel mb-4" style={{ padding: '1rem' }}>
                 <div className="output-header">Tablo 2: Sayısal Örnek Veri Seti (Pⱼₖ, Dⱼ)</div>
                 <table className="data-table small-table">
@@ -831,14 +984,22 @@ export default function GuidedFlow() {
                   <div className="form-group"><label>NP Yüzde (%)</label><input type="number" className="input-field" value={inputNP} onChange={e => setInputNP(e.target.value)} /></div>
                   <div className="form-group"><label>Senaryo</label><select className="input-field" value={inputScenario} onChange={e => setInputScenario(e.target.value)}><option value="high">Yüksek Talep</option><option value="low">Düşük Talep</option></select></div>
                 </div>
-                <AcademicInsight message="Hazırlık sürelerinin (Sᵢⱼₖ) modele dahil edilmesi kritiktir; çünkü ürün aileleri arası geçişlerdeki zaman kayıpları, toplam üretim süresini (Makespan) ve teslimat performansını doğrudan etkiler." />
+                <AcademicInsight message={flowNarratives.prepTimeApplied} />
                 <button className="btn btn-warning mt-4" onClick={generateData} disabled={loading}><Play size={16} /> Veriyi Üret ve Matrisleri İncele</button>
               </div>
 
               {problemData && (
                 <div className="mt-4 slide-in">
                   <DataMatrixView data={problemData} title="Üretilen Problem Veri Matrisi" />
-                  <AcademicInsight message="Karmaşık Sᵢⱼₖ matrislerini işlerken hiçbir veri kaybı yaşanmaması için sayfalama ve sanal kaydırma teknolojileri kullanılarak, verinin tüm akademik zenginliği korunmuştur." />
+                  <ReportArtifactCard
+                    label="Bölüm 3.1"
+                    title="Veri Yapısı ve Örnek Problem"
+                    status="live backend"
+                    note="Rapordaki Section 5.1'in canlı verilerle doğrulanmasıdır."
+                  >
+                    <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>{flowNarratives.dataApplied}</div>
+                  </ReportArtifactCard>
+
                   <button className="btn btn-warning mt-4" onClick={() => scrollToNext(4)}>Matematiksel Modellere (MILP) Geç</button>
                 </div>
               )}
@@ -848,7 +1009,7 @@ export default function GuidedFlow() {
 
         {/* CHAPTER 4: Matematiksel Modeller */}
         {activeStage >= 4 && problemData && (
-          <div className="flow-step active slide-in">
+          <div ref={(el) => { stageRefs.current[4] = el; }} className="flow-step active slide-in">
             <div className="flow-step-number">04</div>
             <div className="flow-step-node">
               <h3><Calculator size={20} /> 04. Matematiksel Modeller (MILP - Bölüm 3.2)</h3>
@@ -861,7 +1022,14 @@ export default function GuidedFlow() {
                 <strong>📊 Tablo 6: Model Kompleksliği (Özet)</strong> — Karar Değişkeni: n²m + n. İkili (Binary): n²m + n.
               </div>
               
-              <AcademicInsight message="Küçük ölçekli problemler için kesin çözücü motorlarla global optimumu arıyoruz. Ancak makalede de vurgulandığı üzere, problem boyutu büyüdükçe (n > 15) kesin çözüm yöntemleri matematiksel olarak 'intractable' hale gelir; bu noktada sezgisel algoritmalar (DDR) devreye girer." />
+              <ReportArtifactCard
+                label="Bölüm 3.2"
+                title="Çözüm Metodolojisi Eşleşmesi"
+                status="paper reference"
+                note="Rapordaki Section 3.2'nin matematiksel modellerini temsil eder."
+              >
+                <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>{flowNarratives.methodologyApplied}</div>
+              </ReportArtifactCard>
 
               {problemData.metadata.n <= 15 ? (
                 <div className="mt-4">
@@ -869,6 +1037,7 @@ export default function GuidedFlow() {
                   {cpsatResults.M1 && (
                     <div className="mt-4">
                       <PayoffTable results={cpsatResults} />
+                      <AcademicInsight message={flowNarratives.augmeconBridge} />
                       <button className="btn btn-accent mt-4" onClick={runAugmecon} disabled={loading}><BarChart3 size={16} /> Pareto Cephesini Hesapla (AUGMECON)</button>
                       {augmeconResults && <MILPParetoChart results={cpsatResults} augmeconResults={augmeconResults} />}
                       <div className="mt-4"><JobSequenceTable schedule={cpsatResults.M4.schedule} m={Number(inputMachines)} problemData={problemData} /></div>
@@ -885,14 +1054,14 @@ export default function GuidedFlow() {
 
         {/* CHAPTER 5: DDR */}
         {activeStage >= 5 && problemData && (
-          <div className="flow-step active slide-in">
+          <div ref={(el) => { stageRefs.current[5] = el; }} className="flow-step active slide-in">
             <div className="flow-step-number">05</div>
             <div className="flow-step-node">
               <h3><Zap size={20} /> 05. Dinamik Dağıtım Kuralları (DDR - Bölüm 4)</h3>
               <AcademicBlock items={[
-                { h: "Sezgisel Strateji", t: "Makalede geliştirilen 3 temel ve 36 hibrit kural. Hibrit kurallar tₛ zamanında strateji değiştirerek çatışan amaçlar arasında denge kurar." }
+                { h: "Sezgisel Strateji", t: flowNarratives.ddrIntro }
               ]} />
-              <AcademicInsight message="39 farklı konfigürasyonun (3 standart + 36 hibrit) analiz edilmesi, makaledeki temel tezi test etmemizi sağlar: Stratejik 'kural değiştirme' (switching) noktaları, tekli kurallara göre çok amaçlı performans metriklerinde daha iyi bir denge sunar." />
+              <AcademicInsight message={flowNarratives.ddrSwitching} />
               <div className="flex-column" style={{ gap: '1rem', alignItems: 'center', margin: '2rem 0' }}>
                 <button className="btn btn-warning" onClick={runDDR} disabled={loading} style={{ padding: '1rem 3rem', fontSize: '1.1rem', fontWeight: 'bold', boxShadow: '0 0 20px rgba(210,153,34,0.3)' }}>
                   {loading ? (
@@ -914,6 +1083,16 @@ export default function GuidedFlow() {
                       <div style={{ height: '100%', background: 'var(--warning)', width: `${(ddrResults.length / 39) * 100}%`, transition: 'width 0.4s ease' }}></div>
                     </div>
                   </div>
+                )}
+                {ddrResults.length > 0 && (
+                  <ReportArtifactCard
+                    label="Bölüm 4"
+                    title="Sezgisel Öncelik Kuralları (DDR)"
+                    status="live backend"
+                    note="Rapordaki Section 4 kurallarının simülasyonudur."
+                  >
+                    <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>{flowNarratives.ddrApplied}</div>
+                  </ReportArtifactCard>
                 )}
               </div>
               
@@ -966,19 +1145,33 @@ export default function GuidedFlow() {
 
         {/* CHAPTER 6: TOPSIS Sonuçları ve Çizelge */}
         {activeStage >= 6 && topsisResults.length > 0 && problemData && (
-          <div className="flow-step active slide-in">
+          <div ref={(el) => { stageRefs.current[6] = el; }} className="flow-step active slide-in">
             <div className="flow-step-number">06</div>
             <div className="flow-step-node">
               <h3><Target size={20} /> 06. Karar Analizi (Rapor Bölüm 5.3)</h3>
-              <AcademicInsight message="Bu aşama yalnızca seçilen optimal çizelgeyi sunar. TOPSIS, Pareto kümesindeki alternatifleri ağırlıklı tercih yapısına göre sıralar; CC* değeri 1'e yaklaştıkça çözüm ideal noktaya yaklaşır." />
+              <AcademicInsight message={flowNarratives.topsisSelectionNote} />
+              <AcademicInsight message={flowNarratives.topsisApplied} />
+              <div style={{ fontSize: '0.75rem', opacity: 0.75, marginTop: '0.25rem' }}>{flowNarratives.topsisLegend}</div>
               <TopsisNormalizationTable topsisResults={topsisResults} />
+
+              <ReportArtifactCard
+                label="Tablo 20 / 21"
+                title="TOPSIS Tabanlı Kural Seçimi"
+                status="live backend"
+                note="Ağırlıklar: wC, wT, wL bazlı seçim."
+              >
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.75rem' }}>Ağırlıklar: wC {weights.wC}, wT {weights.wT}, wL {weights.wL}</div>
+                <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>{flowNarratives.topsisApplied}</div>
+              </ReportArtifactCard>
+
               <div className="mt-4" style={{ border: '2px solid var(--warning)', borderRadius: '12px', padding: '1.5rem', background: 'rgba(0,0,0,0.2)' }}>
                 <div className="output-header" style={{ color: 'var(--warning)', border: 'none', padding: 0, marginBottom: '1.5rem' }}>🏆 SEÇİLEN OPTİMAL ÇİZELGE: {topsisResults[0].rule_name}</div>
                 <JobSequenceTable schedule={topsisResults[0].schedule} m={Number(inputMachines)} problemData={problemData} />
                 <GanttChart schedule={topsisResults[0].schedule} m={Number(inputMachines)} n={Number(inputJobs)} />
                 <CompactMetrics schedule={topsisResults[0].schedule} problemData={problemData} />
               </div>
-              <AcademicInsight message="Gantt şemasındaki yeşil bloklar net işlem süresini (Pⱼ,ₖ), mor bloklar ise o tezgahtaki bir önceki işten kaynaklanan sıra-bağımlı hazırlık süresini (Sᵢ,ⱼ,ₖ) temsil eder." />
+              <AcademicInsight message={flowNarratives.ganttLegend} />
+              <AcademicInsight message={flowNarratives.ganttApplied} />
               <button className="btn btn-warning mt-4" onClick={() => scrollToNext(7)}>Büyük Ölçekli Analizlere Geç</button>
             </div>
           </div>
@@ -986,11 +1179,13 @@ export default function GuidedFlow() {
 
         {/* CHAPTER 7: Live validation */}
         {activeStage >= 7 && (
-          <div className="flow-step active slide-in">
+          <div ref={(el) => { stageRefs.current[7] = el; }} className="flow-step active slide-in">
             <div className="flow-step-number">07</div>
             <div className="flow-step-node">
               <h3><TrendingUp size={20} /> 07. Canlı Performans Doğrulama</h3>
-              <AcademicInsight message="Bu bölüm, makaledeki istatistiksel trendi canlı payload üzerinde doğrulamak için kullanılır. Burada ANOVA raporlanmaz; yalnızca üretilen veriye göre çizilen performans karşılaştırması gösterilir." />
+              <AcademicInsight message={flowNarratives.liveValidationNote} />
+              <AcademicInsight message={flowNarratives.liveComparisonNote} />
+              <AcademicInsight message={flowNarratives.liveApplied} />
 
               <div className="mt-4">
                 <div style={{ fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '1rem', color: 'var(--accent)' }}>CANLI PERFORMANS KARŞILAŞTIRMASI</div>
@@ -1021,6 +1216,121 @@ export default function GuidedFlow() {
                 </div>
               </div>
 
+              <div className="mt-4">
+                <div style={{ fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '1rem', color: 'var(--accent)' }}>RAPOR ATLASI: BÜYÜK ÖLÇEKLİ DOĞRULAMA (TABLO 14-19)</div>
+                <div style={{ display: 'grid', gap: '1rem' }}>
+                   <ReportArtifactCard
+                    label="Tablo 14 / 15"
+                    title="Talep Trendi ve Kümeleme"
+                    status={reportBundle?.table14 ? 'live backend' : 'loading...'}
+                  >
+                    {reportBundle?.table14 ? (
+                      <>
+                        <ScrollableTable maxHeight="260px">
+                          <table className="data-table small-table">
+                            <thead>
+                              <tr>
+                                <th>Ay</th><th>Senaryo</th><th>İş</th><th>Aile</th><th>Elig%</th><th>Avg P</th><th>Setup S</th><th>Setup D</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {reportBundle.table14.instances.map((row) => (
+                                <tr key={row.month}>
+                                  <td>{row.month}</td><td>{row.scenario}</td><td>{row.jobs}</td><td>{row.families}</td>
+                                  <td>{(row.eligible_ratio * 100).toFixed(1)}%</td><td>{row.avg_processing?.toFixed?.(2)}</td>
+                                  <td>{row.avg_setup_same?.toFixed?.(2)}</td><td>{row.avg_setup_diff?.toFixed?.(2)}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </ScrollableTable>
+                        <div className="grid-2 mt-3" style={{ gap: '0.75rem' }}>
+                          <div className="glass-panel p-2" style={{ fontSize: '0.75rem' }}>
+                            <strong>Tablo 14 Özeti:</strong> {reportBundle.table14.summary.months} ay · Avg Jobs: {reportBundle.table14.summary.avg_jobs}
+                          </div>
+                          <div className="glass-panel p-2" style={{ fontSize: '0.75rem' }}>
+                            <strong>Tablo 15 Kümeleme:</strong> Silhouette: {reportBundle.table15.silhouette} · Low: {reportBundle.table15.clusters?.[0]?.count} ay · High: {reportBundle.table15.clusters?.[1]?.count} ay
+                          </div>
+                        </div>
+                      </>
+                    ) : <div>Büyük ölçekli veriler yükleniyor...</div>}
+                  </ReportArtifactCard>
+                  
+                  <ReportArtifactCard
+                    label="Tablo 16 / 17 / 18 / 19"
+                    title="DDR Performans Analizi (ANOVA & Regresyon)"
+                    status={reportBundle?.table16 ? 'live backend' : 'loading...'}
+                  >
+                    {reportBundle?.table16 ? (
+                      <div style={{ display: 'grid', gap: '0.75rem' }}>
+                        <details>
+                          <summary style={{ cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--warning)' }}>Tablo 16: Tekli DDR ANOVA & Tukey</summary>
+                          {Object.entries(reportBundle.table16.anova).map(([metric, rows]) => (
+                            <div key={metric} className="mt-2">
+                              <div style={{ fontSize: '0.7rem', fontWeight: 'bold' }}>{metric} ANOVA</div>
+                              <ScrollableTable maxHeight="140px">
+                                <table className="data-table small-table">
+                                  <thead><tr><th>Terim</th><th>df</th><th>F</th><th>p</th></tr></thead>
+                                  <tbody>
+                                    {rows && rows.length > 0 ? (
+                                      rows.map((row, idx) => (
+                                        row.error ? (
+                                          <tr key={idx}><td colSpan="4" style={{ color: 'var(--warning)', fontSize: '0.65rem' }}>Hata: {row.error}</td></tr>
+                                        ) : (
+                                          <tr key={idx}>
+                                            <td>{row.term || '—'}</td>
+                                            <td>{row.df || '0'}</td>
+                                            <td>{typeof row.F === 'number' ? row.F.toFixed(3) : '—'}</td>
+                                            <td>{typeof row.p_value === 'number' ? row.p_value.toFixed(4) : '—'}</td>
+                                          </tr>
+                                        )
+                                      ))
+                                    ) : (
+                                      <tr><td colSpan="4" style={{ textAlign: 'center', opacity: 0.5 }}>Veri hesaplanamadı</td></tr>
+                                    )}
+                                  </tbody>
+                                </table>
+                              </ScrollableTable>
+                            </div>
+                          ))}
+                          <div className="mt-2" style={{ fontSize: '0.7rem', opacity: 0.8 }}>* Tukey karşılaştırmaları backend'den doğrulanmıştır (Rej: p &lt; 0.05).</div>
+                        </details>
+
+                        <details>
+                          <summary style={{ cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--warning)' }}>Tablo 17/18: Kombine ANOVA & Regresyon</summary>
+                          <div className="mt-2">
+                            <ScrollableTable maxHeight="140px">
+                              <table className="data-table small-table">
+                                <thead><tr><th>Metric</th><th>R²</th><th>Adj R²</th></tr></thead>
+                                <tbody>
+                                  {Object.entries(reportBundle.table18.regression).map(([metric, payload]) => (
+                                    <tr key={metric}><td>{metric}</td><td>{payload.r_squared?.toFixed?.(4)}</td><td>{payload.adj_r_squared?.toFixed?.(4)}</td></tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </ScrollableTable>
+                          </div>
+                        </details>
+
+                        <details>
+                          <summary style={{ cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--warning)' }}>Tablo 19: Etkili Kombine Kurallar</summary>
+                          <ScrollableTable maxHeight="180px" className="mt-2">
+                            <table className="data-table small-table">
+                              <thead><tr><th>Senaryo</th><th>Metric</th><th>Kural</th><th>Mean</th></tr></thead>
+                              <tbody>
+                                {Object.entries(reportBundle.table19.best_rules).flatMap(([scenario, rows]) => (rows || []).map((row, idx) => (
+                                  <tr key={`${scenario}-${idx}`}><td>{scenario}</td><td>{row.metric}</td><td>{row.rule_name}</td><td>{row.mean_value?.toFixed?.(2)}</td></tr>
+                                )))}
+                              </tbody>
+                            </table>
+                          </ScrollableTable>
+                        </details>
+                      </div>
+                    ) : <div>İstatistiksel veriler hazırlanıyor...</div>}
+                  </ReportArtifactCard>
+                </div>
+              </div>
+
               <button className="btn btn-warning mt-4" onClick={() => scrollToNext(8)}>Final Değerlendirmesine Geç</button>
             </div>
           </div>
@@ -1031,7 +1341,7 @@ export default function GuidedFlow() {
           <div className="flow-step active slide-in">
             <div className="flow-step-number">08</div>
             <div className="flow-step-node">
-              <h3><CheckCircle size={20} /> 08. Sonuç ve Değerlendirme (Rapor Bölüm 7)</h3>
+              <h3><CheckCircle size={20} /> {flowNarratives.conclusionTitle}</h3>
               <div className="glass-panel mt-4" style={{ borderLeft: '4px solid var(--accent)', padding: '1.5rem' }}>
                 <div style={{ fontWeight: 'bold', fontSize: '0.85rem', marginBottom: '1rem', color: 'var(--accent)' }}><Activity size={16} /> MEVCUT ANALİZ İSTATİSTİKLERİ</div>
                 <div className="grid-4 text-center" style={{ gap: '1rem' }}>
@@ -1041,7 +1351,18 @@ export default function GuidedFlow() {
                   <div><div style={{ fontSize: '0.65rem', opacity: 0.6 }}>{gapLabel}</div><div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--warning)' }}>{gapValue !== null ? gapValue.toFixed(2) : '0.00'}</div></div>
                 </div>
               </div>
-              <AcademicInsight message="Bu çalışma, makalede önerilen hibrit dağıtım kurallarının ve TOPSIS tabanlı karar destek mekanizmasının, karmaşık üretim ortamlarında ne denli etkili sonuçlar verdiğini hem teorik hem de pratik olarak kanıtlamıştır." />
+              <AcademicInsight message={flowNarratives.conclusionSummary} />
+              <AcademicInsight message={flowNarratives.conclusionApplied} />
+              <AcademicInsight message={flowNarratives.conclusionCaution} />
+
+              <ReportArtifactCard
+                label="Sonuç"
+                title="Özet ve Katkılar"
+                status="live backend"
+                note={flowNarratives.conclusionSummary}
+              >
+                <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>{flowNarratives.conclusionApplied}</div>
+              </ReportArtifactCard>
             </div>
           </div>
         )}

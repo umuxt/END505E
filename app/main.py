@@ -25,6 +25,7 @@ from app.ddr_heuristic import (
 )
 from app.topsis import run_topsis, print_topsis_results
 from app.augmecon import run_augmecon, ParetoSolution, select_best_pareto
+from app.report_analytics import build_report_bundle, render_report_bundle_markdown
 from app.utils import Colors, print_gantt_chart, get_gantt_str, get_html_gantt, get_html_summary_table, system_health_check
 
 DATA_PATH = os.path.join(ROOT, "data", "seed_input.json")
@@ -317,7 +318,13 @@ def flow_export_pdf(extra_content: str = ""):
     """Sadece deneysel sonuçları içeren bağımsız bir PDF üretir."""
     print("\n  ─── Deneysel Sonuçlar PDF'i Üretiliyor ───────────────────")
     result_file = os.path.join(ROOT, "12_DENEYSEL_SONUCLAR_RAPORU.md")
-    header = f"# UPMSP Çizelgeleme Problemi - Deneysel Analiz Raporu\n---\n**Çalışma:** Akademik Doğrulama ve Performans Analizi\n\n{extra_content}\n"
+    try:
+        report_bundle = build_report_bundle()
+        report_bundle_md = render_report_bundle_markdown(report_bundle)
+    except Exception as exc:
+        report_bundle_md = f"## Rapor Atlası Ekleri\n\nRapor bundle oluşturulamadı: {exc}\n"
+
+    header = f"# UPMSP Çizelgeleme Problemi - Deneysel Analiz Raporu\n---\n**Çalışma:** Akademik Doğrulama ve Performans Analizi\n\n{extra_content}\n\n{report_bundle_md}\n"
     with open(result_file, "w", encoding="utf-8") as f: f.write(header)
     os.system(f"npx md-to-pdf \"{result_file}\"")
     print(f"\n  [OK] PDF oluşturuldu: {result_file.replace('.md', '.pdf')}")
