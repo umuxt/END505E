@@ -85,8 +85,14 @@ h1, h2, h3, h4 {
 .dashboard-container {
   max-width: 1440px;
   margin: 0 auto;
-  padding: 2.5rem 2rem;
+  padding: 2.5rem 1rem;
   width: 100%;
+}
+
+@media (min-width: 768px) {
+  .dashboard-container {
+    padding: 2.5rem 2rem;
+  }
 }
 
 .header {
@@ -303,8 +309,15 @@ h1, h2, h3, h4 {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--glass-border);
   border-radius: 20px;
-  padding: 2rem;
+  padding: 1.25rem 1rem;
   transition: var(--transition);
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .flow-step-node {
+    padding: 2rem;
+  }
 }
 
 .flow-step.active .flow-step-node {
@@ -927,9 +940,15 @@ h1, h2, h3, h4 {
 
 /* Computational Notebook Styles */
 .notebook-container {
-  max-width: 1000px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 3rem 2rem;
+  padding: 2rem 1rem;
+}
+
+@media (min-width: 768px) {
+  .notebook-container {
+    padding: 3rem 2rem;
+  }
 }
 
 .notebook-header {
@@ -1002,7 +1021,8 @@ h1, h2, h3, h4 {
 }
 
 .side-panel {
-  width: 500px;
+  width: 100%;
+  max-width: 500px;
   height: 100%;
   background: var(--bg-dark);
   border-left: 1px solid var(--glass-border);

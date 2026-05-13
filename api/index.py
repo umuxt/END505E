@@ -68,9 +68,9 @@ def api_generate(req: GenerateRequest):
         return {"status": "success", "data": light_data}
     except Exception as e:
         import traceback
-        with open("backend_error.log", "a") as f:
-            f.write(traceback.format_exc())
-        raise HTTPException(status_code=500, detail=str(e))
+        error_msg = f"Generate Error: {str(e)}\n{traceback.format_exc()}"
+        print(error_msg)
+        raise HTTPException(status_code=500, detail=error_msg)
 
 class DDRRequest(BaseModel):
     problem: dict

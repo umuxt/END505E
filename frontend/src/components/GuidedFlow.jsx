@@ -267,7 +267,7 @@ const PaginatedSetupMatrix = React.memo(({ data, selectedK }) => {
 
   return (
     <div style={{ marginTop: '1rem', background: 'rgba(0,0,0,0.1)', padding: '1rem', borderRadius: '8px', opacity: loading ? 0.5 : 1 }}>
-      <div className="flex-row" style={{ justifyContent: 'space-between', marginBottom: '15px', alignItems: 'center' }}>
+      <div className="flex-row" style={{ justifyContent: 'space-between', marginBottom: '15px', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
         <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--warning)' }}>
           🔍 Sᵢⱼₖ Matris Görünümü (İş {startI + 1}-{endI} / {n})
         </div>
@@ -277,7 +277,9 @@ const PaginatedSetupMatrix = React.memo(({ data, selectedK }) => {
           <button className="btn btn-sm" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}>Sonraki →</button>
         </div>
       </div>
-      <ScrollableTable maxHeight="350px">
+      <ScrollableTable maxHeight="450px">
+
+
         <table className="data-table small-table sticky-column">
           <thead>
             <tr>
@@ -325,7 +327,7 @@ const DataMatrixView = React.memo(({ data, title }) => {
 
   return (
     <div className="matrix-section slide-in mt-4">
-      <div className="flex-row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="flex-row" style={{ justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
         <div className="output-header" style={{ color: 'var(--warning)', border: 'none' }}><BarChart3 size={14} /> {title} (n={n}, m={m})</div>
         <div style={{ display: 'flex', gap: '10px' }}>
           <button className="btn btn-sm" onClick={copyToClipboard}><Copy size={12} /> JSON</button>
@@ -336,7 +338,9 @@ const DataMatrixView = React.memo(({ data, title }) => {
           </div>
         </div>
       </div>
-      <ScrollableTable maxHeight="400px">
+      <ScrollableTable maxHeight="450px">
+
+
         <table className="data-table sticky-column">
           <thead>
             <tr>
@@ -360,7 +364,7 @@ const DataMatrixView = React.memo(({ data, title }) => {
         </table>
       </ScrollableTable>
       <div className="mt-4" style={{ background: 'rgba(255,255,255,0.01)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-        <div className="flex-row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="flex-row" style={{ justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
           <div style={{ fontSize: '0.8rem', fontWeight: 600 }}><Activity size={14} /> Sᵢⱼₖ (Sıra-Bağımlı Hazırlık Süresi Matrisi)</div>
           <select className="input-field" style={{ width: 'auto', padding: '2px 8px', fontSize: '0.75rem' }} value={selectedK} onChange={e => setSelectedK(Number(e.target.value))}>
             {Array.from({ length: m }).map((_, k) => <option key={k} value={k}>M{k + 1} Tezgahı</option>)}
@@ -379,7 +383,9 @@ const TopsisNormalizationTable = ({ topsisResults }) => {
       <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', borderLeft: '3px solid var(--warning)', paddingLeft: '0.75rem', marginBottom: '1rem' }}>
         <strong>Tablo 21: TOPSIS Karar Matrisi</strong> — Ağırlıklı skorlara göre sıralama.
       </div>
-      <ScrollableTable maxHeight="320px">
+      <ScrollableTable maxHeight="450px">
+
+
         <table className="data-table small-table">
           <thead>
             <tr>
@@ -425,7 +431,7 @@ const GanttChart = React.memo(({ schedule, m, n }) => {
 
   return (
     <div className="gantt-container mt-4" style={{ background: '#0d1117', padding: '1.5rem', borderRadius: '12px', border: '1px solid #30363d', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
-      <div className="flex-row" style={{ justifyContent: 'space-between', marginBottom: '1.5rem', borderBottom: '1px solid #30363d', paddingBottom: '1rem' }}>
+      <div className="flex-row" style={{ justifyContent: 'space-between', marginBottom: '1.5rem', borderBottom: '1px solid #30363d', paddingBottom: '1rem', flexWrap: 'wrap', gap: '15px' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
           <div style={{ fontSize: '0.85rem', fontWeight: 'bold', letterSpacing: '0.5px' }}>Zaman Çizelgesi (Gantt)</div>
           <div style={{ display: 'flex', gap: '15px', fontSize: '0.65rem', opacity: 0.7 }}>
@@ -511,7 +517,9 @@ const JobSequenceTable = React.memo(({ schedule, m, problemData }) => {
 
   return (
     <div className="terminal-box" style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-      <ScrollableTable maxHeight="500px">
+      <ScrollableTable maxHeight="450px">
+
+
         <table className="data-table small-table">
           <thead>
             <tr><th>Tezgâh</th><th>İş</th><th>Fⱼ</th><th>Pⱼₖ</th><th>Sᵢⱼₖ</th><th>Cⱼ</th><th>Dⱼ</th><th>eⱼ⁺</th><th>eⱼ⁻</th></tr>
@@ -556,11 +564,11 @@ const CompactMetrics = ({ schedule, problemData }) => {
   });
   const util = (totalP / (Object.keys(schedule).length * maxC)) * 100;
   return (
-    <div className="flex-row" style={{ gap: '1rem', marginTop: '1rem', padding: '0.75rem', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', fontSize: '0.8rem', justifyContent: 'space-around', border: '1px solid rgba(255,255,255,0.05)' }}>
-      <span><strong>Cₘₐₓ:</strong> {maxC?.toFixed?.(1) || '0.0'}h</span>
-      <span><strong>ΣT:</strong> {totalT?.toFixed?.(1) || '0.0'}h</span>
-      <span><strong>L:</strong> {numL ?? 0} iş</span>
-      <span><strong>Kullanım Oranı:</strong> %{util?.toFixed?.(1) || '0.0'}</span>
+    <div className="flex-row" style={{ gap: '1rem', marginTop: '1rem', padding: '0.75rem', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', fontSize: '0.8rem', justifyContent: 'space-around', border: '1px solid rgba(255,255,255,0.05)', flexWrap: 'wrap' }}>
+      <span style={{ whiteSpace: 'nowrap' }}><strong>Cₘₐₓ:</strong> {maxC?.toFixed?.(1) || '0.0'}h</span>
+      <span style={{ whiteSpace: 'nowrap' }}><strong>ΣT:</strong> {totalT?.toFixed?.(1) || '0.0'}h</span>
+      <span style={{ whiteSpace: 'nowrap' }}><strong>L:</strong> {numL ?? 0} iş</span>
+      <span style={{ whiteSpace: 'nowrap' }}><strong>Kullanım:</strong> %{util?.toFixed?.(1) || '0.0'}</span>
     </div>
   );
 };
@@ -577,8 +585,8 @@ const AcademicBlock = ({ items }) => (
 );
 
 const ReportArtifactCard = ({ label, title, status, note, children, tone = 'var(--accent)' }) => (
-  <div className="glass-panel" style={{ padding: '1rem', borderLeft: `4px solid ${tone}`, background: 'rgba(255,255,255,0.02)' }}>
-    <div className="flex-row" style={{ justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+  <div className="glass-panel" style={{ padding: '1rem', borderLeft: `4px solid ${tone}`, background: 'rgba(255,255,255,0.02)', marginBottom: '1.5rem' }}>
+    <div className="flex-row" style={{ justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
       <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#e6edf3' }}>{label} · {title}</div>
       <div style={{ fontSize: '0.65rem', fontWeight: 'bold', textTransform: 'uppercase', color: tone, letterSpacing: '0.08em' }}>{status}</div>
     </div>
@@ -622,7 +630,9 @@ const ReportAtlas = ({ problemData, cpsatResults, augmeconResults, ddrResults, t
         >
           {report14 && report15 ? (
             <>
-              <ScrollableTable maxHeight="260px">
+              <ScrollableTable maxHeight="450px">
+
+
                 <table className="data-table small-table">
                   <thead>
                     <tr>
@@ -895,7 +905,7 @@ export default function GuidedFlow() {
       <div className="flow-content">
         
         {/* CHAPTER 1: Giriş */}
-        <div ref={(el) => { stageRefs.current[1] = el; }} className={`flow-step ${activeStage >= 1 ? 'active' : ''}`}>
+        <div ref={(el) => { stageRefs.current[1] = el; }} className={`flow-step ${activeStage >= 1 ? 'active' : ''}`} style={{ marginBottom: '3rem' }}>
           <div className="flow-step-number">01</div>
           <div className="flow-step-node">
             <h3><BookOpen size={20} /> 01. Giriş (Introduction)</h3>
@@ -919,7 +929,7 @@ export default function GuidedFlow() {
 
         {/* CHAPTER 2: Literatür */}
         {activeStage >= 2 && (
-          <div ref={(el) => { stageRefs.current[2] = el; }} className="flow-step active slide-in">
+          <div ref={(el) => { stageRefs.current[2] = el; }} className="flow-step active slide-in" style={{ marginBottom: '3rem' }}>
             <div className="flow-step-number">02</div>
             <div className="flow-step-node">
               <h3><FileText size={20} /> 02. Literatür Taraması (Literature Review)</h3>
@@ -955,7 +965,7 @@ export default function GuidedFlow() {
 
         {/* CHAPTER 3: Problem Tanımı ve Veri Üretimi */}
         {activeStage >= 3 && (activeStage === 3 || problemData) && (
-          <div ref={(el) => { stageRefs.current[3] = el; }} className="flow-step active slide-in">
+          <div ref={(el) => { stageRefs.current[3] = el; }} className="flow-step active slide-in" style={{ marginBottom: '3rem' }}>
             <div className="flow-step-number">03</div>
             <div className="flow-step-node">
               <h3><Database size={20} /> 03. Problem Tanımı ve Veri Üretimi (Bölüm 3.1)</h3>
@@ -975,18 +985,22 @@ export default function GuidedFlow() {
                 </table>
               </div>
 
-              <div className="mt-4" style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1.5rem' }}>
-                <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--warning)', marginBottom: '1rem' }}>🧪 Canlı Test: Kendi Veri Setinizi Oluşturun</div>
-                <div className="grid-4" style={{ gap: '1rem' }}>
-                  <div className="form-group"><label>İş (n)</label><input type="number" className="input-field" value={inputJobs} onChange={e => setInputJobs(e.target.value)} /></div>
-                  <div className="form-group"><label>Tezgah (m)</label><input type="number" className="input-field" value={inputMachines} onChange={e => setInputMachines(e.target.value)} /></div>
-                  <div className="form-group"><label>Aile (F)</label><input type="number" className="input-field" value={inputFamilies} onChange={e => setInputFamilies(e.target.value)} /></div>
-                  <div className="form-group"><label>NP Yüzde (%)</label><input type="number" className="input-field" value={inputNP} onChange={e => setInputNP(e.target.value)} /></div>
-                  <div className="form-group"><label>Senaryo</label><select className="input-field" value={inputScenario} onChange={e => setInputScenario(e.target.value)}><option value="high">Yüksek Talep</option><option value="low">Düşük Talep</option></select></div>
+                <div className="mt-4" style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1.5rem' }}>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--warning)', marginBottom: '1rem' }}>🧪 Canlı Test: Kendi Veri Setinizi Oluşturun</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '0.75rem' }}>
+                    <div className="form-group"><label>İş (n)</label><input type="number" className="input-field" value={inputJobs} onChange={e => setInputJobs(e.target.value)} /></div>
+                    <div className="form-group"><label>Tezgah (m)</label><input type="number" className="input-field" value={inputMachines} onChange={e => setInputMachines(e.target.value)} /></div>
+                    <div className="form-group"><label>Aile (F)</label><input type="number" className="input-field" value={inputFamilies} onChange={e => setInputFamilies(e.target.value)} /></div>
+                    <div className="form-group">
+                      <label>NP Oranı (%)</label>
+                      <input type="number" className="input-field" value={inputNP} onChange={e => setInputNP(e.target.value)} />
+                      <div style={{ fontSize: '0.62rem', color: 'var(--text-secondary)', marginTop: '4px', lineHeight: '1.2' }}>0: Kısıt Yok<br/>100: Tam Kısıt</div>
+                    </div>
+                    <div className="form-group" style={{ gridColumn: 'span 1' }}><label>Senaryo</label><select className="input-field" value={inputScenario} onChange={e => setInputScenario(e.target.value)}><option value="high">Yüksek Talep</option><option value="low">Düşük Talep</option></select></div>
+                  </div>
+                  <AcademicInsight message={flowNarratives.prepTimeApplied} />
+                  <button className="btn btn-warning mt-4" style={{ width: '100%' }} onClick={generateData} disabled={loading}><Play size={16} /> Veriyi Üret ve Matrisleri İncele</button>
                 </div>
-                <AcademicInsight message={flowNarratives.prepTimeApplied} />
-                <button className="btn btn-warning mt-4" onClick={generateData} disabled={loading}><Play size={16} /> Veriyi Üret ve Matrisleri İncele</button>
-              </div>
 
               {problemData && (
                 <div className="mt-4 slide-in">
@@ -1009,11 +1023,11 @@ export default function GuidedFlow() {
 
         {/* CHAPTER 4: Matematiksel Modeller */}
         {activeStage >= 4 && problemData && (
-          <div ref={(el) => { stageRefs.current[4] = el; }} className="flow-step active slide-in">
+          <div ref={(el) => { stageRefs.current[4] = el; }} className="flow-step active slide-in" style={{ marginBottom: '3rem' }}>
             <div className="flow-step-number">04</div>
             <div className="flow-step-node">
               <h3><Calculator size={20} /> 04. Matematiksel Modeller (MILP - Bölüm 3.2)</h3>
-              <div className="grid-3" style={{ gap: '1rem', margin: '1rem 0' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', margin: '1rem 0' }}>
                 <MathBox title="M1: Min Cₘₐₓ" formula="min Z = Cₘₐₓ" description="Toplam üretim süresini minimize eder." />
                 <MathBox title="M2: Min T" formula="min T = Σ eⱼ⁺" description="Müşteri gecikmelerini minimize eder." />
                 <MathBox title="M3: Min L" formula="min L = Σ Uⱼ" description="Geciken sipariş sayısını minimize eder." />
@@ -1054,7 +1068,7 @@ export default function GuidedFlow() {
 
         {/* CHAPTER 5: DDR */}
         {activeStage >= 5 && problemData && (
-          <div ref={(el) => { stageRefs.current[5] = el; }} className="flow-step active slide-in">
+          <div ref={(el) => { stageRefs.current[5] = el; }} className="flow-step active slide-in" style={{ marginBottom: '3rem' }}>
             <div className="flow-step-number">05</div>
             <div className="flow-step-node">
               <h3><Zap size={20} /> 05. Dinamik Dağıtım Kuralları (DDR - Bölüm 4)</h3>
@@ -1120,7 +1134,9 @@ export default function GuidedFlow() {
 
                    <div className="glass-panel" style={{ padding: '1rem', marginBottom: '1rem' }}>
                     <strong>📊 Tablo 12: DDR Performans Matrisi</strong>
-                    <ScrollableTable maxHeight="300px">
+                    <ScrollableTable maxHeight="450px">
+
+
                       <table className="data-table small-table">
                         <thead><tr><th>Kural</th><th>Cₘₐₓ</th><th>T (Gecikme)</th><th>L (Geciken)</th></tr></thead>
                         <tbody>
@@ -1131,11 +1147,11 @@ export default function GuidedFlow() {
                       </table>
                     </ScrollableTable>
                   </div>
-                  <div className="mt-4 flex-row" style={{ gap: '1rem', background: 'rgba(255,255,255,0.02)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                    <div className="form-group" style={{ flex: 1 }}><label>w₁ (Cₘₐₓ)</label><input type="number" step="0.05" className="input-field" value={weights.wC} onChange={e => setWeights({...weights, wC: Number(e.target.value)})} /></div>
-                    <div className="form-group" style={{ flex: 1 }}><label>w₂ (T)</label><input type="number" step="0.05" className="input-field" value={weights.wT} onChange={e => setWeights({...weights, wT: Number(e.target.value)})} /></div>
-                    <div className="form-group" style={{ flex: 1 }}><label>w₃ (L)</label><input type="number" step="0.05" className="input-field" value={weights.wL} onChange={e => setWeights({...weights, wL: Number(e.target.value)})} /></div>
-                    <button className="btn btn-warning mt-auto" style={{ height: '42px' }} onClick={runTopsis} disabled={ddrResults.length < 39}><Target size={16} /> TOPSIS Analizi Uygula</button>
+                  <div className="mt-4 flex-row" style={{ gap: '1rem', background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '12px', border: '1px solid var(--border-color)', flexWrap: 'wrap' }}>
+                    <div className="form-group" style={{ flex: '1 1 100px' }}><label>w₁ (Cₘₐₓ)</label><input type="number" step="0.05" className="input-field" value={weights.wC} onChange={e => setWeights({...weights, wC: Number(e.target.value)})} /></div>
+                    <div className="form-group" style={{ flex: '1 1 100px' }}><label>w₂ (T)</label><input type="number" step="0.05" className="input-field" value={weights.wT} onChange={e => setWeights({...weights, wT: Number(e.target.value)})} /></div>
+                    <div className="form-group" style={{ flex: '1 1 100px' }}><label>w₃ (L)</label><input type="number" step="0.05" className="input-field" value={weights.wL} onChange={e => setWeights({...weights, wL: Number(e.target.value)})} /></div>
+                    <button className="btn btn-warning mt-auto" style={{ height: '42px', width: '100%', flex: '1 1 100%' }} onClick={runTopsis} disabled={ddrResults.length < 39}><Target size={16} /> TOPSIS Analizi Uygula</button>
                   </div>
                 </div>
               )}
@@ -1145,7 +1161,7 @@ export default function GuidedFlow() {
 
         {/* CHAPTER 6: TOPSIS Sonuçları ve Çizelge */}
         {activeStage >= 6 && topsisResults.length > 0 && problemData && (
-          <div ref={(el) => { stageRefs.current[6] = el; }} className="flow-step active slide-in">
+          <div ref={(el) => { stageRefs.current[6] = el; }} className="flow-step active slide-in" style={{ marginBottom: '3rem' }}>
             <div className="flow-step-number">06</div>
             <div className="flow-step-node">
               <h3><Target size={20} /> 06. Karar Analizi (Rapor Bölüm 5.3)</h3>
@@ -1179,7 +1195,7 @@ export default function GuidedFlow() {
 
         {/* CHAPTER 7: Live validation */}
         {activeStage >= 7 && (
-          <div ref={(el) => { stageRefs.current[7] = el; }} className="flow-step active slide-in">
+          <div ref={(el) => { stageRefs.current[7] = el; }} className="flow-step active slide-in" style={{ marginBottom: '3rem' }}>
             <div className="flow-step-number">07</div>
             <div className="flow-step-node">
               <h3><TrendingUp size={20} /> 07. Canlı Performans Doğrulama</h3>
@@ -1200,7 +1216,7 @@ export default function GuidedFlow() {
                 <div style={{ color: 'var(--warning)', fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Zap size={18} /> CANLI KURAL ÖZETİ: EN ETKİLİ HİBRİT SEÇİMLER
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
                   <div className="p-3" style={{ background: 'rgba(0,0,0,0.2)', borderRadius: '8px', textAlign: 'center' }}>
                     <div style={{ fontWeight: 'bold', fontSize: '0.8rem', color: 'var(--accent)' }}>[SCT & SC-LPT: 450]</div>
                     <div style={{ fontSize: '0.65rem', opacity: 0.7 }}>Cₘₐₓ ve L için güçlü seçenek</div>
@@ -1226,7 +1242,9 @@ export default function GuidedFlow() {
                   >
                     {reportBundle?.table14 ? (
                       <>
-                        <ScrollableTable maxHeight="260px">
+                        <ScrollableTable maxHeight="450px">
+
+
                           <table className="data-table small-table">
                             <thead>
                               <tr>
@@ -1268,7 +1286,9 @@ export default function GuidedFlow() {
                           {Object.entries(reportBundle.table16.anova).map(([metric, rows]) => (
                             <div key={metric} className="mt-2">
                               <div style={{ fontSize: '0.7rem', fontWeight: 'bold' }}>{metric} ANOVA</div>
-                              <ScrollableTable maxHeight="140px">
+                              <ScrollableTable maxHeight="450px">
+
+
                                 <table className="data-table small-table">
                                   <thead><tr><th>Terim</th><th>df</th><th>F</th><th>p</th></tr></thead>
                                   <tbody>
@@ -1299,7 +1319,9 @@ export default function GuidedFlow() {
                         <details>
                           <summary style={{ cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--warning)' }}>Tablo 17/18: Kombine ANOVA & Regresyon</summary>
                           <div className="mt-2">
-                            <ScrollableTable maxHeight="140px">
+                            <ScrollableTable maxHeight="450px">
+
+
                               <table className="data-table small-table">
                                 <thead><tr><th>Metric</th><th>R²</th><th>Adj R²</th></tr></thead>
                                 <tbody>
@@ -1338,13 +1360,13 @@ export default function GuidedFlow() {
 
         {/* CHAPTER 8: Sonuç */}
         {activeStage >= 8 && topsisResults.length > 0 && problemData && (
-          <div className="flow-step active slide-in">
+          <div className="flow-step active slide-in" style={{ marginBottom: '3rem' }}>
             <div className="flow-step-number">08</div>
             <div className="flow-step-node">
               <h3><CheckCircle size={20} /> {flowNarratives.conclusionTitle}</h3>
               <div className="glass-panel mt-4" style={{ borderLeft: '4px solid var(--accent)', padding: '1.5rem' }}>
                 <div style={{ fontWeight: 'bold', fontSize: '0.85rem', marginBottom: '1rem', color: 'var(--accent)' }}><Activity size={16} /> MEVCUT ANALİZ İSTATİSTİKLERİ</div>
-                <div className="grid-4 text-center" style={{ gap: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: '1rem', textAlign: 'center' }}>
                   <div><div style={{ fontSize: '0.65rem', opacity: 0.6 }}>İŞ / MAKİNE</div><div style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>{inputJobs} / {inputMachines}</div></div>
                   <div><div style={{ fontSize: '0.65rem', opacity: 0.6 }}>AİLE SAYISI</div><div style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>{new Set(Object.values(problemData.family || {})).size}</div></div>
                   <div><div style={{ fontSize: '0.65rem', opacity: 0.6 }}>BEST CC*</div><div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--success)' }}>{topsisResults[0]?.cc}</div></div>
